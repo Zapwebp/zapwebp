@@ -1,0 +1,24 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/ui",
+  "version": "1.0.0",
+  "type": "sdk",
+  "description": "Accessible, zero-dependency browser dropzone, reactive cockpit bar, and interactive comparison dialog.",
+  "install": "npm install @zapwebp/ui",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/sdk/ui",
+  "docsMarkdown": "https://zapwebp.vercel.app/sdk/ui.md",
+  "repository": "https://github.com/Zapwebp/ui",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "components": [
+    "ZapDropzone",
+    "ZapCockpit",
+    "ZapPreviewModal",
+    "ZapResultCard"
+  ],
+  "accessibility": {
+    "standard": "WCAG 2.2 AA",
+    "keyboardNavigation": true,
+    "ariaAnnouncements": true
+  }
+}

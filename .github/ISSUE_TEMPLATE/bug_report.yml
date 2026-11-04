@@ -1,0 +1,53 @@
+name: "🐛 Bug Report"
+description: "File a bug report to help us maintain zero-defect, transparency-safe conversions."
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Please ensure you have tested with the latest Zapwebp version.
+  - type: input
+    id: version
+    attributes:
+      label: Zapwebp Version
+      description: Run `zap --version` or check package.json
+      placeholder: "1.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Operating System / Environment
+      options:
+        - "Windows 11 / 10"
+        - "macOS (Apple Silicon)"
+        - "macOS (Intel)"
+        - "Ubuntu / Debian"
+        - "Alpine Linux (Docker)"
+        - "Android Termux"
+        - "Web Browser (Chrome / Safari / Firefox)"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide clear, minimal steps to reproduce the issue.
+      placeholder: |
+        1. Run `zap input.svg --to webp`
+        2. Inspect output
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Output or Logs
+      description: Paste any CLI error output, exit codes, or terminal traces.
+      render: shell

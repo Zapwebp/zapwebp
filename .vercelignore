@@ -1,0 +1,8 @@
+node_modules
+sources
+AGENTS.md
+.agents
+.codex
+.git
+.env
+.env.*

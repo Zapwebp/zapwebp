@@ -1,0 +1,113 @@
+/**
+ * Primitive Color and Motion Tokens (Verbatim Source of Truth)
+ * Do NOT alter these hex values directly; map components through semantic.css
+ */
+:root {
+  --bg: #f7f7f4;
+  --bg-dropzone: #ffffff;
+  --bg-dropzone-hover: #f2f3ed;
+  --border-mid: #e2e3dc;
+  --border-dropzone: #d5d7cd;
+  --green-border-hover: #8dc63f;
+  --green-primary: #8dc63f;
+  --green-hover: #7db732;
+  --green-bright: #c7f36b;
+  --green-outline: #8dc63f;
+  --green-alpha-13: rgba(141, 198, 63, 0.13);
+  --error: #cf222e;
+  --text-primary: #1a1c18;
+  --gray-600: #73776b;
+  --status-dot: #8dc63f;
+
+  /* Raw Motion */
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-burst: ease-out;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #10120f;
+  --bg-dropzone: #171a15;
+  --bg-dropzone-hover: #21251e;
+  --border-mid: #292d25;
+  --border-dropzone: #343930;
+  --text-primary: #f2f4ef;
+  --gray-600: #8e9488;
+  --error: #f85149;
+  --status-dot: #8dc63f;
+  --green-primary: #8dc63f;
+  --green-hover: #9fe248;
+  --green-bright: #c7f36b;
+  --green-outline: #8dc63f;
+  --green-alpha-13: rgba(141, 198, 63, 0.16);
+}
+
+/**
+ * Semantic Aliases - Components and feature code reference ONLY these tokens
+ */
+:root, [data-theme="dark"] {
+  --color-surface: var(--bg);
+  --color-surface-raised: var(--bg-dropzone);
+  --color-surface-hover: var(--bg-dropzone-hover);
+  --color-border: var(--border-mid);
+  --color-border-dropzone: var(--border-dropzone);
+  --color-border-hover: var(--green-border-hover);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--gray-600);
+  --color-accent: var(--green-primary);
+  --color-accent-hover: var(--green-hover);
+  --color-accent-bright: var(--green-bright);
+  --color-accent-soft: var(--green-alpha-13);
+  --color-danger: var(--error);
+  --color-focus-ring: var(--green-outline);
+  --color-dot-idle: var(--gray-600);
+  --color-dot-active: var(--status-dot);
+  --color-dot-done: var(--green-primary);
+  --color-dot-error: var(--error);
+}
+
+/**
+ * Fluid Typography Scale (Continuous scaling without media queries)
+ */
+:root {
+  --step--1: clamp(0.80rem, 0.78rem + 0.10vw, 0.86rem);
+  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  --step-1: clamp(1.10rem, 1.05rem + 0.25vw, 1.28rem);
+  --step-2: clamp(1.30rem, 1.20rem + 0.50vw, 1.65rem);
+  --step-3: clamp(1.60rem, 1.42rem + 0.90vw, 2.20rem);
+  --step-4: clamp(2.00rem, 1.65rem + 1.75vw, 3.20rem);
+  --step-5: clamp(2.50rem, 1.90rem + 3.00vw, 4.50rem);
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.60;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/**
+ * Spacing and Border Radius Tokens
+ */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}

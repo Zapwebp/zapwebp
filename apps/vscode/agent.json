@@ -1,0 +1,47 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp-vscode",
+  "publisher": "zapwebp",
+  "version": "1.1.0",
+  "type": "editor-extension",
+  "description": "VS Code and Open VSX extension for in-editor image conversion, retina multipliers, and local WASM processing.",
+  "install": "code --install-extension zapwebp.zapwebp-vscode",
+  "registry": "https://open-vsx.org/extension/zapwebp/zapwebp-vscode",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/vscode",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/vscode.md",
+  "repository": "https://github.com/Zapwebp/vscode",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "commands": [
+    {
+      "command": "zapwebp.convert",
+      "title": "Zap to WebP"
+    },
+    {
+      "command": "zapwebp.convertScales",
+      "title": "Zap to WebP (@1x, @2x, @3x)"
+    }
+  ],
+  "configuration": {
+    "zapwebp.convertOnSave": {
+      "type": "boolean",
+      "default": false
+    },
+    "zapwebp.baseWidth": {
+      "type": "number",
+      "default": 512
+    },
+    "zapwebp.quality": {
+      "type": "number",
+      "default": 85
+    },
+    "zapwebp.clean": {
+      "type": "boolean",
+      "default": true
+    },
+    "zapwebp.outputExtension": {
+      "type": "string",
+      "default": "webp"
+    }
+  }
+}

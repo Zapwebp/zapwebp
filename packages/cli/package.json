@@ -1,0 +1,48 @@
+{
+  "name": "zapwebp",
+  "version": "1.1.0",
+  "description": "Convert and optimize common image formats from your terminal.",
+  "license": "MIT",
+  "bin": {
+    "zap": "bin/zap.js",
+    "zapwebp": "bin/zapwebp.js"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./journal": "./src/journal.js",
+    "./config": "./src/config.js",
+    "./gate-chain": "./src/gate-chain.js",
+    "./gitignore": "./src/gitignore.js"
+  },
+  "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*",
+    "fflate": "^0.8.3",
+    "ignore": "^7.0.14"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/cli/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

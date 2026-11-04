@@ -1,0 +1,37 @@
+{
+  "name": "@zapwebp/crop",
+  "version": "1.0.0",
+  "description": "Pure transform crop plugin for Zapwebp with auto-crop (aspect ratios, gravity, face detection) and manual coordinates.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@zapwebp/plugin-sdk": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/crop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/crop/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

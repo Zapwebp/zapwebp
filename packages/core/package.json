@@ -1,0 +1,42 @@
+{
+  "name": "@zapwebp/core",
+  "version": "1.1.0",
+  "description": "Format-aware image conversion engine with transparency-safe outputs.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@zapwebp/shared": "workspace:*",
+    "sharp": "^0.33.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/core/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

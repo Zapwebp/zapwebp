@@ -1,0 +1,34 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp-next",
+  "version": "1.0.0",
+  "type": "plugin",
+  "description": "Next.js integration for build-time image conversion, App Router static exports, and custom loader support.",
+  "install": "npm install zapwebp-next",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/next",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/next.md",
+  "repository": "https://github.com/Zapwebp/next",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "dist/index.js",
+  "options": {
+    "targetFormats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "webp",
+        "avif"
+      ]
+    },
+    "quality": {
+      "type": "number",
+      "default": 85
+    },
+    "cleanMetadata": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

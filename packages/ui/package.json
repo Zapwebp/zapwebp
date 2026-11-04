@@ -1,0 +1,99 @@
+{
+  "name": "@zapwebp/ui",
+  "version": "1.1.0",
+  "description": "Universal Error & Upload UI kit, design system tokens, and accessible UI primitives for Zapwebp",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./toast": {
+      "types": "./src/components/toast.d.ts",
+      "default": "./src/components/toast.js"
+    },
+    "./banner": {
+      "types": "./src/components/banner.d.ts",
+      "default": "./src/components/banner.js"
+    },
+    "./modal": {
+      "types": "./src/components/modal.d.ts",
+      "default": "./src/components/modal.js"
+    },
+    "./card": {
+      "types": "./src/components/card.d.ts",
+      "default": "./src/components/card.js"
+    },
+    "./dropzone": {
+      "types": "./src/components/dropzone.d.ts",
+      "default": "./src/components/dropzone.js"
+    },
+    "./button": {
+      "types": "./src/components/button.d.ts",
+      "default": "./src/components/button.js"
+    },
+    "./progress": {
+      "types": "./src/components/progress.d.ts",
+      "default": "./src/components/progress.js"
+    },
+    "./errors": {
+      "types": "./src/errors/index.d.ts",
+      "default": "./src/errors/index.js"
+    },
+    "./state": {
+      "types": "./src/state/index.d.ts",
+      "default": "./src/state/index.js"
+    },
+    "./react": {
+      "types": "./src/frameworks/react.d.ts",
+      "default": "./src/frameworks/react.js"
+    },
+    "./vue": {
+      "types": "./src/frameworks/vue.d.ts",
+      "default": "./src/frameworks/vue.js"
+    },
+    "./svelte": {
+      "types": "./src/frameworks/svelte.d.ts",
+      "default": "./src/frameworks/svelte.js"
+    },
+    "./blade": {
+      "types": "./src/frameworks/blade/index.d.ts",
+      "default": "./src/frameworks/blade/index.js"
+    },
+    "./tokens": "./src/tokens/index.css",
+    "./tokens/ui.css": "./src/tokens/ui.css",
+    "./tokens/primitives.css": "./src/tokens/primitives.css",
+    "./tokens/semantic.css": "./src/tokens/semantic.css",
+    "./tokens/typography.css": "./src/tokens/typography.css",
+    "./tokens/spacing.css": "./src/tokens/spacing.css",
+    "./motion": "./src/motion/index.js",
+    "./preset": "./tailwind.preset.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "ui-kit",
+    "error-handling",
+    "upload",
+    "dropzone",
+    "design-system",
+    "tokens",
+    "tailwind",
+    "zapwebp"
+  ],
+  "author": "Zapwebp Team",
+  "license": "MIT",
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/ui.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/ui/issues"
+  }
+}

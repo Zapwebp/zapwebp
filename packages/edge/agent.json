@@ -1,0 +1,25 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/edge",
+  "version": "2.0.0",
+  "type": "sdk",
+  "description": "Zero-dependency edge runtime adapter for Cloudflare Workers, Vercel Edge, Fastly, and Deno Deploy.",
+  "install": "npm install @zapwebp/edge",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/sdk/edge",
+  "docsMarkdown": "https://zapwebp.vercel.app/sdk/edge.md",
+  "repository": "https://github.com/Zapwebp/edge",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "exports": [
+    "handleEdgeRequest",
+    "createEdgeHandler",
+    "verifyEdgePayload"
+  ],
+  "compatibility": [
+    "cloudflare-workers",
+    "vercel-edge-functions",
+    "fastly-compute",
+    "deno",
+    "bun"
+  ]
+}

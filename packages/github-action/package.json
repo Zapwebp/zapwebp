@@ -1,0 +1,51 @@
+{
+  "name": "zapwebp-github-action",
+  "version": "1.0.0",
+  "description": "Official first-party GitHub Action for Zapwebp â€” automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core.",
+  "main": "src/index.js",
+  "bin": {
+    "zapwebp-action": "src/index.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "action.yml",
+    "Dockerfile",
+    "entrypoint.sh",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "github-action",
+    "zapwebp",
+    "webp",
+    "svg",
+    "image-optimization",
+    "ci"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/github-action.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/github-action/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

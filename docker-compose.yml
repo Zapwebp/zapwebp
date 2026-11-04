@@ -1,0 +1,10 @@
+services:
+  zapwebp:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      MAX_FILE_BYTES: 5242880
+      MAX_WIDTH: 4096
+    restart: unless-stopped

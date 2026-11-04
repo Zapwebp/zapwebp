@@ -1,0 +1,26 @@
+{
+  "name": "@zapwebp/laravel",
+  "version": "1.0.0",
+  "description": "Official Laravel integration for Zapwebp transparency-safe image conversion engine.",
+  "license": "MIT",
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>",
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/laravel.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/laravel/issues"
+  },
+  "keywords": [
+    "laravel",
+    "php",
+    "image",
+    "webp",
+    "avif",
+    "converter"
+  ]
+}

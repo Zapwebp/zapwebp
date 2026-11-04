@@ -1,0 +1,74 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/crop",
+  "version": "1.0.0",
+  "type": "transform-plugin",
+  "description": "Pure transform crop plugin for Zapwebp with auto-crop (aspect ratios, gravity, face detection) and manual coordinates.",
+  "install": "npm install @zapwebp/crop",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/crop",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/crop.md",
+  "repository": "https://github.com/Zapwebp/crop",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "src/index.js",
+  "exports": [
+    "cropTransform",
+    "cropImage",
+    "calculateCropBox",
+    "parseAspectRatio",
+    "detectFaceBounds",
+    "CROP_PRESETS"
+  ],
+  "presets": [
+    "avatar",
+    "thumbnail",
+    "banner",
+    "product",
+    "story"
+  ],
+  "options": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual"
+      ],
+      "default": "auto"
+    },
+    "aspectRatio": {
+      "type": "string",
+      "enum": [
+        "1:1",
+        "16:9",
+        "4:5",
+        "3:2",
+        "9:16",
+        "21:9"
+      ]
+    },
+    "gravity": {
+      "type": "string",
+      "enum": [
+        "center",
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "face"
+      ],
+      "default": "center"
+    },
+    "fit": {
+      "type": "string",
+      "enum": [
+        "cover",
+        "contain"
+      ],
+      "default": "cover"
+    },
+    "background": {
+      "type": "string",
+      "default": "transparent"
+    }
+  }
+}

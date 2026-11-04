@@ -1,0 +1,40 @@
+{
+  "name": "@zapwebp/mcp",
+  "version": "1.1.0",
+  "description": "MCP tools for image conversion and asset optimization.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "zapwebp-mcp": "bin/zapwebp-mcp.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@zapwebp/core": "workspace:*",
+    "zapwebp": "workspace:*",
+    "zod": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/mcp/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/plugin-sdk",
+  "version": "1.1.0",
+  "type": "sdk",
+  "description": "Standard framework for authoring first-party and community Zapwebp plugins, adapters, and lifecycle hooks.",
+  "install": "npm install @zapwebp/plugin-sdk",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/sdk/plugin",
+  "docsMarkdown": "https://zapwebp.vercel.app/sdk/plugin.md",
+  "repository": "https://github.com/Zapwebp/plugin-sdk",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "exports": [
+    "definePlugin",
+    "safeDecode",
+    "createMockEngine",
+    "validateOptions",
+    "PluginLifecycle"
+  ],
+  "hooks": [
+    "beforeConvert",
+    "afterConvert",
+    "onError",
+    "onBatchComplete"
+  ]
+}

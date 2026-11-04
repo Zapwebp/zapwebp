@@ -1,0 +1,39 @@
+{
+  "name": "zapwebp-lens",
+  "version": "1.0.0",
+  "description": "Read-only image inspection, visual comparison, and alpha verification CLI.",
+  "bin": {
+    "zapwebp-lens": "bin/zapwebp-lens.js",
+    "lens": "bin/zapwebp-lens.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/lens.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/lens/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

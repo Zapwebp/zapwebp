@@ -1,0 +1,28 @@
+/**
+ * Primitive Color and Motion Tokens (Verbatim Source of Truth)
+ * Do NOT alter these hex values directly; map components through semantic.css
+ */
+:root {
+  --bg: #f7f7f4;
+  --bg-dropzone: #ffffff;
+  --bg-dropzone-hover: #f2f3ed;
+  --border-mid: #e2e3dc;
+  --border-dropzone: #d5d7cd;
+  --green-border-hover: #8dc63f;
+  --green-primary: #8dc63f;
+  --green-hover: #7db732;
+  --green-bright: #c7f36b;
+  --green-outline: #8dc63f;
+  --green-alpha-13: rgba(141, 198, 63, 0.13);
+  --error: #cf222e;
+  --text-primary: #1a1c18;
+  --gray-600: #73776b;
+  --status-dot: #8dc63f;
+
+  /* Raw Motion */
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-burst: ease-out;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}

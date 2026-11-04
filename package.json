@@ -1,0 +1,53 @@
+{
+  "name": "zapwebp-workspace",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Transparency-aware image conversion for web and developer workflows.",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "workspaces": [
+    "packages/*",
+    "apps/vscode"
+  ],
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "cli": "node packages/cli/bin/zap.js",
+    "cli:zapwebp": "node packages/cli/bin/zapwebp.js",
+    "zap": "node packages/cli/bin/zap.js",
+    "mcp": "node packages/mcp/bin/zapwebp-mcp.js",
+    "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js",
+    "build:docs": "node scripts/build-docs.js",
+    "build:llms": "node scripts/build-llms.js",
+    "validate-locales": "node scripts/validate-locales.js",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "build:vscode": "pnpm --filter zapwebp-vscode build"
+  },
+  "dependencies": {
+    "@kitelet/core": "^1.0.0",
+    "@zapwebp/api": "workspace:*",
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*",
+    "express": "^4.21.2",
+    "fflate": "^0.8.3",
+    "marked": "^18.1.2",
+    "multer": "^2.5.0"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/zapwebp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/zapwebp/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>",
+  "license": "MIT"
+}

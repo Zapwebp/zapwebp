@@ -1,0 +1,17 @@
+{
+  "name": "Zapwebp — Image Converter",
+  "short_name": "Zapwebp",
+  "description": "Convert images to WebP, PNG, JPEG, or AVIF while preserving transparency.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f4",
+  "theme_color": "#f7f7f4",
+  "icons": [
+    {
+      "src": "/zapwebp.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

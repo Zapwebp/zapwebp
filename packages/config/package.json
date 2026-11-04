@@ -1,0 +1,33 @@
+{
+  "name": "@zapwebp/config",
+  "version": "1.0.0",
+  "description": "Shared linting, formatting, and TypeScript configurations for Zapwebp",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./eslint": "./src/eslint/index.js",
+    "./tsconfig": "./src/tsconfig/base.json"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "config",
+    "eslint",
+    "tsconfig",
+    "zapwebp"
+  ],
+  "author": "Zapwebp Team",
+  "license": "MIT",
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/config.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/config/issues"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "zapwebp/laravel",
+  "description": "Laravel integration for Zapwebp transparency-safe image conversion engine.",
+  "homepage": "https://zapwebp.vercel.app",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eldrex Delos Reyes Bula",
+      "email": "eldrexdelosreyesbula@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/process": "^10.0|^11.0|^12.0",
+    "illuminate/filesystem": "^10.0|^11.0|^12.0",
+    "illuminate/validation": "^10.0|^11.0|^12.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0|^11.0",
+    "orchestra/testbench": "^8.0|^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Zapwebp\\Laravel\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Zapwebp\\Laravel\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Zapwebp\\Laravel\\ZapwebpServiceProvider"
+      ],
+      "aliases": {
+        "Zap": "Zapwebp\\Laravel\\Facades\\Zap"
+      }
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://github.com/Zapwebp/laravel/issues",
+    "source": "https://github.com/Zapwebp/laravel"
+  }
+}

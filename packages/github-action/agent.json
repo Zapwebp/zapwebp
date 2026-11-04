@@ -1,0 +1,35 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp-github-action",
+  "version": "1.0.0",
+  "type": "github-action",
+  "description": "Automated GitHub Action for CI/CD pipelines to convert staged images, verify transparency, and enforce size budgets.",
+  "install": "uses: Zapwebp/github-action@v1",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/github-action",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/github-action.md",
+  "repository": "https://github.com/Zapwebp/github-action",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "inputs": {
+    "directory": {
+      "type": "string",
+      "default": "."
+    },
+    "format": {
+      "type": "string",
+      "default": "webp"
+    },
+    "quality": {
+      "type": "number",
+      "default": 85
+    },
+    "clean": {
+      "type": "boolean",
+      "default": true
+    },
+    "fail-on-regression": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

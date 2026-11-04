@@ -1,0 +1,23 @@
+/**
+ * Semantic Aliases - Components and feature code reference ONLY these tokens
+ */
+:root {
+  --color-surface: var(--bg);
+  --color-surface-raised: var(--bg-dropzone);
+  --color-surface-hover: var(--bg-dropzone-hover);
+  --color-border: var(--border-mid);
+  --color-border-dropzone: var(--border-dropzone);
+  --color-border-hover: var(--green-border-hover);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--gray-600);
+  --color-accent: var(--green-primary);
+  --color-accent-hover: var(--green-hover);
+  --color-accent-bright: var(--green-bright);
+  --color-accent-soft: var(--green-alpha-13);
+  --color-danger: var(--error);
+  --color-focus-ring: var(--green-outline);
+  --color-dot-idle: var(--gray-600);
+  --color-dot-active: var(--status-dot);
+  --color-dot-done: var(--green-primary);
+  --color-dot-error: var(--error);
+}

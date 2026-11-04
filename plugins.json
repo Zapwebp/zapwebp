@@ -1,0 +1,207 @@
+{
+  "$schema": "https://zapwebp.vercel.app/schemas/plugins.schema.json",
+  "version": "2.0.0",
+  "updatedAt": "2026-11-03T14:00:00Z",
+  "plugins": [
+    {
+      "name": "zapwebp-vite",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Vite plugin for zero-config image conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), and responsive manifests.",
+      "npm": "zapwebp-vite",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "vite",
+        "build",
+        "frontend",
+        "bundler",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-next",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Next.js plugin for image conversion during next build with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), and next/image compatibility.",
+      "npm": "zapwebp-next",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "nextjs",
+        "react",
+        "ssg",
+        "ssr",
+        "webpack",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-github-action",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party GitHub Action for automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core.",
+      "npm": "zapwebp-github-action",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "github-action",
+        "ci",
+        "automation",
+        "universal-formats"
+      ]
+    },
+    {
+      "name": "zapwebp-storage",
+      "author": "Zapwebp",
+      "version": "1.1.0",
+      "description": "Core storage contract and withZapwebp() wrapper — pre-upload image conversion, alpha safety, delete cascades, and multi-scale generation.",
+      "npm": "@zapwebp/storage",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "wrapper",
+        "adapter-core",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-supabase",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Supabase storage adapter for Zapwebp — pre-upload image conversion and alpha safety.",
+      "npm": "@zapwebp/storage/supabase",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "supabase",
+        "postgres",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-firebase",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Firebase & Google Cloud Storage adapter for Zapwebp — client SDK and Admin SDK support.",
+      "npm": "@zapwebp/storage/firebase",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "firebase",
+        "gcs",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-neocities",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Neocities storage adapter for Zapwebp — zero-dependency HTTP upload with rate-limit backoff.",
+      "npm": "@zapwebp/storage/neocities",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "neocities",
+        "static-site",
+        "web-hosting",
+        "webp"
+      ]
+    },
+    {
+      "name": "zapwebp-lens",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Visual comparison and inspection companion CLI for Zapwebp with side-by-side terminal, browser HTML viewer, and byte diffing.",
+      "npm": "zapwebp-lens",
+      "repository": "https://github.com/Zapwebp",
+      "tags": [
+        "lens",
+        "inspection",
+        "visual-diff",
+        "checkerboard",
+        "read-only"
+      ]
+    },
+    {
+      "name": "create-zapwebp",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Interactive scaffolding CLI generator for custom Zapwebp format decoders, storage adapters, clean handlers, and CLI wrappers.",
+      "npm": "create-zapwebp",
+      "repository": "https://github.com/Zapwebp",
+      "tags": [
+        "scaffolding",
+        "generator",
+        "cli",
+        "boilerplate",
+        "dx"
+      ]
+    },
+    {
+      "name": "zapwebp-laravel",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Official Laravel integration for Zapwebp transparency-safe image conversion, Process runner, SafeImage validation rule, and middleware.",
+      "npm": "zapwebp/laravel",
+      "repository": "https://github.com/Zapwebp",
+      "tags": [
+        "laravel",
+        "php",
+        "process",
+        "middleware",
+        "validation"
+      ]
+    },
+    {
+      "name": "zapwebp-format-tiff",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Community format plugin for decoding and encoding uncompressed and LZW TIFF raster assets with alpha channel preservation.",
+      "npm": "zapwebp-format-tiff",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "format",
+        "tiff",
+        "print",
+        "lossless",
+        "alpha"
+      ]
+    },
+    {
+      "name": "zapwebp-format-heic",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Community format plugin for decoding Apple HEIC and HEIF photos into raw RGBA buffers.",
+      "npm": "zapwebp-format-heic",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "format",
+        "heic",
+        "heif",
+        "apple",
+        "mobile"
+      ]
+    },
+    {
+      "name": "zapwebp-format-jxl",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "Community format plugin for next-generation JPEG XL image encoding and decoding with high dynamic range and alpha preservation.",
+      "npm": "zapwebp-format-jxl",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "format",
+        "jxl",
+        "jpeg-xl",
+        "hdr",
+        "alpha"
+      ]
+    }
+  ]
+}

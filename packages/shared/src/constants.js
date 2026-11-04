@@ -1,0 +1,24 @@
+'use strict';
+
+const APP_ORIGIN = 'https://zapwebp.vercel.app';
+const DEFAULT_PORT = 3000;
+const DEFAULT_TIMEOUT_MS = 30_000;
+const MAX_DIMENSION = 4096;
+const MAX_PIXELS = MAX_DIMENSION * MAX_DIMENSION;
+const MAX_SVG_DEPTH = 64;
+const MAX_DATA_URI_BYTES = 1_000_000;
+const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+const ZAPWEBP_USER_AGENT = 'zapwebp/1.2.0';
+
+module.exports = {
+  APP_ORIGIN,
+  DEFAULT_PORT,
+  DEFAULT_TIMEOUT_MS,
+  MAX_DIMENSION,
+  MAX_PIXELS,
+  MAX_SVG_DEPTH,
+  MAX_DATA_URI_BYTES,
+  DEFAULT_CACHE_CONTROL,
+  ZAPWEBP_USER_AGENT,
+};
+

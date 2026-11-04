@@ -1,0 +1,117 @@
+{
+  "$schema": "https://zapwebp.vercel.app/schemas/plugins.schema.json",
+  "version": "1.1.0",
+  "updatedAt": "2026-11-03T03:00:00Z",
+  "plugins": [
+    {
+      "name": "zapwebp-vite",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Vite plugin for zero-config image conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), and responsive manifests.",
+      "npm": "zapwebp-vite",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "vite",
+        "build",
+        "frontend",
+        "bundler",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-next",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Next.js plugin for image conversion during next build with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), and next/image compatibility.",
+      "npm": "zapwebp-next",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "nextjs",
+        "react",
+        "ssg",
+        "ssr",
+        "webpack",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-github-action",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party GitHub Action for automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core.",
+      "npm": "zapwebp-github-action",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "github-action",
+        "ci",
+        "automation",
+        "universal-formats"
+      ]
+    },
+    {
+      "name": "zapwebp-storage",
+      "author": "Zapwebp",
+      "version": "1.1.0",
+      "description": "Core storage contract and withZapwebp() wrapper — pre-upload image conversion, alpha safety, delete cascades, and multi-scale generation.",
+      "npm": "@zapwebp/storage",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "wrapper",
+        "adapter-core",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-supabase",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Supabase storage adapter for Zapwebp — pre-upload image conversion and alpha safety.",
+      "npm": "@zapwebp/storage/supabase",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "supabase",
+        "postgres",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-firebase",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Firebase & Google Cloud Storage adapter for Zapwebp — client SDK and Admin SDK support.",
+      "npm": "@zapwebp/storage/firebase",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "cloud",
+        "firebase",
+        "gcs",
+        "webp",
+        "retina"
+      ]
+    },
+    {
+      "name": "zapwebp-storage-neocities",
+      "author": "Zapwebp",
+      "version": "1.0.0",
+      "description": "First-party Neocities storage adapter for Zapwebp — zero-dependency HTTP upload with rate-limit backoff.",
+      "npm": "@zapwebp/storage/neocities",
+      "repository": "https://github.com/Zapwebp/plugins",
+      "tags": [
+        "storage",
+        "neocities",
+        "static-site",
+        "web-hosting",
+        "webp"
+      ]
+    }
+  ]
+}

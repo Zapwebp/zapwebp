@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Disallow: /api/v1/
+
+# Explicitly welcome modern AI pair programmers and LLM search agents
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+Sitemap: https://zapwebp.vercel.app/sitemap.xml

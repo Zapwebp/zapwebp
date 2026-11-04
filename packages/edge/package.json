@@ -1,0 +1,43 @@
+{
+  "name": "@zapwebp/edge",
+  "version": "2.0.0",
+  "description": "Edge runtime and fetch handler for transparency-safe target locked image conversion",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "zapwebp",
+    "edge",
+    "cloudflare-workers",
+    "vercel-edge",
+    "image-conversion",
+    "target-lock"
+  ],
+  "author": "Zapwebp Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/edge.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/edge/issues"
+  }
+}

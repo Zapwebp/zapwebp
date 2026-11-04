@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f7f4" />
+    <meta
+      name="description"
+      content="Convert correctly. Transparency preserved. Metadata stripped. Output verified. Same engine in the browser, terminal, build tools, CI, and AI agents."
+    />
+    <meta property="og:title" content="Zapwebp — Convert correctly." />
+    <meta
+      property="og:description"
+      content="Convert images correctly. Transparency preserved. Metadata stripped. Output verified."
+    />
+    <meta property="og:url" content="https://zapwebp.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://zapwebp.vercel.app/" />
+    <title>Zapwebp — Convert correctly.</title>
+    <link rel="icon" type="image/svg+xml" href="/zapwebp.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/styles.css?v=2.2.0" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Zapwebp",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web, Linux, macOS, Windows, Android",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Convert correctly. Transparency preserved, metadata stripped, output verified.",
+        "url": "https://zapwebp.vercel.app",
+        "softwareVersion": "2.1.0",
+        "license": "https://opensource.org/licenses/MIT",
+        "author": {
+          "@type": "Person",
+          "name": "Eldrex Delos Reyes Bula",
+          "email": "eldrexdelosreyesbula@gmail.com"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "128"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Announcement Bar -->
+    <aside class="announcement-bar" aria-label="Announcement">
+      <div class="announcement-content">
+        <span class="live-pulse" aria-hidden="true"></span>
+        <span class="announcement-text">
+          <strong>Runs locally:</strong> Zero uploads. No server limits.
+        </span>
+        <a href="https://zapwebp-docs.vercel.app" class="announcement-link"
+          >Read the docs →</a
+        >
+      </div>
+    </aside>
+
+    <!-- Main Navigation Header -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="header-left">
+          <a class="brand-link" href="/" aria-label="Zapwebp home">
+            <img
+              class="brand-logo"
+              src="/assets/zapwebp.svg"
+              alt="Zapwebp Logo"
+              width="32"
+              height="32"
+            />
+            <div class="brand-info">
+              <span class="brand-title">Zapwebp</span>
+            </div>
+          </a>
+        </div>
+
+        <nav class="header-nav" aria-label="Main Navigation">
+          <a href="https://zapwebp-docs.vercel.app" class="nav-link">Docs</a>
+          <a href="https://zapwebp-docs.vercel.app/cli" class="nav-link">CLI</a>
+          <a href="https://zapwebp-docs.vercel.app/mcp" class="nav-link"
+            >MCP Agent</a
+          >
+          <a href="https://zapwebp-docs.vercel.app/api" class="nav-link"
+            >REST API</a
+          >
+          <a href="https://zapwebp-docs.vercel.app/formats" class="nav-link"
+            >Formats</a
+          >
+        </nav>
+
+        <div class="header-right">
+          <button
+            type="button"
+            class="theme-toggle-btn"
+            id="theme-toggle-btn"
+            aria-label="Toggle dark and light theme"
+            title="Toggle theme"
+          >
+            <svg
+              class="theme-icon icon-sun"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg
+              class="theme-icon icon-moon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="theme-toggle-btn"
+            id="theme-toggle-btn"
+            aria-label="Toggle dark and light theme"
+            title="Toggle theme"
+          >
+            <svg class="theme-icon icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="theme-icon icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+
+          <a
+            href="https://github.com/Zapwebp"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="github-icon-btn"
+            aria-label="GitHub Repository"
+            title="View Source on GitHub"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+    <main class="page-content" id="main-content">
+      <!-- Hero & Converter Section -->
+      <section class="hero-section">
+        <div class="hero-header-wrap">
+          <br />
+          <h1 class="hero-headline">
+            Convert<span class="accent-gradient"> correctly.</span>
+          </h1>
+
+          <p class="hero-description">
+            Transparency preserved. Metadata stripped. Output verified. Same
+            engine across the browser, terminal, build tools, and AI agents.
+          </p>
+        </div>
+
+        <!-- The Interactive Converter -->
+        <div class="converter-card" id="converter-container">
+          <input
+            id="file-input"
+            type="file"
+            accept=".svg,.png,.jpg,.jpeg,.webp,.avif,.gif,.tif,.tiff"
+            multiple
+            hidden
+          />
+
+          <!-- Dropzone Workspace -->
+          <div
+            class="dropzone-area"
+            id="dropzone"
+            tabindex="0"
+            role="button"
+            aria-label="Drop images here to convert"
+          >
+            <!-- Idle State -->
+            <div class="idle-glyph" id="idle-glyph">
+              <div class="drop-circle-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 3v13M6 10l6 6 6-6" />
+                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                </svg>
+              </div>
+
+              <div class="drop-title">
+                <span class="highlight-action">Drop images here</span> or
+                <span class="browse-link">browse files</span>
+              </div>
+
+              <p class="drop-subtitle">
+                Select single files, batches, or folders.
+              </p>
+
+              <div class="supported-chips" aria-label="Supported file formats">
+                <span class="fmt-chip chip-alpha">SVG</span>
+                <span class="fmt-chip chip-alpha">PNG</span>
+                <span class="fmt-chip chip-alpha">WEBP</span>
+                <span class="fmt-chip chip-alpha">AVIF</span>
+                <span class="fmt-chip">JPEG</span>
+                <span class="fmt-chip chip-alpha">GIF</span>
+                <span class="fmt-chip">TIFF</span>
+              </div>
+            </div>
+
+            <!-- Converting State -->
+            <div
+              class="converting-state"
+              id="converting-state"
+              hidden
+              aria-live="polite"
+            >
+              <div class="converting-spinner-wrap">
+                <div class="progress-track" aria-hidden="true">
+                  <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="preview-thumbnail-box">
+                  <img
+                    class="current-thumbnail"
+                    id="current-thumbnail"
+                    alt="Image preview"
+                  />
+                </div>
+                <div class="converting-text">Converting...</div>
+              </div>
+            </div>
+
+            <!-- Converted Results Grid -->
+            <div
+              class="results-container"
+              id="results"
+              hidden
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Integrated Controls Bar -->
+          <div class="cockpit-bar">
+            <!-- Target Format Control -->
+            <div class="bar-control-item">
+              <span class="bar-control-label">Format</span>
+              <div
+                class="format-pills"
+                id="format-pills"
+                role="radiogroup"
+                aria-label="Target format"
+              >
+                <button
+                  type="button"
+                  class="fmt-select-btn is-active"
+                  data-format="webp"
+                  role="radio"
+                  aria-checked="true"
+                >
+                  WebP
+                </button>
+                <button
+                  type="button"
+                  class="fmt-select-btn"
+                  data-format="avif"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  AVIF
+                </button>
+                <button
+                  type="button"
+                  class="fmt-select-btn"
+                  data-format="png"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  PNG
+                </button>
+                <button
+                  type="button"
+                  class="fmt-select-btn"
+                  data-format="jpeg"
+                  role="radio"
+                  aria-checked="false"
+                >
+                  JPEG
+                </button>
+              </div>
+            </div>
+
+            <!-- Background Flatten Color (Visible when JPEG target is selected) -->
+            <div class="bar-control-item bar-bg-item" id="bar-bg-item" hidden>
+              <span class="bar-control-label">Background</span>
+              <div class="bg-picker-wrap">
+                <input
+                  type="color"
+                  id="bg-color-picker"
+                  class="bg-color-input"
+                  value="#ffffff"
+                  title="Flatten background color for JPEG (default: white)"
+                  aria-label="Flatten background color"
+                />
+                <span class="bg-hex-label" id="bg-hex-label">#FFFFFF</span>
+              </div>
+            </div>
+
+            <!-- Scale Multipliers -->
+            <div class="bar-control-item">
+              <span class="bar-control-label">Scales</span>
+              <div
+                class="scale-toggles"
+                id="scale-toggles"
+                role="group"
+                aria-label="Scale multipliers"
+              >
+                <button
+                  type="button"
+                  class="scale-btn is-active"
+                  data-scale="1"
+                  aria-pressed="true"
+                >
+                  1x
+                </button>
+                <button
+                  type="button"
+                  class="scale-btn"
+                  data-scale="2"
+                  aria-pressed="false"
+                >
+                  2x
+                </button>
+                <button
+                  type="button"
+                  class="scale-btn"
+                  data-scale="3"
+                  aria-pressed="false"
+                >
+                  3x
+                </button>
+              </div>
+            </div>
+
+            <!-- Quality Slider -->
+            <div class="bar-control-item bar-slider-item">
+              <div class="slider-label-row">
+                <span class="bar-control-label">Quality</span>
+                <span class="quality-display" id="quality-display">85%</span>
+              </div>
+              <input
+                class="quality-bar"
+                id="quality"
+                type="range"
+                min="1"
+                max="100"
+                value="85"
+                aria-label="Conversion quality"
+              />
+            </div>
+
+            <!-- Lossless Toggle -->
+            <div class="bar-control-item bar-lossless-item">
+              <label
+                class="clean-toggle-label lossless-toggle-label"
+                title="Preserve 100% pixel fidelity without lossy compression artifacts"
+              >
+                <input type="checkbox" id="lossless-toggle" />
+                <span class="clean-toggle-custom" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 16 16"
+                    width="12"
+                    height="12"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.354 5.354-4 4a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7 9.293l3.646-3.647a.5.5 0 0 1 .708.708z"
+                    />
+                  </svg>
+                </span>
+                <span>Lossless</span>
+              </label>
+            </div>
+
+            <!-- Clean Mode Toggle -->
+            <div class="bar-control-item bar-clean-item">
+              <label
+                class="clean-toggle-label"
+                title="Remove EXIF, XMP, and C2PA metadata."
+              >
+                <input type="checkbox" id="clean-toggle" checked />
+                <span class="clean-toggle-custom" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 16 16"
+                    width="12"
+                    height="12"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M8 0L1.5 3v5c0 4.14 2.76 8 6.5 9 3.74-1 6.5-4.86 6.5-9V3L8 0zm0 1.5l5.5 2.54v3.96c0 3.38-2.28 6.54-5.5 7.42-3.22-.88-5.5-4.04-5.5-7.42V4.04L8 1.5z"
+                    />
+                  </svg>
+                </span>
+                <span>Clean Mode</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Features -->
+      <section class="section-container pillars-wrap">
+        <div class="section-title-wrap">
+          <span class="section-kicker">HOW IT WORKS</span>
+          <h2 class="section-heading">Built to convert correctly.</h2>
+          <p class="section-lead">Correctness is enforced, not hoped for.</p>
+        </div>
+
+        <div class="pillars-grid">
+          <div class="pillar-box">
+            <div class="pillar-icon-ring">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a10 10 0 0 1 10 10" />
+                <path d="M12 12 19 5" />
+              </svg>
+            </div>
+            <h3 class="pillar-name">Transparency Preserved</h3>
+            <p class="pillar-desc">
+              ImageMagick defaults to a black background. Zapwebp enforces
+              transparency. If the alpha channel is lost, the conversion fails.
+            </p>
+          </div>
+
+          <div class="pillar-box">
+            <div class="pillar-icon-ring">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <h3 class="pillar-name">Runs Locally</h3>
+            <p class="pillar-desc">
+              Execution happens in your browser. No uploads, no server timeouts,
+              and no exposure to the network.
+            </p>
+          </div>
+
+          <div class="pillar-box">
+            <div class="pillar-icon-ring">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 21V9" />
+              </svg>
+            </div>
+            <h3 class="pillar-name">Multipliers</h3>
+            <p class="pillar-desc">
+              Generate 1x, 2x, and 3x outputs in one drop. Includes ready-to-use
+              <code>&lt;picture&gt;</code> and <code>srcset</code> HTML.
+            </p>
+          </div>
+
+          <div class="pillar-box">
+            <div class="pillar-icon-ring">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <h3 class="pillar-name">Clean Mode</h3>
+            <p class="pillar-desc">
+              Removes EXIF, XMP, and C2PA metadata by default. Output is
+              verified to contain zero metadata chunks before writing.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Developer Tools -->
+      <section class="section-container dev-showcase-wrap">
+        <div class="section-title-wrap">
+          <span class="section-kicker">DEVELOPERS</span>
+          <h2 class="section-heading">Terminal CLI & AI Agents</h2>
+          <p class="section-lead">
+            The same conversion engine in your command line and editor.
+          </p>
+        </div>
+
+        <div class="terminal-deck">
+          <div class="deck-tabs" role="tablist" aria-label="Code examples">
+            <button
+              class="deck-tab is-active"
+              data-deck="tab-cli"
+              role="tab"
+              aria-selected="true"
+            >
+              CLI
+            </button>
+            <button
+              class="deck-tab"
+              data-deck="tab-mcp"
+              role="tab"
+              aria-selected="false"
+            >
+              MCP Agent
+            </button>
+            <button
+              class="deck-tab"
+              data-deck="tab-vite"
+              role="tab"
+              aria-selected="false"
+            >
+              Vite Plugin
+            </button>
+            <button
+              class="deck-tab"
+              data-deck="tab-curl"
+              role="tab"
+              aria-selected="false"
+            >
+              REST API
+            </button>
+          </div>
+
+          <div class="deck-panel is-active" id="tab-cli">
+            <pre><code><span class="c-comment"># Convert an SVG with @1x/@2x/@3x scales and clean metadata</span>
+<span class="c-prompt">$</span> npx zapwebp logo.svg --to webp --scale 1,2,3 --clean
+
+<span class="c-comment"># Batch convert an entire assets folder</span>
+<span class="c-prompt">$</span> zapwebp src/assets/*.png --to avif --quality 85
+
+<span class="c-comment"># Undo previous batch</span>
+<span class="c-prompt">$</span> zapwebp undo</code></pre>
+            <button
+              class="snippet-copy-btn"
+              data-code="npx zapwebp logo.svg --to webp --scale 1,2,3 --clean"
+              aria-label="Copy CLI snippet"
+            >
+              Copy
+            </button>
+          </div>
+
+          <div class="deck-panel" id="tab-mcp" hidden>
+            <pre><code><span class="c-comment">// Connect to Cursor, Windsurf, or Claude Desktop</span>
+{
+  "mcpServers": {
+    "zapwebp": {
+      "command": "npx",
+      "args": ["-y", "@zapwebp/mcp"]
+    }
+  }
+}</code></pre>
+            <button
+              class="snippet-copy-btn"
+              data-code="npx -y @zapwebp/mcp"
+              aria-label="Copy MCP config snippet"
+            >
+              Copy
+            </button>
+          </div>
+
+          <div class="deck-panel" id="tab-vite" hidden>
+            <pre><code><span class="c-comment">// vite.config.js</span>
+import { defineConfig } from 'vite';
+import { zapwebp } from '@zapwebp/plugin-sdk/vite';
+
+export default defineConfig({
+  plugins: [zapwebp({ formats: ['webp', 'avif'], quality: 85, clean: true })],
+});</code></pre>
+            <button
+              class="snippet-copy-btn"
+              data-code="npm i -D @zapwebp/plugin-sdk"
+              aria-label="Copy Vite snippet"
+            >
+              Copy
+            </button>
+          </div>
+
+          <div class="deck-panel" id="tab-curl" hidden>
+            <pre><code><span class="c-comment"># Convert an image using the REST API</span>
+curl -X POST https://zapwebp.vercel.app/api/v1/convert \
+  -F "svg=@logo.svg" \
+  -F "to=webp" \
+  -F "quality=85" \
+  --output logo.webp</code></pre>
+            <button
+              class="snippet-copy-btn"
+              data-code="curl -X POST https://zapwebp.vercel.app/api/v1/convert -F 'svg=@logo.svg' -F 'to=webp' --output logo.webp"
+              aria-label="Copy cURL snippet"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Comparison Matrix -->
+      <section class="section-container matrix-wrap">
+        <div class="section-title-wrap">
+          <span class="section-kicker">COMPARISON</span>
+          <h2 class="section-heading">How Zapwebp Compares</h2>
+          <p class="section-lead">
+            A factual breakdown of conversion behavior.
+          </p>
+        </div>
+
+        <div class="matrix-table-wrap">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th scope="col">Feature</th>
+                <th scope="col" class="highlight-col">Zapwebp</th>
+                <th scope="col">ImageMagick</th>
+                <th scope="col">Online Converters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Transparency</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green"
+                    >Preserved & verified</span
+                  >
+                </td>
+                <td>
+                  <span class="table-pill pill-yellow"
+                    >Requires manual flags</span
+                  >
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Unpredictable</span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Execution</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green"
+                    >Local browser memory</span
+                  >
+                </td>
+                <td>
+                  <span class="table-pill pill-green">Local terminal</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Remote server upload</span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Payload Limit</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green">RAM bound</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-green">Disk bound</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Server limits (4.5MB)</span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Metadata</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green"
+                    >Stripped automatically</span
+                  >
+                </td>
+                <td>
+                  <span class="table-pill pill-yellow">Manual -strip flag</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Retained</span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Multipliers</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green">Native output</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-yellow">Manual scripting</span>
+                </td>
+                <td><span class="table-pill pill-red">Not supported</span></td>
+              </tr>
+              <tr>
+                <th scope="row">AI Agents (MCP)</th>
+                <td class="highlight-col">
+                  <span class="table-pill pill-green">Supported</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Not supported</span>
+                </td>
+                <td>
+                  <span class="table-pill pill-red">Not supported</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Platform Footer -->
+    <footer class="site-footer">
+      <div class="footer-top-grid">
+        <div class="footer-brand-box">
+          <a class="footer-brand-link" href="/" aria-label="Zapwebp home">
+            <img
+              src="/assets/zapwebp.svg"
+              alt="Zapwebp"
+              width="28"
+              height="28"
+            />
+            <span class="footer-brand-name">Zapwebp</span>
+          </a>
+          <p class="footer-brand-desc">
+            Convert correctly. Transparency preserved. Metadata stripped. Output
+            verified.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-col-title">Product</h4>
+          <ul class="footer-link-list">
+            <li><a href="/">Web Converter</a></li>
+            <li><a href="/#dropzone">Batch Mode</a></li>
+            <li><a href="/formats">Supported Formats</a></li>
+            <li><a href="/clean">Clean Mode</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-col-title">Developers</h4>
+          <ul class="footer-link-list">
+            <li><a href="https://zapwebp-docs.vercel.app/cli">CLI Tool</a></li>
+            <li><a href="https://zapwebp-docs.vercel.app/mcp">MCP Agent</a></li>
+            <li><a href="https://zapwebp-docs.vercel.app/api">REST API</a></li>
+            <li>
+              <a href="https://zapwebp-docs.vercel.app/developers"
+                >Plugin SDK</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/Zapwebp"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub Repository</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-col-title">Documentation</h4>
+          <ul class="footer-link-list">
+            <li><a href="https://zapwebp-docs.vercel.app">Overview</a></li>
+            <li>
+              <a href="https://zapwebp-docs.vercel.app/errors">Error Codes</a>
+            </li>
+            <li><a href="https://zapwebp-docs.vercel.app/safety">Safety</a></li>
+            <li><a href="/llms.txt">For Agents (llms.txt)</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-col-title">Platform</h4>
+          <ul class="footer-link-list">
+            <li><a href="https://zapwebp-docs.vercel.app/about">About</a></li>
+            <li>
+              <a href="https://zapwebp-docs.vercel.app/privacy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a href="https://zapwebp-docs.vercel.app/terms"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a href="mailto:eldrexdelosreyesbula@gmail.com"
+                >Contact Support</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.paypal.com/paypalme/eldrexbula"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Support Creator</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <div class="footer-bottom-inner">
+          <p class="footer-copyright">
+            © 2026 Zapwebp. Open source under the MIT License. Operated by
+            Eldrex Delos Reyes Bula in the Philippines.
+          </p>
+          <div class="footer-legal-nav">
+            <a href="https://zapwebp-docs.vercel.app/privacy">Privacy</a>
+            <span aria-hidden="true">·</span>
+            <a href="https://zapwebp-docs.vercel.app/terms">Terms</a>
+            <span aria-hidden="true">·</span>
+            <a href="/llms.txt">llms.txt</a>
+            <span aria-hidden="true">·</span>
+            <select
+              id="lang-select"
+              class="lang-select"
+              aria-label="Select Language"
+            >
+              <option value="en">English</option>
+              <option value="tl">Tagalog</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Interactive Image Preview Modal -->
+    <dialog
+      class="preview-dialog"
+      id="preview-dialog"
+      aria-labelledby="preview-title"
+    >
+      <div class="preview-modal-box">
+        <div class="preview-modal-top">
+          <div class="preview-info-col">
+            <h3 id="preview-title" class="preview-filename">Image Preview</h3>
+            <div class="preview-badge-row">
+              <span id="preview-format-badge" class="preview-badge">WEBP</span>
+              <span id="preview-scale-badge" class="preview-badge">@1x</span>
+              <span
+                id="preview-alpha-badge"
+                class="preview-badge preview-badge-alpha"
+                >Alpha Preserved</span
+              >
+              <span
+                id="preview-clean-badge"
+                class="preview-badge preview-badge-clean"
+                >Clean Mode</span
+              >
+            </div>
+          </div>
+
+          <div
+            class="preview-view-tabs"
+            role="tablist"
+            aria-label="Preview view modes"
+          >
+            <button
+              type="button"
+              class="view-tab-btn is-active"
+              id="view-tab-converted"
+              role="tab"
+              aria-selected="true"
+            >
+              Converted
+            </button>
+            <button
+              type="button"
+              class="view-tab-btn"
+              id="view-tab-original"
+              role="tab"
+              aria-selected="false"
+            >
+              Original
+            </button>
+            <button
+              type="button"
+              class="view-tab-btn"
+              id="view-tab-split"
+              role="tab"
+              aria-selected="false"
+            >
+              Side-by-Side
+            </button>
+          </div>
+
+          <button
+            type="button"
+            id="preview-close-btn"
+            class="preview-close-btn"
+            aria-label="Close preview"
+            title="Close (Esc)"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="preview-stage-container" id="preview-stage">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="preview-modal-bottom">
+          <div class="preview-metrics">
+            <div class="metric-block">
+              <span class="metric-label">Dimensions</span>
+              <span class="metric-value" id="preview-dim-val">0 × 0</span>
+            </div>
+            <div class="metric-block">
+              <span class="metric-label">File Size</span>
+              <span class="metric-value" id="preview-size-val">0 KB</span>
+            </div>
+            <div class="metric-block" id="preview-savings-wrap">
+              <span class="metric-label">Reduction</span>
+              <span class="metric-value metric-savings" id="preview-savings-val"
+                >0%</span
+              >
+            </div>
+          </div>
+
+          <div class="preview-actions">
+            <button
+              type="button"
+              id="preview-crop-btn"
+              class="preview-action-crop"
+              aria-label="Crop this image"
+              title="Crop image (aspect ratio & coordinates)"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+                <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+              </svg>
+              <span>Crop</span>
+            </button>
+            <a
+              href="#"
+              id="preview-download-btn"
+              class="preview-action-download"
+              download
+            >
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                width="14"
+                height="14"
+              >
+                <path d="M10 4v10M5 9l5 5 5-5M4 16h12" />
+              </svg>
+              <span>Download File</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Interactive Image Cropper Modal -->
+    <dialog
+      class="crop-dialog"
+      id="crop-dialog"
+      aria-labelledby="crop-title"
+    >
+      <div class="crop-modal-box">
+        <div class="crop-modal-top">
+          <div class="crop-info-col">
+            <h3 id="crop-title" class="crop-filename">Crop Then Convert</h3>
+            <span class="crop-sublabel" id="crop-sublabel">Select an aspect ratio or drag handles to crop</span>
+          </div>
+          <button
+            type="button"
+            id="crop-close-btn"
+            class="preview-close-btn"
+            aria-label="Close cropper"
+            title="Close (Esc)"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="crop-aspect-bar" role="group" aria-label="Aspect Ratio Presets">
+          <button type="button" class="aspect-btn is-active" data-aspect="free">Free</button>
+          <button type="button" class="aspect-btn" data-aspect="1:1">1:1 Square</button>
+          <button type="button" class="aspect-btn" data-aspect="16:9">16:9 Banner</button>
+          <button type="button" class="aspect-btn" data-aspect="4:5">4:5 Product</button>
+          <button type="button" class="aspect-btn" data-aspect="3:2">3:2 Photo</button>
+          <button type="button" class="aspect-btn" data-aspect="9:16">9:16 Story</button>
+        </div>
+
+        <div class="crop-stage-wrapper" id="crop-stage-wrapper">
+          <div class="crop-canvas-container" id="crop-canvas-container">
+            <img id="crop-source-img" class="crop-source-img" alt="Source for cropping" />
+            <div id="crop-selection-box" class="crop-selection-box" tabindex="0" role="region" aria-label="Crop region. Use arrow keys to adjust position.">
+              <div class="crop-handle crop-handle-nw" data-handle="nw"></div>
+              <div class="crop-handle crop-handle-ne" data-handle="ne"></div>
+              <div class="crop-handle crop-handle-sw" data-handle="sw"></div>
+              <div class="crop-handle crop-handle-se" data-handle="se"></div>
+              <div class="crop-grid-line crop-grid-h1"></div>
+              <div class="crop-grid-line crop-grid-h2"></div>
+              <div class="crop-grid-line crop-grid-v1"></div>
+              <div class="crop-grid-line crop-grid-v2"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="crop-modal-bottom">
+          <div class="crop-coords-readout">
+            <span id="crop-coords-text">Crop: 0 × 0 at (0, 0)</span>
+          </div>
+          <div class="crop-actions">
+            <button type="button" id="crop-reset-btn" class="crop-btn-reset">Reset</button>
+            <button type="button" id="crop-apply-btn" class="crop-btn-apply">Apply Crop</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Error Dialog -->
+    <dialog
+      class="error-dialog"
+      id="error-dialog"
+      aria-labelledby="error-title"
+    >
+      <div class="error-box">
+        <h2 id="error-title">!</h2>
+        <p id="error-detail"></p>
+        <button
+          type="button"
+          id="error-close"
+          class="error-close-btn"
+          aria-label="Dismiss error"
+        >
+          ✕
+        </button>
+      </div>
+    </dialog>
+
+    <script src="/vendor/fflate.min.js"></script>
+    <script src="/app.js?v=2.2.0" defer></script>
+  </body>
+</html>

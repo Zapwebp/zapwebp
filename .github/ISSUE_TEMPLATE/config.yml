@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Zapwebp Documentation
+    url: https://zapwebp-docs.vercel.app
+    about: Read official guides, CLI reference, and architecture contracts.
+  - name: Ask Questions & Discussions
+    url: https://github.com/Zapwebp/discussions
+    about: Ask implementation questions or discuss ideas before proposing issues.

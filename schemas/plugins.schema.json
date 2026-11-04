@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zapwebp.vercel.app/schemas/plugins.schema.json",
+  "title": "Zapwebp Plugin Registry",
+  "description": "Validation schema for the official and community Zapwebp plugin and adapter catalog.",
+  "type": "object",
+  "required": ["$schema", "version", "updatedAt", "plugins"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "author", "version", "description", "npm", "repository", "tags"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9@/-]+$"
+          },
+          "author": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "npm": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

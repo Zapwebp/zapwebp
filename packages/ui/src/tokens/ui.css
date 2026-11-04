@@ -1,0 +1,631 @@
+/**
+ * @zapwebp/ui — Universal Error & Upload UI Kit Styles & Tokens
+ * Zero-dependency, framework-agnostic CSS custom properties and component rules.
+ */
+
+:root {
+  --zap-primary: #8dc63f;
+  --zap-primary-hover: #7cb334;
+  --zap-ink: #20211f;
+  --zap-bg: #f7f7f4;
+  --zap-surface: #ffffff;
+  --zap-border: #e7e8e1;
+  --zap-muted: #6b7280;
+  --zap-error: #cf222e;
+  --zap-error-bg: #fdf2f2;
+  --zap-error-border: #fca5a5;
+  --zap-warning: #d97706;
+  --zap-warning-bg: #fffbeb;
+  --zap-warning-border: #fcd34d;
+  --zap-success: #8dc63f;
+  --zap-success-bg: #f4fbf0;
+  --zap-success-border: #bbf7d0;
+  --zap-info: #0969da;
+  --zap-info-bg: #f0f7ff;
+  --zap-info-border: #bae6fd;
+  --zap-radius: 10px;
+  --zap-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --zap-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --zap-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --zap-shadow-lg: 0 16px 36px -6px rgba(0, 0, 0, 0.16), 0 6px 14px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   Presets (Default, Minimal, Glass, Dark)
+   ========================================================================== */
+
+/* 1. Default (Zapwebp Green Brand) */
+[data-zap-theme="default"], .zap-preset-default {
+  --zap-primary: #8dc63f;
+}
+
+/* 2. Minimal (High contrast black and white, zero radius/shadow) */
+[data-zap-theme="minimal"], .zap-preset-minimal {
+  --zap-primary: #111827;
+  --zap-primary-hover: #000000;
+  --zap-ink: #111827;
+  --zap-bg: #ffffff;
+  --zap-surface: #ffffff;
+  --zap-border: #111827;
+  --zap-muted: #4b5563;
+  --zap-error-bg: #ffffff;
+  --zap-error-border: #111827;
+  --zap-warning-bg: #ffffff;
+  --zap-warning-border: #111827;
+  --zap-success-bg: #ffffff;
+  --zap-success-border: #111827;
+  --zap-info-bg: #ffffff;
+  --zap-info-border: #111827;
+  --zap-radius: 0px;
+  --zap-shadow: none;
+  --zap-shadow-lg: none;
+}
+
+/* 3. Glass (Blurred backdrop and translucent panels) */
+[data-zap-theme="glass"], .zap-preset-glass {
+  --zap-bg: rgba(247, 247, 244, 0.65);
+  --zap-surface: rgba(255, 255, 255, 0.72);
+  --zap-border: rgba(255, 255, 255, 0.45);
+  --zap-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* 4. Dark (Deep obsidian, high readability) */
+[data-zap-theme="dark"], .zap-preset-dark {
+  --zap-primary: #8dc63f;
+  --zap-primary-hover: #a1d655;
+  --zap-ink: #f0f2ec;
+  --zap-bg: #151813;
+  --zap-surface: #1d211a;
+  --zap-border: #2c3227;
+  --zap-muted: #8b9284;
+  --zap-error-bg: #2a1215;
+  --zap-error-border: #6d2024;
+  --zap-warning-bg: #2b1f0d;
+  --zap-warning-border: #78350f;
+  --zap-success-bg: #142211;
+  --zap-success-border: #22541c;
+  --zap-info-bg: #0d1e2e;
+  --zap-info-border: #1e3a5f;
+  --zap-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --zap-shadow-lg: 0 16px 36px -6px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   Primitive 1: ZapToast
+   ========================================================================== */
+
+.zap-toast-container {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: 420px;
+  width: calc(100% - 32px);
+}
+
+.zap-toast-container.pos-top-right { top: 16px; right: 16px; }
+.zap-toast-container.pos-bottom-right { bottom: 16px; right: 16px; }
+.zap-toast-container.pos-top-left { top: 16px; left: 16px; }
+.zap-toast-container.pos-bottom-left { bottom: 16px; left: 16px; }
+.zap-toast-container.pos-top { top: 16px; left: 50%; transform: translateX(-50%); }
+.zap-toast-container.pos-bottom { bottom: 16px; left: 50%; transform: translateX(-50%); }
+
+.zap-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  border-radius: var(--zap-radius);
+  box-shadow: var(--zap-shadow);
+  color: var(--zap-ink);
+  font-family: var(--zap-font);
+  font-size: 13.5px;
+  line-height: 1.45;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.zap-toast.is-entering {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+.zap-toast.is-leaving {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+
+.zap-toast-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.zap-toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.zap-toast-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.zap-toast-msg {
+  color: var(--zap-ink);
+  word-break: break-word;
+}
+
+.zap-toast-dismiss {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--zap-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.zap-toast-dismiss:hover { color: var(--zap-ink); }
+
+.zap-toast.type-success { border-left: 4px solid var(--zap-success); }
+.zap-toast.type-error { border-left: 4px solid var(--zap-error); }
+.zap-toast.type-warning { border-left: 4px solid var(--zap-warning); }
+.zap-toast.type-info { border-left: 4px solid var(--zap-info); }
+
+/* ==========================================================================
+   Primitive 2: ZapBanner
+   ========================================================================== */
+
+.zap-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: var(--zap-radius);
+  border: 1px solid var(--zap-border);
+  font-family: var(--zap-font);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--zap-ink);
+  box-shadow: var(--zap-shadow);
+  margin: 10px 0;
+}
+
+.zap-banner.layout-vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.zap-banner.pos-top {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  border-radius: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.zap-banner.pos-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 900;
+  border-radius: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.zap-banner.type-success {
+  background: var(--zap-success-bg);
+  border-color: var(--zap-success-border);
+}
+.zap-banner.type-error {
+  background: var(--zap-error-bg);
+  border-color: var(--zap-error-border);
+}
+.zap-banner.type-warning {
+  background: var(--zap-warning-bg);
+  border-color: var(--zap-warning-border);
+}
+.zap-banner.type-info {
+  background: var(--zap-info-bg);
+  border-color: var(--zap-info-border);
+}
+
+.zap-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.zap-banner-icon {
+  flex-shrink: 0;
+}
+
+.zap-banner-title {
+  font-weight: 600;
+}
+
+.zap-banner-msg {
+  color: var(--zap-ink);
+}
+
+.zap-banner-fix {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--zap-muted);
+}
+
+.zap-banner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.zap-banner-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: calc(var(--zap-radius) * 0.6);
+  border: 1px solid var(--zap-border);
+  background: var(--zap-surface);
+  color: var(--zap-ink);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.zap-banner-btn:hover {
+  background: var(--zap-bg);
+  border-color: var(--zap-ink);
+}
+.zap-banner-btn.variant-primary {
+  background: var(--zap-primary);
+  color: #ffffff;
+  border-color: transparent;
+}
+.zap-banner-btn.variant-primary:hover {
+  background: var(--zap-primary-hover);
+}
+
+/* ==========================================================================
+   Primitive 3: ZapModal
+   ========================================================================== */
+
+.zap-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.zap-modal-backdrop.is-open {
+  opacity: 1;
+}
+
+.zap-modal {
+  width: 100%;
+  max-width: 480px;
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  border-radius: calc(var(--zap-radius) * 1.2);
+  box-shadow: var(--zap-shadow-lg);
+  color: var(--zap-ink);
+  font-family: var(--zap-font);
+  overflow: hidden;
+  transform: translateY(10px) scale(0.97);
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.zap-modal-backdrop.is-open .zap-modal {
+  transform: translateY(0) scale(1);
+}
+
+.zap-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px 22px;
+  border-bottom: 1px solid var(--zap-border);
+}
+
+.zap-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zap-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.zap-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--zap-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.zap-modal-close:hover { color: var(--zap-ink); }
+
+.zap-modal-body {
+  padding: 20px 22px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--zap-ink);
+}
+
+.zap-modal-fix-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--zap-bg);
+  border: 1px solid var(--zap-border);
+  border-radius: var(--zap-radius);
+  font-size: 13px;
+}
+.zap-modal-fix-label {
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--zap-muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.zap-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  background: var(--zap-bg);
+  border-top: 1px solid var(--zap-border);
+}
+
+/* ==========================================================================
+   Primitive 4: ZapErrorCard
+   ========================================================================== */
+
+.zap-error-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  border-radius: calc(var(--zap-radius) * 1.2);
+  box-shadow: var(--zap-shadow);
+  font-family: var(--zap-font);
+  color: var(--zap-ink);
+  max-width: 520px;
+}
+
+.zap-error-card.severity-error { border-top: 4px solid var(--zap-error); }
+.zap-error-card.severity-warning { border-top: 4px solid var(--zap-warning); }
+.zap-error-card.severity-info { border-top: 4px solid var(--zap-info); }
+
+.zap-error-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.zap-error-card-code {
+  font-family: var(--zap-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--zap-bg);
+  border: 1px solid var(--zap-border);
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--zap-error);
+}
+
+.zap-error-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.zap-error-card-msg {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--zap-ink);
+  margin-bottom: 16px;
+}
+
+.zap-error-card-fix-section {
+  padding: 12px 14px;
+  background: var(--zap-bg);
+  border-radius: var(--zap-radius);
+  border: 1px solid var(--zap-border);
+  margin-bottom: 18px;
+}
+
+.zap-error-card-fix-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--zap-muted);
+  margin-bottom: 4px;
+}
+
+.zap-error-card-fix-text {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.zap-error-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.zap-error-card-link {
+  font-size: 13px;
+  color: var(--zap-info);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.zap-error-card-link:hover { text-decoration: underline; }
+
+/* ==========================================================================
+   Upload Components: Dropzone, UploadButton, Progress
+   ========================================================================== */
+
+.zap-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 28px 24px;
+  background: var(--zap-bg);
+  border: 2px dashed var(--zap-border);
+  border-radius: calc(var(--zap-radius) * 1.4);
+  cursor: pointer;
+  text-align: center;
+  font-family: var(--zap-font);
+  color: var(--zap-ink);
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+.zap-dropzone:hover, .zap-dropzone.is-dragging {
+  border-color: var(--zap-primary);
+  background: var(--zap-success-bg);
+}
+
+.zap-dropzone:focus-visible {
+  outline: 2px solid var(--zap-primary);
+  outline-offset: 2px;
+}
+
+.zap-dropzone-icon {
+  margin-bottom: 12px;
+  color: var(--zap-muted);
+  transition: transform 140ms ease;
+}
+.zap-dropzone:hover .zap-dropzone-icon,
+.zap-dropzone.is-dragging .zap-dropzone-icon {
+  transform: translateY(-2px);
+  color: var(--zap-primary);
+}
+
+.zap-dropzone-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.zap-dropzone-hint {
+  font-size: 12px;
+  color: var(--zap-muted);
+}
+
+.zap-dropzone-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.zap-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  font-family: var(--zap-font);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--zap-primary);
+  border: 1px solid transparent;
+  border-radius: var(--zap-radius);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 120ms ease;
+}
+.zap-upload-button:hover {
+  background: var(--zap-primary-hover);
+}
+.zap-upload-button:focus-visible {
+  outline: 2px solid var(--zap-primary);
+  outline-offset: 2px;
+}
+
+.zap-upload-progress {
+  width: 100%;
+  font-family: var(--zap-font);
+}
+
+.zap-upload-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--zap-muted);
+  margin-bottom: 6px;
+}
+
+.zap-upload-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--zap-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.zap-upload-progress-fill {
+  height: 100%;
+  background: var(--zap-primary);
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+/* ==========================================================================
+   Accessibility & Reduced Motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .zap-toast,
+  .zap-modal,
+  .zap-dropzone,
+  .zap-upload-progress-fill {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+

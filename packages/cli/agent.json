@@ -1,0 +1,57 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp",
+  "version": "1.1.0",
+  "type": "cli",
+  "description": "Terminal executable for single/batch conversion, retina scales, undo/redo journals, and CI checks.",
+  "install": "npm install -g zapwebp",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/cli",
+  "docsMarkdown": "https://zapwebp.vercel.app/cli.md",
+  "repository": "https://github.com/Zapwebp/cli",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "commands": {
+    "convert": "zap <input...> [options]",
+    "batch": "zap batch <dir> [options]",
+    "clean": "zap clean <input...> [options]",
+    "inspect": "zap inspect <file>",
+    "undo": "zap undo",
+    "redo": "zap redo"
+  },
+  "flags": {
+    "--format": {
+      "type": "string",
+      "enum": [
+        "webp",
+        "avif",
+        "png",
+        "jpeg"
+      ],
+      "default": "webp"
+    },
+    "--quality": {
+      "type": "number",
+      "default": 85
+    },
+    "--scale": {
+      "type": "string",
+      "description": "Retina scale multipliers e.g. 1x,2x,3x"
+    },
+    "--clean": {
+      "type": "boolean",
+      "default": true
+    },
+    "--lossless": {
+      "type": "boolean",
+      "default": false
+    },
+    "--out-dir": {
+      "type": "string",
+      "description": "Target output directory"
+    },
+    "--json": {
+      "type": "boolean",
+      "description": "Emit machine-readable JSON logs for agents"
+    }
+  }
+}

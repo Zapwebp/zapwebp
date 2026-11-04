@@ -1,0 +1,93 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/core",
+  "version": "1.1.0",
+  "type": "sdk",
+  "description": "Core image conversion engine guaranteeing alpha preservation, zero black backgrounds, SVG sanitization, and clean metadata stripping.",
+  "install": "npm install @zapwebp/core",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/sdk/core",
+  "docsMarkdown": "https://zapwebp.vercel.app/sdk/core.md",
+  "repository": "https://github.com/Zapwebp/core",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "dist/index.js",
+  "capabilities": [
+    "transparency-preservation",
+    "svg-sanitization",
+    "multi-format-conversion",
+    "metadata-stripping",
+    "stream-processing"
+  ],
+  "supportedFormats": {
+    "inputs": [
+      "svg",
+      "png",
+      "jpeg",
+      "webp",
+      "avif",
+      "tiff",
+      "gif"
+    ],
+    "outputs": [
+      "webp",
+      "avif",
+      "png",
+      "jpeg"
+    ]
+  },
+  "exports": [
+    "convertImage",
+    "convertSvgToWebp",
+    "assertAlphaPreserved",
+    "detectFormat",
+    "cleanMetadata",
+    "stripMetadata",
+    "INPUT_FORMATS",
+    "OUTPUT_FORMATS"
+  ],
+  "options": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "webp",
+        "avif",
+        "png",
+        "jpeg"
+      ],
+      "default": "webp"
+    },
+    "quality": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 85
+    },
+    "lossless": {
+      "type": "boolean",
+      "default": false
+    },
+    "clean": {
+      "type": "boolean",
+      "default": true
+    },
+    "baseWidth": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 16384,
+      "default": 512
+    },
+    "multipliers": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": [
+        1
+      ]
+    },
+    "backgroundColor": {
+      "type": "string",
+      "default": "transparent"
+    }
+  }
+}

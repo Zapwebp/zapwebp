@@ -1,0 +1,29 @@
+{
+  "name": "zapwebp-docs",
+  "version": "1.0.0",
+  "description": "Clean, framework-free documentation for Zapwebp built on Kite and Marked",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@kitelet/core": "^1.0.0",
+    "marked": "^18.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "license": "MIT",
+  "homepage": "https://zapwebp-docs.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/docs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/docs/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

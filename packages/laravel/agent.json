@@ -1,0 +1,20 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp/laravel",
+  "version": "1.0.0",
+  "type": "laravel-package",
+  "description": "First-party Laravel bridge for Zapwebp: Zap facade, SafeImage validation rule, and ConvertUploads middleware.",
+  "install": "composer require zapwebp/laravel",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/laravel",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/laravel.md",
+  "repository": "https://github.com/Zapwebp/laravel",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "features": [
+    "Zap::convert() facade",
+    "Zap::batch() facade",
+    "SafeImage validation rule",
+    "ConvertUploads middleware",
+    "zero-telemetry"
+  ]
+}

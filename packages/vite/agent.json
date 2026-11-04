@@ -1,0 +1,51 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp-vite",
+  "version": "1.0.0",
+  "type": "plugin",
+  "description": "Vite build-time asset plugin for automatic image optimization, srcset generation, and alpha preservation.",
+  "install": "npm install -D zapwebp-vite",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/vite",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/vite.md",
+  "repository": "https://github.com/Zapwebp/vite",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "dist/index.js",
+  "options": {
+    "scale": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": [
+        1,
+        2,
+        3
+      ]
+    },
+    "baseWidth": {
+      "type": "number",
+      "default": 512
+    },
+    "quality": {
+      "type": "number",
+      "default": 85
+    },
+    "lossless": {
+      "type": "boolean",
+      "default": false
+    },
+    "clean": {
+      "type": "boolean",
+      "default": true
+    },
+    "outDir": {
+      "type": "string",
+      "default": "dist"
+    },
+    "emitManifest": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

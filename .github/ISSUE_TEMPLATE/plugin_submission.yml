@@ -1,0 +1,44 @@
+name: "🔌 Plugin / Extension Submission"
+description: "Submit a community plugin or adapter for listing in the Zapwebp registry."
+labels: ["plugin", "ecosystem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for expanding the Zapwebp ecosystem! All plugins must adhere to the `@zapwebp/plugin-sdk` contracts and zero-tracking privacy policy.
+  - type: input
+    id: package_name
+    attributes:
+      label: npm Package Name
+      placeholder: "zapwebp-format-example"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Plugin Category
+      options:
+        - "format (Image Decoder/Encoder)"
+        - "storage (Cloud or FS Adapter)"
+        - "metadata (Clean Mode Stripper/Checker)"
+        - "build-tool (Vite / Rollup / Webpack)"
+    validations:
+      required: true
+  - type: input
+    id: repository
+    attributes:
+      label: Source Repository URL
+      placeholder: "https://github.com/username/zapwebp-format-example"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklists
+    attributes:
+      label: Verification Checklist
+      options:
+        - label: "My plugin implements the `@zapwebp/plugin-sdk` contract and passes all unit tests."
+          required: true
+        - label: "My plugin contains zero telemetry, analytics, or external phone-home requests."
+          required: true
+        - label: "My plugin conforms to SemVer and provides complete TypeScript / JSDoc declarations."
+          required: true

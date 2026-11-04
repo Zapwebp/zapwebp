@@ -1,0 +1,119 @@
+{
+  "name": "zapwebp-vscode",
+  "displayName": "Zapwebp",
+  "description": "Convert images correctly in VS Code. Transparency preserved, metadata stripped, no uploads.",
+  "version": "1.1.0",
+  "publisher": "ebula",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Formatters"
+  ],
+  "keywords": [
+    "image",
+    "convert",
+    "webp",
+    "svg",
+    "png",
+    "avif"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "icon": "icon.png",
+  "scripts": {
+    "build": "node ./build.js",
+    "test": "node --test",
+    "vscode:prepublish": "pnpm run build"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "zapwebp.convert",
+        "title": "Zap to WebP",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.convertScales",
+        "title": "Zap to WebP (@1x, @2x, @3x)",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.showOutput",
+        "title": "Show Conversion Logs",
+        "category": "Zapwebp"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "zapwebp.convert",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif",
+          "group": "zapwebp@1"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png",
+          "group": "zapwebp@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Zapwebp",
+      "properties": {
+        "zapwebp.convertOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically write a .webp file when you save a .svg."
+        },
+        "zapwebp.baseWidth": {
+          "type": "number",
+          "default": 512,
+          "description": "Base width for @1x output (used by multi-scale command)."
+        },
+        "zapwebp.quality": {
+          "type": "number",
+          "default": 85,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Lossy quality (0â€“100)."
+        },
+        "zapwebp.clean": {
+          "type": "boolean",
+          "default": true,
+          "description": "Strip EXIF, XMP, and C2PA metadata on conversion."
+        },
+        "zapwebp.outputExtension": {
+          "type": "string",
+          "default": "webp",
+          "enum": [
+            "webp",
+            "png",
+            "avif",
+            "jpeg"
+          ],
+          "description": "Target format for the single-file command."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@zapwebp/core": "workspace:*",
+    "esbuild": "^0.25.0"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/vscode/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

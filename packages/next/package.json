@@ -1,0 +1,60 @@
+{
+  "name": "zapwebp-next",
+  "version": "1.0.0",
+  "description": "Official first-party Next.js plugin for Zapwebp â€” SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers, and next/image compatibility.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "next",
+    "nextjs",
+    "next-plugin",
+    "zapwebp",
+    "webp",
+    "svg",
+    "image-optimization",
+    "transparency",
+    "webpack"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "next": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/next.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/next/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

@@ -1,0 +1,149 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Zapwebp Conversion API",
+    "version": "1.1.0",
+    "description": "Convert supported image formats while preserving transparency when the chosen output format supports alpha. GIF and TIFF inputs use the first frame or page."
+  },
+  "servers": [{ "url": "https://zapwebp.vercel.app" }],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Check API availability",
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean" }, "service": { "type": "string" }, "version": { "type": "string" } } } } }
+          }
+        }
+      }
+    },
+    "/api/v1/inspect": {
+      "post": {
+        "summary": "Inspect an image",
+        "description": "Upload a file in the `file` field to extract format, dimensions, transparency presence, and recommended target formats.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image metadata and format recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "filename": { "type": "string" },
+                    "format": { "type": "string" },
+                    "width": { "type": "integer" },
+                    "height": { "type": "integer" },
+                    "hasAlpha": { "type": "boolean" },
+                    "bytes": { "type": "integer" },
+                    "recommendedTargets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "to": { "type": "string" },
+                          "reason": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid or unrecognized image format" }
+        }
+      }
+    },
+    "/api/v1/convert": {
+      "post": {
+        "summary": "Convert one image",
+        "description": "Upload a file in the `svg` field. The field retains its original name for compatibility and accepts SVG, PNG, JPEG, WebP, AVIF, GIF, or TIFF data.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["svg"],
+                "properties": {
+                  "svg": { "type": "string", "format": "binary" },
+                  "to": { "type": "string", "enum": ["webp", "png", "jpeg", "avif"], "default": "webp" },
+                  "width": { "type": "integer", "minimum": 1, "maximum": 4096 },
+                  "height": { "type": "integer", "minimum": 1, "maximum": 4096 },
+                  "fit": { "type": "string", "enum": ["contain", "cover", "fill", "inside", "outside"], "default": "contain" },
+                  "quality": { "type": "integer", "minimum": 0, "maximum": 100, "default": 85 },
+                  "lossless": { "type": "boolean", "default": false },
+                  "effort": { "type": "integer", "minimum": 0, "maximum": 9, "default": 4 },
+                  "background": { "type": "string", "description": "Required when converting an input with alpha to JPEG; when supplied, the image is flattened against this color for any output format." },
+                  "stripMetadata": { "type": "boolean", "default": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Converted image. Headers include X-Zapwebp-Width, X-Zapwebp-Height, and X-Zapwebp-Alpha-Preserved.",
+            "content": { "image/webp": { "schema": { "type": "string", "format": "binary" } }, "image/png": { "schema": { "type": "string", "format": "binary" } }, "image/jpeg": { "schema": { "type": "string", "format": "binary" } }, "image/avif": { "schema": { "type": "string", "format": "binary" } } }
+          },
+          "400": { "description": "Invalid, unsupported, or unsafe image/options" },
+          "413": { "description": "Upload or converted response exceeds the configured host limit" }
+        }
+      }
+    },
+    "/api/v1/batch": {
+      "post": {
+        "summary": "Convert a batch of images",
+        "description": "Upload repeated `files` fields. On the hosted service, the batch upload is limited to 4 MiB total and 20 files; each file is limited to 4 MiB. The JSON response size is host-limited.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["files"],
+                "properties": {
+                  "files": { "type": "array", "items": { "type": "string", "format": "binary" } },
+                  "to": { "type": "string", "enum": ["webp", "png", "jpeg", "avif"], "default": "webp" },
+                  "targets": { "type": "string", "description": "Comma-separated target formats (e.g. webp,avif,png)" },
+                  "width": { "type": "integer", "minimum": 1, "maximum": 4096 },
+                  "height": { "type": "integer", "minimum": 1, "maximum": 4096 },
+                  "fit": { "type": "string", "enum": ["contain", "cover", "fill", "inside", "outside"], "default": "contain" },
+                  "quality": { "type": "integer", "minimum": 0, "maximum": 100, "default": 85 },
+                  "lossless": { "type": "boolean", "default": false },
+                  "effort": { "type": "integer", "minimum": 0, "maximum": 9, "default": 4 },
+                  "background": { "type": "string" },
+                  "stripMetadata": { "type": "boolean", "default": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Per-file results; converted image bytes are base64 encoded in the JSON data field.",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "results": { "type": "array", "items": { "type": "object" } } } } } }
+          },
+          "400": { "description": "Invalid or unsupported image/options" },
+          "413": { "description": "Upload exceeds the configured limits" }
+        }
+      }
+    }
+  }
+}

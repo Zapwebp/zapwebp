@@ -1,0 +1,29 @@
+{
+  "name": "@zapwebp/shared",
+  "version": "1.1.2",
+  "description": "Shared constants, format pairs, and utility functions for Zap",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "zapwebp",
+    "shared",
+    "constants",
+    "image-formats"
+  ],
+  "author": "Zapwebp",
+  "license": "MIT",
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/shared.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/shared/issues"
+  }
+}

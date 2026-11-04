@@ -1,0 +1,28 @@
+name: "💡 Feature Request"
+description: "Suggest an idea or improvement mapped to a concrete user process."
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Features in Zapwebp follow the Business Process Management (BPM) doctrine: every feature must map to a concrete process step, actor, and outcome.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Process Step & Problem
+      description: What specific process step or friction does this solve?
+      placeholder: "As a [developer / designer], when I [action], I need to [outcome] because [reason]..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the minimal sufficient architecture or command interface.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches or workarounds exist today?

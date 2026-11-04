@@ -1,0 +1,41 @@
+{
+  "name": "@zapwebp/features",
+  "version": "1.0.0",
+  "description": "Modular vertical feature slices for Zapwebp: convert, batch, clean, and multipliers",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": "./src/index.js",
+    "./convert": "./src/convert/index.js",
+    "./batch": "./src/batch/index.js",
+    "./clean": "./src/clean/index.js",
+    "./multipliers": "./src/multipliers/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
+  },
+  "keywords": [
+    "features",
+    "converter",
+    "batch",
+    "clean-mode",
+    "multipliers"
+  ],
+  "author": "Zapwebp Team",
+  "license": "MIT",
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/features.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/features/issues"
+  }
+}

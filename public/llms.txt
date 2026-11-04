@@ -1,0 +1,74 @@
+# Zapwebp
+
+> Convert correctly. A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere (browser, terminal, build tools, CI, AI agents). Open source, MIT licensed.
+
+## Core
+
+- [Home](https://zapwebp.vercel.app/): Landing page.
+- [Docs](https://zapwebp-docs.vercel.app/docs): Full documentation.
+- [CLI](https://zapwebp-docs.vercel.app/cli): Terminal tool.
+- [MCP](https://zapwebp-docs.vercel.app/mcp): AI agent integration.
+- [API](https://zapwebp-docs.vercel.app/api): REST API reference.
+
+## SDKs
+
+- [Core SDK](https://zapwebp-docs.vercel.app/sdk/core): @zapwebp/core — the engine.
+- [Plugin SDK](https://zapwebp-docs.vercel.app/sdk/plugin): @zapwebp/plugin-sdk — build plugins.
+- [UI SDK](https://zapwebp-docs.vercel.app/sdk/ui): @zapwebp/ui — error and upload components.
+- [CLI SDK](https://zapwebp-docs.vercel.app/sdk/cli): CLI flags and options.
+- [Storage SDK](https://zapwebp-docs.vercel.app/sdk/storage): @zapwebp/storage — cloud upload wrapper.
+- [Edge SDK](https://zapwebp-docs.vercel.app/sdk/edge): @zapwebp/edge — edge runtime.
+
+## Error codes
+
+- [Errors](https://zapwebp-docs.vercel.app/errors): Every E_* code, cause, and fix.
+
+## Plugins
+
+- [Vite](https://zapwebp-docs.vercel.app/plugins/vite): Vite build plugin.
+- [Next.js](https://zapwebp-docs.vercel.app/plugins/next): Next.js build plugin.
+- [GitHub Action](https://zapwebp-docs.vercel.app/plugins/github-action): PR image optimization action.
+- [Storage](https://zapwebp-docs.vercel.app/plugins/storage): Cloud storage upload interceptor.
+- [VS Code](https://zapwebp-docs.vercel.app/plugins/vscode): VS Code / Open VSX extension.
+- [Laravel](https://zapwebp-docs.vercel.app/plugins/laravel): Laravel service provider.
+- [Lens](https://zapwebp-docs.vercel.app/plugins/lens): Image inspection and visual diffing.
+- [Crop](https://zapwebp-docs.vercel.app/plugins/crop): Pure transform crop plugin with auto/manual modes and face detection.
+
+## Community & Governance
+
+- [Contributing](https://zapwebp-docs.vercel.app/contributing): Developer workflows and PR checklist.
+- [Code of Conduct](https://zapwebp-docs.vercel.app/code-of-conduct): Community standards and pledge.
+- [Security](https://zapwebp-docs.vercel.app/security): Security policy and vulnerability disclosure.
+- [Translators](https://zapwebp-docs.vercel.app/translators): Translation guide and recognized contributors.
+- [GitHub](https://github.com/Zapwebp): Source code repository.
+- [Discussions](https://github.com/Zapwebp/discussions): Developer discussions and Q&A.
+
+## Raw Markdown Mirrors (For Agents)
+
+- [Convert Raw](/convert.md): Convert images in the browser.
+- [CLI Raw](/cli.md): Terminal tool command reference.
+- [MCP Raw](/mcp.md): AI agent MCP server protocol.
+- [Clean Raw](/clean.md): Strip metadata (EXIF, XMP, C2PA) from images.
+- [Formats Raw](/formats.md): Supported input and output formats.
+- [Safety Raw](/safety.md): What Zapwebp refuses to touch.
+- [Errors Raw](/errors.md): Every error code and fix.
+- [Backgrounds Raw](/backgrounds.md): Background preservation and deterministic flattening.
+- [Lock Target Raw](/lock-target.md): Universal target locking gateway.
+- [Core SDK Raw](/sdk/core.md): Core WASM and native engine API.
+- [Plugin SDK Raw](/sdk/plugin.md): Plugin architecture and lifecycle hooks.
+- [UI SDK Raw](/sdk/ui.md): Accessible design tokens and components.
+- [CLI SDK Raw](/sdk/cli.md): CLI binary arguments and flags.
+- [Storage SDK Raw](/sdk/storage.md): Cloud storage upload wrappers.
+- [Edge SDK Raw](/sdk/edge.md): Edge runtime request handlers.
+- [Vite Plugin Raw](/plugins/vite.md): Vite bundler plugin documentation.
+- [Next Plugin Raw](/plugins/next.md): Next.js bundler plugin documentation.
+- [GitHub Action Raw](/plugins/github-action.md): CI/CD image optimization action.
+- [Storage Plugin Raw](/plugins/storage.md): Cloud storage integration guide.
+- [VS Code Plugin Raw](/plugins/vscode.md): VS Code extension documentation.
+- [Laravel Plugin Raw](/plugins/laravel.md): Laravel package documentation.
+- [Lens Plugin Raw](/plugins/lens.md): Image inspection and visual diffing CLI.
+- [Crop Plugin Raw](/plugins/crop.md): Crop transform plugin documentation.
+- [Security Raw](/security.md): Security policy and vulnerability reporting.
+- [Code of Conduct Raw](/code-of-conduct.md): Contributor Covenant standards.
+- [Contributing Raw](/contributing.md): Developer guide and PR checklist.
+- [Translators Raw](/translators.md): Internationalization guide and contributors.

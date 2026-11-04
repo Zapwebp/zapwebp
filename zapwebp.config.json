@@ -1,0 +1,10 @@
+{
+  "$schema": "https://zapwebp.vercel.app/zapwebp.schema.json",
+  "width": 1024,
+  "quality": 85,
+  "lossless": false,
+  "input": "src/assets/**/*.svg",
+  "outDir": "public/img",
+  "watch": false
+}
+

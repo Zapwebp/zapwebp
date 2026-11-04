@@ -1,0 +1,38 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/mcp",
+  "version": "1.1.0",
+  "type": "mcp-server",
+  "description": "Model Context Protocol server offering 15 tools, 6 prompts, and 7 resources for AI coding agents.",
+  "install": "npx -y @zapwebp/mcp",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/mcp",
+  "docsMarkdown": "https://zapwebp.vercel.app/mcp.md",
+  "repository": "https://github.com/Zapwebp/mcp",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "transports": [
+    "stdio",
+    "streamable-http"
+  ],
+  "tools": [
+    "convert_image",
+    "batch_convert",
+    "inspect_image",
+    "check_transparency",
+    "strip_metadata",
+    "generate_srcset",
+    "validate_asset_security",
+    "calculate_savings"
+  ],
+  "resources": [
+    "zapwebp://formats",
+    "zapwebp://errors",
+    "zapwebp://standards",
+    "zapwebp://config"
+  ],
+  "prompts": [
+    "optimize_directory",
+    "audit_web_assets",
+    "generate_responsive_srcset"
+  ]
+}

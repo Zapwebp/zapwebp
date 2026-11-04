@@ -1,0 +1,35 @@
+{
+  "name": "create-zapwebp",
+  "version": "1.0.1",
+  "description": "Scaffold working Zapwebp format plugins, storage adapters, build plugins, and custom CLIs.",
+  "bin": {
+    "create-zapwebp": "bin/create-zapwebp.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/create-zapwebp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/create-zapwebp/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

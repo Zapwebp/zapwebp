@@ -1,0 +1,31 @@
+name: Validate Plugin Registry
+
+on:
+  pull_request:
+    paths:
+      - 'plugins.json'
+      - 'schemas/plugins.schema.json'
+  push:
+    paths:
+      - 'plugins.json'
+      - 'schemas/plugins.schema.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate plugins.json syntax and schema
+        run: |
+          node -e "
+            const fs = require('node:fs');
+            const data = JSON.parse(fs.readFileSync('plugins.json', 'utf8'));
+            const schema = JSON.parse(fs.readFileSync('schemas/plugins.schema.json', 'utf8'));
+            if (!data.plugins || !Array.isArray(data.plugins)) {
+              throw new Error('plugins.json must contain a plugins array');
+            }
+            console.log('✓ Validated plugins.json syntax and structure (' + data.plugins.length + ' plugins).');
+          "

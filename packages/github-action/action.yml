@@ -1,0 +1,72 @@
+name: "Zapwebp"
+description: "Official first-party GitHub Action for Zapwebp — automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core."
+author: "Zapwebp"
+branding:
+  icon: "zap"
+  color: "green"
+
+inputs:
+  input-glob:
+    description: "Files to convert (glob pattern)."
+    required: false
+    default: "**/*.{svg,png,jpg,jpeg,webp,avif}"
+  glob:
+    description: "Alias for input-glob."
+    required: false
+    default: "**/*.{svg,png,jpg,jpeg,webp,avif}"
+  format:
+    description: "Target format to convert images to (webp | png | jpeg | avif)."
+    required: false
+    default: "webp"
+  scale:
+    description: "Output widths as multipliers (e.g. 1,2,3)."
+    required: false
+    default: "1"
+  base-width:
+    description: "1x width in pixels."
+    required: false
+    default: "512"
+  quality:
+    description: "Lossy quality (0-100)."
+    required: false
+    default: "85"
+  lossless:
+    description: "Pixel-perfect encoding."
+    required: false
+    default: "false"
+  clean:
+    description: "Strip EXIF, XMP, and C2PA from output."
+    required: false
+    default: "true"
+  out-dir:
+    description: "Where converted images land. Empty = alongside sources."
+    required: false
+    default: ""
+  mode:
+    description: "commit | check | comment."
+    required: false
+    default: "commit"
+  commit-message:
+    description: "Commit message for mode=commit."
+    required: false
+    default: "chore: optimize images [zapwebp]"
+  token:
+    description: "GitHub token for commit/comment."
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.input-glob }}
+    - ${{ inputs.format }}
+    - ${{ inputs.scale }}
+    - ${{ inputs.base-width }}
+    - ${{ inputs.quality }}
+    - ${{ inputs.lossless }}
+    - ${{ inputs.clean }}
+    - ${{ inputs.out-dir }}
+    - ${{ inputs.mode }}
+    - ${{ inputs.commit-message }}
+    - ${{ inputs.token }}

@@ -1,0 +1,6 @@
+.git/**
+.github/**
+src/**
+test/**
+**/*.map
+**/*.tsbuildinfo

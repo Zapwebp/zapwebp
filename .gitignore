@@ -1,0 +1,11 @@
+node_modules/
+.pnpm-store/
+storage/
+.env
+pnpm-debug.log
+dist/
+*.vsix
+.vsix
+
+# Local-only EA architecture and governance docs (never pushed to GitHub)
+docs/

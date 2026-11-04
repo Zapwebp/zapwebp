@@ -1,0 +1,18 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "zapwebp-lens",
+  "version": "1.0.0",
+  "type": "cli-tool",
+  "description": "Read-only image inspection, visual comparison, and alpha channel verification CLI.",
+  "install": "npm install -g zapwebp-lens",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/lens",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/lens.md",
+  "repository": "https://github.com/Zapwebp/lens",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "commands": {
+    "inspect": "lens inspect <file>",
+    "diff": "lens diff <original> <converted>",
+    "alpha": "lens alpha <file>"
+  }
+}
