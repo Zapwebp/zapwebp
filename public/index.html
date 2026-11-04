@@ -4,19 +4,42 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f7f4" />
+    <title>Zapwebp — Transparency-Safe Image Engine</title>
     <meta
       name="description"
-      content="Convert correctly. Transparency preserved. Metadata stripped. Output verified. Same engine in the browser, terminal, build tools, CI, and AI agents."
+      content="Convert correctly. Transparency preserved, metadata stripped, output verified. Zero-footprint in-browser image engine, CLI, REST API, and AI agent integration."
     />
-    <meta property="og:title" content="Zapwebp — Convert correctly." />
+    <meta
+      name="keywords"
+      content="image converter, webp, avif, png, svg to webp, lossless webp, clean metadata, strip exif, transparency safe, image compression, developer image tools, mcp agent"
+    />
+    <meta name="author" content="Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://zapwebp.vercel.app/" />
+
+    <!-- Open Graph (Facebook / LinkedIn) -->
+    <meta property="og:site_name" content="Zapwebp" />
+    <meta property="og:title" content="Zapwebp — Transparency-Safe Image Engine" />
     <meta
       property="og:description"
-      content="Convert images correctly. Transparency preserved. Metadata stripped. Output verified."
+      content="Convert correctly. Transparency preserved, metadata stripped, output verified. Same engine across the browser, terminal, build tools, and AI agents."
     />
     <meta property="og:url" content="https://zapwebp.vercel.app/" />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://zapwebp.vercel.app/" />
-    <title>Zapwebp — Convert correctly.</title>
+    <meta property="og:image" content="https://zapwebp.vercel.app/zapwebp.svg" />
+    <meta property="og:image:alt" content="Zapwebp Image Engine" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@zapwebp" />
+    <meta name="twitter:creator" content="@eldrex" />
+    <meta name="twitter:title" content="Zapwebp — Transparency-Safe Image Engine" />
+    <meta
+      name="twitter:description"
+      content="Convert correctly. Transparency preserved, metadata stripped, output verified."
+    />
+    <meta name="twitter:image" content="https://zapwebp.vercel.app/zapwebp.svg" />
+
     <link rel="icon" type="image/svg+xml" href="/zapwebp.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="stylesheet" href="/styles.css?v=2.2.0" />
@@ -398,50 +421,36 @@
               />
             </div>
 
-            <!-- Lossless Toggle -->
-            <div class="bar-control-item bar-lossless-item">
-              <label
-                class="clean-toggle-label lossless-toggle-label"
-                title="Preserve 100% pixel fidelity without lossy compression artifacts"
-              >
-                <input type="checkbox" id="lossless-toggle" />
-                <span class="clean-toggle-custom" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 16 16"
-                    width="12"
-                    height="12"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.354 5.354-4 4a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7 9.293l3.646-3.647a.5.5 0 0 1 .708.708z"
-                    />
-                  </svg>
-                </span>
-                <span>Lossless</span>
-              </label>
-            </div>
+            <!-- Dual Modes (Lossless & Clean Mode Toggles) -->
+            <div class="bar-control-item bar-modes-item">
+              <span class="bar-control-label">Modes</span>
+              <div class="toggles-cluster">
+                <!-- Lossless Switch Toggle -->
+                <label
+                  class="switch-toggle-card lossless-toggle-card clean-toggle-label"
+                  id="lossless-toggle-card"
+                  title="Preserve 100% pixel fidelity without lossy compression artifacts"
+                >
+                  <input type="checkbox" id="lossless-toggle" />
+                  <span class="switch-pill" aria-hidden="true">
+                    <span class="switch-pill-thumb"></span>
+                  </span>
+                  <span class="switch-title">Lossless</span>
+                </label>
 
-            <!-- Clean Mode Toggle -->
-            <div class="bar-control-item bar-clean-item">
-              <label
-                class="clean-toggle-label"
-                title="Remove EXIF, XMP, and C2PA metadata."
-              >
-                <input type="checkbox" id="clean-toggle" checked />
-                <span class="clean-toggle-custom" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 16 16"
-                    width="12"
-                    height="12"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M8 0L1.5 3v5c0 4.14 2.76 8 6.5 9 3.74-1 6.5-4.86 6.5-9V3L8 0zm0 1.5l5.5 2.54v3.96c0 3.38-2.28 6.54-5.5 7.42-3.22-.88-5.5-4.04-5.5-7.42V4.04L8 1.5z"
-                    />
-                  </svg>
-                </span>
-                <span>Clean Mode</span>
-              </label>
+                <!-- Clean Mode Switch Toggle -->
+                <label
+                  class="switch-toggle-card clean-toggle-card clean-toggle-label is-active"
+                  id="clean-toggle-card"
+                  title="Strip EXIF, XMP, GPS, and C2PA provenance metadata"
+                >
+                  <input type="checkbox" id="clean-toggle" checked />
+                  <span class="switch-pill" aria-hidden="true">
+                    <span class="switch-pill-thumb"></span>
+                  </span>
+                  <span class="switch-title">Clean Mode</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>

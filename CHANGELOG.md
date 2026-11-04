@@ -2,6 +2,32 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.8.0] - 2026-11-05
+
+### Added
+
+- **Dual Mode Switch Toggles (Clean Mode & Lossless)**:
+  - Implemented accessible, high-craft switch toggles (`role="switch"`, `aria-checked`, pill track and sliding thumb) for both **Clean Mode** and **Lossless** in the web converter cockpit toolbar.
+  - Linked Lossless toggle with automatic quality slider lock (disabling slider and displaying `100% (Lossless)`), live client-side re-conversion, and local preference persistence (`zapwebp_lossless`).
+- **Comprehensive SEO & Machine Discoverability Across Web App and Docs**:
+  - Embedded complete OpenGraph (`og:title`, `og:description`, `og:url`, `og:image`, `og:type`) and Twitter Cards (`summary_large_image`) across `public/index.html` and `zapwebp-docs/index.html`.
+  - Added dynamic meta tag synchronization in `zapwebp-docs/src/render.ts` updating document title, description, canonical link, and OpenGraph/Twitter tags on route transitions.
+  - Enforced canonical domains `https://zapwebp.vercel.app/` for the main converter web application and `https://zapwebp-docs.vercel.app/` for the documentation platform.
+
+### Fixed
+
+- **Mobile Documentation Responsiveness & Viewport Clipping**:
+  - Eliminated horizontal layout overflow on mobile screens ($\le 768\text{px}$ and $\le 480\text{px}$) by enforcing `overflow-x: hidden` and `max-width: 100vw` across root containers.
+  - Collapsed secondary header actions on small screens and truncated language dropdown labels, preventing the header from pushing the sidebar toggle button and article headings off-canvas.
+  - Fixed mobile drawer clipping by hiding closed off-canvas navigation from layout scroll calculation (`visibility: hidden; pointer-events: none;`).
+  - Added auto-close behavior when mobile users select any documentation link in the navigation drawer.
+
+### Changed
+
+- **High-Craft Drag-and-Drop Converter Interface**:
+  - Elevated `.dropzone-area` with radial surface gradient, double-bezel border tokens, refined drop circle icon, high-contrast typography, and tokenized format chips with transparency indicators (`chip-alpha`).
+  - Enhanced active drag-over state (`.is-dragging`) with smooth scaling feedback (`scale(1.008)`), pulsing green accent border glow, and interactive hover feedback.
+
 ## [2.7.0] - 2026-11-04
 
 ### Added

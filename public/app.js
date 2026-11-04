@@ -225,6 +225,18 @@ function syncUiWithSettings() {
 
   updateQualitySliderState();
   updateBackgroundPickerVisibility();
+  updateToggleCards();
+}
+
+function updateToggleCards() {
+  const cleanCard = document.querySelector('#clean-toggle-card');
+  if (cleanCard && cleanToggle) {
+    cleanCard.classList.toggle('is-active', cleanToggle.checked);
+  }
+  const losslessCard = document.querySelector('#lossless-toggle-card');
+  if (losslessCard && losslessToggle) {
+    losslessCard.classList.toggle('is-active', losslessToggle.checked);
+  }
 }
 
 function updateQualitySliderState() {
@@ -308,6 +320,7 @@ if (losslessToggle) {
     settings.lossless = losslessToggle.checked;
     persistSettings();
     updateQualitySliderState();
+    updateToggleCards();
     reconvertAllItems();
   });
 }
@@ -316,6 +329,7 @@ if (cleanToggle) {
   cleanToggle.addEventListener('change', () => {
     settings.clean = cleanToggle.checked;
     persistSettings();
+    updateToggleCards();
     reconvertAllItems();
   });
 }

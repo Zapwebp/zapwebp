@@ -111,6 +111,19 @@ export function shell(content: HTMLElement): HTMLElement {
   sidebar.id = 'docs-sidebar';
   sidebar.className = 'docs-sidebar';
 
+  // Mobile drawer controls
+  const toggleBtn = header.querySelector('#mobile-toggle-btn') as HTMLElement;
+  const toggleDrawer = (open?: boolean) => {
+    const isOpen = open !== undefined ? open : !sidebar.classList.contains('is-open');
+    sidebar.classList.toggle('is-open', isOpen);
+    backdrop.classList.toggle('is-open', isOpen);
+    toggleBtn?.setAttribute('aria-expanded', String(isOpen));
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  };
+
+  toggleBtn?.addEventListener('click', () => toggleDrawer());
+  backdrop?.addEventListener('click', () => toggleDrawer(false));
+
   function renderSidebarContent() {
     const categories = ['Core', 'Plugins', 'Developers', 'Platform'] as const;
     const groups: Record<string, typeof DOC_ROUTES> = {};
@@ -191,7 +204,7 @@ export function shell(content: HTMLElement): HTMLElement {
       });
     }
 
-    // Restore active link
+    // Restore active link and close drawer on mobile navigation
     const currentPath = location.pathname.replace(/\/$/, '') || '/';
     sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
       const href = link.getAttribute('data-path') || link.getAttribute('href');
@@ -200,6 +213,11 @@ export function shell(content: HTMLElement): HTMLElement {
         link.setAttribute('aria-current', 'page');
         link.classList.add('is-active');
       }
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+          toggleDrawer(false);
+        }
+      });
     });
   }
 
@@ -391,19 +409,6 @@ export function shell(content: HTMLElement): HTMLElement {
     const currentPath = location.pathname.replace(/\/$/, '') || '/';
     window.dispatchEvent(new CustomEvent('zapwebp-rerender', { detail: { path: currentPath } }));
   });
-
-  // Mobile drawer controls
-  const toggleBtn = header.querySelector('#mobile-toggle-btn') as HTMLElement;
-  const toggleDrawer = (open?: boolean) => {
-    const isOpen = open !== undefined ? open : !sidebar.classList.contains('is-open');
-    sidebar.classList.toggle('is-open', isOpen);
-    backdrop.classList.toggle('is-open', isOpen);
-    toggleBtn?.setAttribute('aria-expanded', String(isOpen));
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  };
-
-  toggleBtn?.addEventListener('click', () => toggleDrawer());
-  backdrop?.addEventListener('click', () => toggleDrawer(false));
 
   return root;
 }

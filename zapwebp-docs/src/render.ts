@@ -103,6 +103,22 @@ function updateHeadMetadata(route: DocRoute, h1Text?: string) {
   }
   canonicalLink.setAttribute('href', `https://zapwebp-docs.vercel.app${route.path}`);
 
+  function setMeta(selector: string, attrName: string, attrVal: string, content: string) {
+    let el = document.querySelector(selector);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrVal);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', content);
+  }
+
+  setMeta('meta[property="og:title"]', 'property', 'og:title', pageTitle);
+  setMeta('meta[property="og:description"]', 'property', 'og:description', route.description);
+  setMeta('meta[property="og:url"]', 'property', 'og:url', `https://zapwebp-docs.vercel.app${route.path}`);
+  setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', pageTitle);
+  setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', route.description);
+
   let scriptLd = document.getElementById('zapwebp-schema-ld');
   if (!scriptLd) {
     scriptLd = document.createElement('script');

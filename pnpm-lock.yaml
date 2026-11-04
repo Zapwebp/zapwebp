@@ -219,7 +219,6 @@ importers:
       marked:
         specifier: ^18.1.2
         version: 18.1.2
-    devDependencies:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

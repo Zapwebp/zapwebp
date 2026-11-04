@@ -401,56 +401,73 @@ body {
 .dropzone-area {
   padding: 56px 24px;
   border-bottom: 1px solid var(--border-mid);
-  background: linear-gradient(180deg, #ffffff 0%, var(--bg-dropzone-hover) 100%);
+  background: radial-gradient(ellipse 75% 65% at 50% 0%, var(--bg-dropzone) 0%, var(--bg) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
   cursor: pointer;
-  transition: all 150ms var(--ease-snap);
-  min-height: 280px;
+  transition: background 160ms var(--ease-snap), border-color 160ms var(--ease-snap), transform 160ms var(--ease-snap), box-shadow 160ms var(--ease-snap);
+  min-height: 290px;
+  outline: none;
+}
+
+.dropzone-area:focus-visible {
+  outline: 2px solid var(--green-primary);
+  outline-offset: -2px;
 }
 
 .dropzone-area:hover {
-  background: var(--bg-dropzone-hover);
+  background: radial-gradient(ellipse 75% 65% at 50% 0%, var(--bg-dropzone-hover) 0%, var(--bg) 100%);
 }
 
 .dropzone-area.is-dragging {
   background: var(--green-alpha-13);
-  box-shadow: inset 0 0 0 2px var(--green-primary);
-  transform: scale(1.004);
+  box-shadow: inset 0 0 0 2px var(--green-primary), 0 10px 30px rgba(141, 198, 63, 0.15);
+  transform: scale(1.008);
 }
 
 .drop-circle-icon {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: var(--bg);
+  background: var(--bg-dropzone);
   border: 1px solid var(--border-mid);
-  color: var(--green-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  color: var(--green-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
-  transition: transform 150ms var(--ease-spring);
+  transition: transform 160ms var(--ease-spring), border-color 160ms var(--ease-snap), box-shadow 160ms var(--ease-snap), color 160ms var(--ease-snap);
 }
 
 .drop-circle-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 }
 
 .dropzone-area:hover .drop-circle-icon {
-  transform: translateY(-2px) scale(1.05);
-  border-color: var(--green-border-hover);
+  transform: translateY(-3px) scale(1.06);
+  border-color: var(--green-primary);
+  box-shadow: 0 6px 18px rgba(141, 198, 63, 0.22);
+}
+
+.dropzone-area.is-dragging .drop-circle-icon {
+  transform: scale(1.12);
+  background: var(--green-primary);
+  color: #ffffff;
+  border-color: var(--green-bright);
+  box-shadow: 0 8px 24px rgba(141, 198, 63, 0.35);
 }
 
 .drop-title {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 6px;
+  letter-spacing: -0.015em;
 }
 
 .highlight-action {
@@ -458,13 +475,19 @@ body {
 }
 
 .browse-link {
-  color: var(--green-hover);
+  color: var(--green-primary);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color 120ms var(--ease-snap);
+}
+
+.browse-link:hover {
+  color: var(--green-hover);
 }
 
 .drop-subtitle {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--gray-600);
   margin-bottom: 20px;
 }
@@ -478,18 +501,31 @@ body {
 }
 
 .fmt-chip {
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-family: var(--font-mono, monospace);
   font-size: 11px;
   font-weight: 600;
   border-radius: 6px;
   background: var(--bg-dropzone);
   border: 1px solid var(--border-mid);
   color: var(--gray-600);
+  letter-spacing: 0.02em;
+  transition: all 120ms var(--ease-snap);
+}
+
+.fmt-chip:hover {
+  border-color: var(--green-primary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
 .fmt-chip.chip-alpha {
-  border-color: rgba(141, 198, 63, 0.4);
+  border-color: rgba(141, 198, 63, 0.35);
   color: var(--text-primary);
+  background: rgba(141, 198, 63, 0.07);
 }
 
 /* Converting State */
@@ -909,28 +945,104 @@ body {
   transform: scale(1.15);
 }
 
+/* Cockpit Dual Toggle Switches (Lossless & Clean Mode) */
+.toggles-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.switch-toggle-card,
 .clean-toggle-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
-  cursor: pointer;
-  user-select: none;
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid var(--border-mid);
   background: var(--bg);
-  transition: all 120ms var(--ease-snap);
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: border-color 140ms var(--ease-snap), background-color 140ms var(--ease-snap), box-shadow 140ms var(--ease-snap);
+  position: relative;
 }
 
+.switch-toggle-card:hover,
 .clean-toggle-label:hover {
   border-color: var(--green-border-hover);
 }
 
+.switch-toggle-card:focus-within,
+.clean-toggle-label:focus-within {
+  outline: 2px solid var(--green-primary);
+  outline-offset: 2px;
+}
+
+.switch-toggle-card input[type="checkbox"],
+.clean-toggle-label input[type="checkbox"],
 .clean-toggle-label input {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Accessible Switch Track (Pill) */
+.switch-pill {
+  width: 32px;
+  height: 18px;
+  border-radius: 10px;
+  background: var(--border-mid);
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 150ms var(--ease-snap);
+  display: inline-block;
+}
+
+/* Sliding Thumb */
+.switch-pill-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 150ms var(--ease-snap);
+}
+
+/* Checked State */
+.switch-toggle-card:has(input:checked),
+.switch-toggle-card.is-active,
+.clean-toggle-label:has(input:checked),
+.clean-toggle-label.is-active {
+  border-color: var(--green-border-hover);
+  background: var(--green-alpha-13);
+}
+
+.switch-toggle-card:has(input:checked) .switch-pill,
+.switch-toggle-card.is-active .switch-pill,
+.clean-toggle-label:has(input:checked) .switch-pill {
+  background: var(--green-primary);
+}
+
+.switch-toggle-card:has(input:checked) .switch-pill-thumb,
+.switch-toggle-card.is-active .switch-pill-thumb,
+.clean-toggle-label:has(input:checked) .switch-pill-thumb {
+  transform: translateX(14px);
+}
+
+.switch-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .clean-toggle-custom {
