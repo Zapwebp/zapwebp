@@ -19,6 +19,7 @@
     "zap": "node packages/cli/bin/zap.js",
     "mcp": "node packages/mcp/bin/zapwebp-mcp.js",
     "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js",
+    "build": "node scripts/build-llms.js",
     "build:docs": "node scripts/build-docs.js",
     "build:llms": "node scripts/build-llms.js",
     "validate-locales": "node scripts/validate-locales.js",

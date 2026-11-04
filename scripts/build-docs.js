@@ -1,7 +1,16 @@
 'use strict';
 
 const path = require('node:path');
-const esbuild = require('../apps/vscode/node_modules/esbuild');
+let esbuild;
+try {
+  esbuild = require('esbuild');
+} catch {
+  try {
+    esbuild = require('../apps/vscode/node_modules/esbuild');
+  } catch {
+    esbuild = require('../zapwebp-docs/node_modules/esbuild');
+  }
+}
 
 const root = path.resolve(__dirname, '..');
 const entry = path.join(root, 'zapwebp-docs', 'src', 'main.ts');
