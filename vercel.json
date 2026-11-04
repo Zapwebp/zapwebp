@@ -5,6 +5,14 @@
       "maxDuration": 120
     }
   },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/server.js" },
+    { "source": "/health", "destination": "/server.js" },
+    { "source": "/feed.xml", "destination": "/server.js" },
+    { "source": "/(.*\\.md)", "destination": "/server.js" },
+    { "source": "/plugins/(.*\\.md)", "destination": "/server.js" },
+    { "source": "/sdk/(.*\\.md)", "destination": "/server.js" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
