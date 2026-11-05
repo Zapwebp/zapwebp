@@ -74,7 +74,42 @@ const settings = {
   lossless: false,
   background: '#ffffff',
   viewMode: 'grid',
+  outputSizeMode: 'auto', // 'auto' | 'custom'
+  outputSizeLimitKb: 500,
+  compressionTarget: 'limit', // 'limit' | 'target'
+  inputSizeLimitMb: 50,
 };
+
+function loadStoredSettings() {
+  try {
+    const raw = localStorage.getItem('zapwebp:settings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        Object.assign(settings, parsed);
+      }
+    }
+  } catch {}
+}
+loadStoredSettings();
+
+function persistSettings() {
+  try {
+    localStorage.setItem('zapwebp:settings', JSON.stringify({
+      format: settings.format,
+      scales: settings.scales,
+      quality: settings.quality,
+      clean: settings.clean,
+      lossless: settings.lossless,
+      background: settings.background,
+      viewMode: settings.viewMode,
+      outputSizeMode: settings.outputSizeMode,
+      outputSizeLimitKb: settings.outputSizeLimitKb,
+      compressionTarget: settings.compressionTarget,
+      inputSizeLimitMb: settings.inputSizeLimitMb,
+    }));
+  } catch {}
+}
 
 // ==========================================================================
 // 1. IndexedDB Persistence Layer (zapwebp-db)
@@ -256,52 +291,146 @@ function persistSettings() {
 loadSettings();
 
 // ==========================================================================
-// 4. Settings Modal & Confirm Delete Modal Controllers
+// 4. Lossless & Size Limit Conflict Warning System
+// ==========================================================================
+const losslessConflictBanner = document.querySelector('#lossless-conflict-banner');
+const conflictLimitVal = document.querySelector('#conflict-limit-val');
+const conflictSwitchLossy = document.querySelector('#conflict-switch-lossy');
+const conflictRemoveLimit = document.querySelector('#conflict-remove-limit');
+
+function checkLosslessConflict() {
+  if (!losslessConflictBanner) return false;
+  const isLossless = settings.lossless || settings.format === 'png';
+  const hasLimit = settings.outputSizeMode === 'custom' && Number(settings.outputSizeLimitKb) > 0;
+
+  if (isLossless && hasLimit) {
+    if (conflictLimitVal) conflictLimitVal.textContent = `${settings.outputSizeLimitKb} KB`;
+    losslessConflictBanner.hidden = false;
+    return true;
+  } else {
+    losslessConflictBanner.hidden = true;
+    return false;
+  }
+}
+
+if (conflictSwitchLossy) {
+  conflictSwitchLossy.addEventListener('click', () => {
+    settings.lossless = false;
+    if (settings.format === 'png') {
+      settings.format = 'webp';
+    }
+    persistSettings();
+    syncUiWithSettings();
+    syncSettingsSlideoverUI();
+    checkLosslessConflict();
+    reconvertAllItems();
+  });
+}
+
+if (conflictRemoveLimit) {
+  conflictRemoveLimit.addEventListener('click', () => {
+    settings.outputSizeMode = 'auto';
+    persistSettings();
+    syncUiWithSettings();
+    syncSettingsSlideoverUI();
+    checkLosslessConflict();
+    reconvertAllItems();
+  });
+}
+
+// ==========================================================================
+// 5. Settings Slide-Over Drawer & Confirm Delete Modal Controllers
 // ==========================================================================
 const settingsBtn = document.querySelector('#settings-btn');
-const settingsModal = document.querySelector('#settings-modal');
-const settingsModalClose = document.querySelector('#settings-modal-close');
+const settingsSlideover = document.querySelector('#settings-slideover') || document.querySelector('#settings-modal');
+const settingsSlideoverClose = document.querySelector('#settings-slideover-close') || document.querySelector('#settings-modal-close');
+const tabBtnEssentials = document.querySelector('#tab-btn-essentials');
+const tabBtnAdvanced = document.querySelector('#tab-btn-advanced');
+const tabPaneEssentials = document.querySelector('#tab-pane-essentials');
+const tabPaneAdvanced = document.querySelector('#tab-pane-advanced');
+
 const settingQualityInput = document.querySelector('#setting-quality-input');
 const settingQualityVal = document.querySelector('#setting-quality-val');
+const settingSizeLimitInput = document.querySelector('#setting-size-limit-input');
 const settingCleanToggle = document.querySelector('#setting-clean-toggle');
+const settingInputLimitInput = document.querySelector('#setting-input-limit-input');
+const settingLosslessToggle = document.querySelector('#setting-lossless-toggle');
 
-function openSettingsModal() {
-  syncSettingsModalUI();
-  if (settingsModal) settingsModal.hidden = false;
+function openSettingsSlideover() {
+  syncSettingsSlideoverUI();
+  if (settingsSlideover) settingsSlideover.hidden = false;
 }
 
-function closeSettingsModal() {
-  if (settingsModal) settingsModal.hidden = true;
+function closeSettingsSlideover() {
+  if (settingsSlideover) settingsSlideover.hidden = true;
 }
 
-function syncSettingsModalUI() {
+function switchSettingsTab(tabName) {
+  if (!tabBtnEssentials || !tabBtnAdvanced) return;
+  const isEssentials = tabName === 'essentials';
+  tabBtnEssentials.classList.toggle('is-active', isEssentials);
+  tabBtnEssentials.setAttribute('aria-selected', String(isEssentials));
+  tabBtnAdvanced.classList.toggle('is-active', !isEssentials);
+  tabBtnAdvanced.setAttribute('aria-selected', String(!isEssentials));
+
+  if (tabPaneEssentials) tabPaneEssentials.hidden = !isEssentials;
+  if (tabPaneAdvanced) tabPaneAdvanced.hidden = isEssentials;
+}
+
+if (tabBtnEssentials) tabBtnEssentials.addEventListener('click', () => switchSettingsTab('essentials'));
+if (tabBtnAdvanced) tabBtnAdvanced.addEventListener('click', () => switchSettingsTab('advanced'));
+
+function syncSettingsSlideoverUI() {
+  // Format radios
   const fmtRadios = document.querySelectorAll('input[name="setting-default-format"]');
   fmtRadios.forEach((r) => { r.checked = (r.value === settings.format); });
 
+  // Quality slider
   if (settingQualityInput) settingQualityInput.value = settings.quality;
   if (settingQualityVal) settingQualityVal.textContent = `${settings.quality}%`;
 
+  // Output size limit
+  const sizeModeRadios = document.querySelectorAll('input[name="setting-output-size-mode"]');
+  sizeModeRadios.forEach((r) => { r.checked = (r.value === settings.outputSizeMode); });
+  if (settingSizeLimitInput) {
+    settingSizeLimitInput.value = settings.outputSizeLimitKb || 500;
+    settingSizeLimitInput.disabled = (settings.outputSizeMode !== 'custom');
+  }
+
+  // Theme radios
   const themeChoice = localStorage.getItem('zapwebp:theme') || 'auto';
   const themeRadios = document.querySelectorAll('input[name="setting-theme"]');
   themeRadios.forEach((r) => { r.checked = (r.value === themeChoice); });
 
+  // Clean metadata toggle
   if (settingCleanToggle) settingCleanToggle.checked = settings.clean;
+
+  // Compression target radios
+  const compTargetRadios = document.querySelectorAll('input[name="setting-compression-target"]');
+  compTargetRadios.forEach((r) => { r.checked = (r.value === settings.compressionTarget); });
+
+  // Input limit
+  if (settingInputLimitInput) settingInputLimitInput.value = settings.inputSizeLimitMb || 50;
+
+  // Lossless toggle
+  if (settingLosslessToggle) settingLosslessToggle.checked = settings.lossless;
 }
 
-if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
-if (settingsModalClose) settingsModalClose.addEventListener('click', closeSettingsModal);
-if (settingsModal) {
-  settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) closeSettingsModal();
+if (settingsBtn) settingsBtn.addEventListener('click', openSettingsSlideover);
+if (settingsSlideoverClose) settingsSlideoverClose.addEventListener('click', closeSettingsSlideover);
+if (settingsSlideover) {
+  settingsSlideover.addEventListener('click', (e) => {
+    if (e.target === settingsSlideover) closeSettingsSlideover();
   });
 }
 
-// Format radios in settings
+// Format radios
 document.querySelectorAll('input[name="setting-default-format"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     settings.format = radio.value;
     persistSettings();
     syncUiWithSettings();
+    checkLosslessConflict();
     reconvertAllItems();
   });
 });
@@ -320,7 +449,35 @@ if (settingQualityInput) {
   });
 }
 
-// Theme radios in settings
+// Output size mode in settings
+document.querySelectorAll('input[name="setting-output-size-mode"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.outputSizeMode = radio.value;
+    if (settingSizeLimitInput) {
+      settingSizeLimitInput.disabled = (settings.outputSizeMode !== 'custom');
+    }
+    persistSettings();
+    checkLosslessConflict();
+    reconvertAllItems();
+  });
+});
+
+if (settingSizeLimitInput) {
+  settingSizeLimitInput.addEventListener('input', () => {
+    const val = Number(settingSizeLimitInput.value);
+    if (val > 0) {
+      settings.outputSizeLimitKb = val;
+      persistSettings();
+      checkLosslessConflict();
+      clearTimeout(qualityDebounceTimer);
+      qualityDebounceTimer = setTimeout(() => {
+        reconvertAllItems();
+      }, 300);
+    }
+  });
+}
+
+// Theme radios
 document.querySelectorAll('input[name="setting-theme"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     localStorage.setItem('zapwebp:theme', radio.value);
@@ -328,12 +485,43 @@ document.querySelectorAll('input[name="setting-theme"]').forEach((radio) => {
   });
 });
 
-// Clean toggle in settings
+// Clean toggle
 if (settingCleanToggle) {
   settingCleanToggle.addEventListener('change', () => {
     settings.clean = settingCleanToggle.checked;
     persistSettings();
     syncUiWithSettings();
+    reconvertAllItems();
+  });
+}
+
+// Compression target radios
+document.querySelectorAll('input[name="setting-compression-target"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.compressionTarget = radio.value;
+    persistSettings();
+    reconvertAllItems();
+  });
+});
+
+// Input size limit
+if (settingInputLimitInput) {
+  settingInputLimitInput.addEventListener('input', () => {
+    const val = Number(settingInputLimitInput.value);
+    if (val > 0) {
+      settings.inputSizeLimitMb = val;
+      persistSettings();
+    }
+  });
+}
+
+// Lossless toggle in settings
+if (settingLosslessToggle) {
+  settingLosslessToggle.addEventListener('change', () => {
+    settings.lossless = settingLosslessToggle.checked;
+    persistSettings();
+    syncUiWithSettings();
+    checkLosslessConflict();
     reconvertAllItems();
   });
 }
@@ -368,11 +556,26 @@ if (confirmDeleteConfirm) {
 const brandResetBtn = document.querySelector('#brand-reset-btn');
 if (brandResetBtn) {
   brandResetBtn.addEventListener('click', (e) => {
-    if (convertedItems.size > 0) {
-      e.preventDefault();
-      clearAllItems();
-    }
+    e.preventDefault();
+    convertedItems.clear();
+    dbClearFiles();
+    renderResultsView();
+    if (losslessConflictBanner) losslessConflictBanner.hidden = true;
+    closeSettingsSlideover();
   });
+}
+
+// Footer Language Button
+const footerLangBtn = document.querySelector('#footer-lang-btn');
+if (footerLangBtn) {
+  footerLangBtn.addEventListener('click', () => {
+    const currentLang = localStorage.getItem('zapwebp:lang') || 'en';
+    const newLang = currentLang === 'en' ? 'tl' : 'en';
+    localStorage.setItem('zapwebp:lang', newLang);
+    footerLangBtn.textContent = newLang === 'en' ? '🌐 EN' : '🌐 TL';
+  });
+  const currentLang = localStorage.getItem('zapwebp:lang') || 'en';
+  footerLangBtn.textContent = currentLang === 'en' ? '🌐 EN' : '🌐 TL';
 }
 
 // Keyboard shortcuts 1–4 and Escape
@@ -648,13 +851,197 @@ function generateSrcsetHtml(baseName, scales, toFormat) {
 }
 
 // ==========================================================================
-// 4. Dual-Layer Conversion Engine (In-Browser Canvas + API Fallback)
+// 6. Dual-Layer Conversion Engine (Web Worker + In-Browser Canvas + API Fallback)
 // ==========================================================================
+
+function getConversionWorker() {
+  if (typeof Worker === 'undefined') return null;
+  try {
+    return new Worker('/worker.js');
+  } catch {
+    return null;
+  }
+}
+
+async function convertViaWorker(file, options) {
+  return new Promise((resolve, reject) => {
+    const worker = getConversionWorker();
+    if (!worker) {
+      return reject(new Error('Web Worker not supported'));
+    }
+
+    const id = `work_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const timer = setTimeout(() => {
+      worker.terminate();
+      reject(new Error('Worker conversion timed out'));
+    }, 30000);
+
+    worker.onmessage = (e) => {
+      clearTimeout(timer);
+      worker.terminate();
+      if (e.data.id === id) {
+        if (e.data.success) {
+          resolve(e.data);
+        } else if (e.data.fallbackToMain) {
+          reject(new Error('FALLBACK_TO_MAIN'));
+        } else {
+          reject(new Error(e.data.error || 'Worker conversion failed'));
+        }
+      }
+    };
+
+    worker.onerror = (err) => {
+      clearTimeout(timer);
+      worker.terminate();
+      reject(err);
+    };
+
+    worker.postMessage({ id, file, options });
+  });
+}
+
+/**
+ * Size-Enforcing Canvas Encoder
+ * Supports Auto, Limit (strict step-down), Target (binary search), and Unlimited (Lossless)
+ */
+async function encodeCanvasWithOptions(canvas, mimeType, toFormat, requestedQuality, isLossless, outputSizeMode, outputSizeLimitKb, compressionTarget) {
+  if (isLossless || toFormat === 'png') {
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((b) => {
+        if (b && (b.type === mimeType || b.size > 0)) resolve(b);
+        else reject(new Error(`Failed to encode canvas to ${mimeType}`));
+      }, mimeType, 1.0);
+    });
+    return { blob, qualityReduced: false, originalQuality: 100, finalQuality: 100 };
+  }
+
+  const initialQ = (requestedQuality || 85) / 100;
+  const initialBlob = await new Promise((resolve, reject) => {
+    canvas.toBlob((b) => {
+      if (b && (b.type === mimeType || b.size > 0)) resolve(b);
+      else reject(new Error(`Failed to encode canvas to ${mimeType}`));
+    }, mimeType, initialQ);
+  });
+
+  if (outputSizeMode !== 'custom' || !outputSizeLimitKb || outputSizeLimitKb <= 0) {
+    return { blob: initialBlob, qualityReduced: false, originalQuality: requestedQuality, finalQuality: requestedQuality };
+  }
+
+  const targetBytes = outputSizeLimitKb * 1024;
+  if (initialBlob.size <= targetBytes) {
+    return { blob: initialBlob, qualityReduced: false, originalQuality: requestedQuality, finalQuality: requestedQuality, limitKb: outputSizeLimitKb };
+  }
+
+  // File exceeds targetBytes: apply compression loop
+  if (compressionTarget === 'target') {
+    let low = 10;
+    let high = Math.min(95, requestedQuality);
+    let bestBlob = initialBlob;
+    let bestQ = requestedQuality;
+    let minOverBlob = initialBlob;
+    let minOverQ = requestedQuality;
+
+    for (let iter = 0; iter < 5; iter++) {
+      const mid = Math.round((low + high) / 2);
+      const testBlob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), mimeType, mid / 100);
+      });
+      if (!testBlob) continue;
+      if (testBlob.size <= targetBytes) {
+        bestBlob = testBlob;
+        bestQ = mid;
+        low = mid + 1;
+      } else {
+        minOverBlob = testBlob;
+        minOverQ = mid;
+        high = mid - 1;
+      }
+    }
+
+    const finalBlob = bestBlob.size <= targetBytes ? bestBlob : minOverBlob;
+    const finalQ = bestBlob.size <= targetBytes ? bestQ : minOverQ;
+    return {
+      blob: finalBlob,
+      qualityReduced: finalQ < requestedQuality,
+      originalQuality: requestedQuality,
+      finalQuality: finalQ,
+      limitKb: outputSizeLimitKb
+    };
+  } else {
+    // Limit mode (strict step down)
+    const stepDownQualities = [75, 65, 55, 45, 35, 25, 15, 10].filter((q) => q < requestedQuality);
+    let currentBlob = initialBlob;
+    let currentQ = requestedQuality;
+
+    for (const q of stepDownQualities) {
+      const testBlob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), mimeType, q / 100);
+      });
+      if (!testBlob) continue;
+      currentBlob = testBlob;
+      currentQ = q;
+      if (testBlob.size <= targetBytes) {
+        break;
+      }
+    }
+
+    return {
+      blob: currentBlob,
+      qualityReduced: currentQ < requestedQuality,
+      originalQuality: requestedQuality,
+      finalQuality: currentQ,
+      limitKb: outputSizeLimitKb
+    };
+  }
+}
+
 async function convertImageFile(file, toFormat, quality, scales, isClean, isLossless, bgColor, cropOptions = null) {
+  // Try Web Worker first for single-scale default pipelines without crop
+  if ((!scales || (scales.length === 1 && scales[0] === 1)) && !cropOptions) {
+    try {
+      const res = await convertViaWorker(file, {
+        format: toFormat,
+        quality,
+        clean: isClean,
+        lossless: isLossless,
+        bgColor,
+        outputSizeMode: settings.outputSizeMode,
+        outputSizeLimitKb: settings.outputSizeLimitKb,
+        compressionTarget: settings.compressionTarget,
+      });
+
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      const outExt = toFormat === 'jpeg' ? 'jpg' : toFormat;
+      const outName = `${baseName}.${outExt}`;
+      const url = URL.createObjectURL(res.blob);
+
+      return [{
+        name: outName,
+        scale: 1,
+        width: res.width || 512,
+        height: res.height || 512,
+        size: res.size || res.blob.size,
+        originalSize: file.size,
+        blob: res.blob,
+        url,
+        alphaPreserved: toFormat !== 'jpeg',
+        format: toFormat,
+        baseName,
+        relativePath: file.relativePath ? file.relativePath.replace(/\.[^.]+$/, `.${outExt}`) : outName,
+        qualityReduced: res.qualityReduced || false,
+        originalQuality: res.originalQuality || quality,
+        finalQuality: res.finalQuality || quality,
+        limitKb: res.limitKb || settings.outputSizeLimitKb,
+      }];
+    } catch {
+      // Fallback to in-browser canvas
+    }
+  }
+
   try {
     return await convertInBrowser(file, toFormat, quality, scales, isClean, isLossless, bgColor, cropOptions);
   } catch (err) {
-    // If browser canvas cannot decode/encode (e.g. TIFF or browser lacking AVIF canvas export), fallback seamlessly to server
+    // If browser canvas cannot decode/encode, fallback seamlessly to server
     try {
       return await convertViaApi(file, toFormat, quality, scales, isClean, isLossless, bgColor);
     } catch (apiErr) {
@@ -759,11 +1146,6 @@ async function convertInBrowser(file, toFormat, quality, scales = [1], isClean =
   const sortedScales = Array.from(scales).sort((a, b) => a - b);
   const baseName = file.name.replace(/\.[^.]+$/, '');
 
-  let encodeQuality = quality / 100;
-  if (isLossless || toFormat === 'png') {
-    encodeQuality = 1.0;
-  }
-
   for (const scale of sortedScales) {
     const width = Math.max(1, Math.round(srcW * scale));
     const height = Math.max(1, Math.round(srcH * scale));
@@ -801,28 +1183,36 @@ async function convertInBrowser(file, toFormat, quality, scales = [1], isClean =
     const outExt = toFormat === 'jpeg' ? 'jpg' : toFormat;
     const outName = `${baseName}${scaleSuffix}.${outExt}`;
 
-    const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob((b) => {
-        if (b && (b.type === mimeType || b.size > 0)) resolve(b);
-        else reject(new Error(`Browser canvas cannot encode to ${toFormat}`));
-      }, mimeType, encodeQuality);
-    });
+    const encodeRes = await encodeCanvasWithOptions(
+      canvas,
+      mimeType,
+      toFormat,
+      quality,
+      isLossless,
+      settings.outputSizeMode,
+      settings.outputSizeLimitKb,
+      settings.compressionTarget
+    );
 
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(encodeRes.blob);
 
     outputs.push({
       name: outName,
       scale,
       width,
       height,
-      size: blob.size,
+      size: encodeRes.blob.size,
       originalSize: file.size,
-      blob,
+      blob: encodeRes.blob,
       url,
       alphaPreserved,
       format: toFormat,
       baseName,
       relativePath: file.relativePath ? file.relativePath.replace(/\.[^.]+$/, `${scaleSuffix}.${outExt}`) : outName,
+      qualityReduced: encodeRes.qualityReduced || false,
+      originalQuality: encodeRes.originalQuality || quality,
+      finalQuality: encodeRes.finalQuality || quality,
+      limitKb: encodeRes.limitKb || settings.outputSizeLimitKb,
     });
   }
 
@@ -1090,6 +1480,11 @@ function renderResultsView() {
           <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
           <span class="single-savings">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
         </div>
+        ${out.qualityReduced ? `
+          <div class="quality-downgrade-badge" title="Quality was automatically reduced to fit file size target">
+            📉 Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB.
+          </div>
+        ` : ''}
       </div>
       <div class="single-actions">
         <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file">
@@ -1195,6 +1590,11 @@ function renderResultsView() {
         <div class="list-row-meta">
           <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
           <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
+          ${out.qualityReduced ? `
+            <span class="result-downgrade-badge" title="Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB">
+              📉 ${out.originalQuality} → ${out.finalQuality}
+            </span>
+          ` : ''}
         </div>
         <div class="list-row-actions">
           <button type="button" class="btn-batch-action btn-batch-download" title="Download">
@@ -1224,7 +1624,14 @@ function renderResultsView() {
       card.innerHTML = `
         <img class="result-thumb" src="${out.url}" alt="${item.name}" loading="lazy" />
         <div class="result-name" title="${item.name}">${item.name}</div>
-        <div class="result-meta">${formatKb(out.size)} <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span></div>
+        <div class="result-meta">
+          ${formatKb(out.size)} <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+          ${out.qualityReduced ? `
+            <div class="result-downgrade-badge" title="Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB">
+              📉 ${out.originalQuality} → ${out.finalQuality} (${out.limitKb} KB)
+            </div>
+          ` : ''}
+        </div>
         <div class="result-actions">
           <button type="button" class="result-download-btn" title="Download file">⬇</button>
           <button type="button" class="btn-single-delete" title="Delete file">🗑</button>
@@ -1456,9 +1863,10 @@ async function handleFiles(files) {
   if (!files?.length) return;
 
   const validFiles = [];
+  const maxBytes = (settings.inputSizeLimitMb || 50) * 1024 * 1024;
   for (const f of files) {
-    if (f.size > 20 * 1024 * 1024) {
-      showError(`"${f.name}" exceeds the 20 MB size limit.`);
+    if (f.size > maxBytes) {
+      showError(`"${f.name}" exceeds the ${settings.inputSizeLimitMb || 50} MB input limit.`);
       continue;
     }
     if (SUPPORTED_EXTENSIONS.has(getFileExtension(f.name))) {
@@ -1470,6 +1878,9 @@ async function handleFiles(files) {
     showError('None of the selected files match supported image formats (SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF).');
     return;
   }
+
+  // Check lossless conflict before starting conversion
+  checkLosslessConflict();
 
   // If first time, hide idle glyph
   if (convertedItems.size === 0) {

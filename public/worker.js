@@ -2,13 +2,99 @@
  * Zapwebp Web Worker
  * Performs client-side image conversion off the main UI thread.
  * Bounded concurrency, zero network access, memory-safe execution.
+ * Enforces Size Modes (Auto, Limit strict, Target best-effort, Unlimited).
  */
+
+async function encodeWorkerCanvas(canvas, mimeType, format, requestedQuality, isLossless, outputSizeMode, outputSizeLimitKb, compressionTarget) {
+  if (isLossless || format === 'png') {
+    const blob = await canvas.convertToBlob({ type: mimeType, quality: 1.0 });
+    return { blob, qualityReduced: false, originalQuality: 100, finalQuality: 100 };
+  }
+
+  const baseQ = (requestedQuality || 85) / 100;
+  const initialBlob = await canvas.convertToBlob({ type: mimeType, quality: baseQ });
+
+  if (outputSizeMode !== 'custom' || !outputSizeLimitKb || outputSizeLimitKb <= 0) {
+    return { blob: initialBlob, qualityReduced: false, originalQuality: requestedQuality, finalQuality: requestedQuality };
+  }
+
+  const targetBytes = outputSizeLimitKb * 1024;
+  if (initialBlob.size <= targetBytes) {
+    return { blob: initialBlob, qualityReduced: false, originalQuality: requestedQuality, finalQuality: requestedQuality, limitKb: outputSizeLimitKb };
+  }
+
+  // File exceeds targetBytes: apply compression loop
+  if (compressionTarget === 'target') {
+    let low = 10;
+    let high = Math.min(95, requestedQuality);
+    let bestBlob = initialBlob;
+    let bestQ = requestedQuality;
+    let minOverBlob = initialBlob;
+    let minOverQ = requestedQuality;
+
+    for (let iter = 0; iter < 5; iter++) {
+      const mid = Math.round((low + high) / 2);
+      const testBlob = await canvas.convertToBlob({ type: mimeType, quality: mid / 100 });
+      if (testBlob.size <= targetBytes) {
+        bestBlob = testBlob;
+        bestQ = mid;
+        low = mid + 1;
+      } else {
+        minOverBlob = testBlob;
+        minOverQ = mid;
+        high = mid - 1;
+      }
+    }
+
+    const finalBlob = bestBlob.size <= targetBytes ? bestBlob : minOverBlob;
+    const finalQ = bestBlob.size <= targetBytes ? bestQ : minOverQ;
+    return {
+      blob: finalBlob,
+      qualityReduced: finalQ < requestedQuality,
+      originalQuality: requestedQuality,
+      finalQuality: finalQ,
+      limitKb: outputSizeLimitKb
+    };
+  } else {
+    // Limit mode (strict step down)
+    const stepDownQualities = [75, 65, 55, 45, 35, 25, 15, 10].filter((q) => q < requestedQuality);
+    let currentBlob = initialBlob;
+    let currentQ = requestedQuality;
+
+    for (const q of stepDownQualities) {
+      const testBlob = await canvas.convertToBlob({ type: mimeType, quality: q / 100 });
+      currentBlob = testBlob;
+      currentQ = q;
+      if (testBlob.size <= targetBytes) {
+        break;
+      }
+    }
+
+    return {
+      blob: currentBlob,
+      qualityReduced: currentQ < requestedQuality,
+      originalQuality: requestedQuality,
+      finalQuality: currentQ,
+      limitKb: outputSizeLimitKb
+    };
+  }
+}
 
 self.onmessage = async (e) => {
   const { id, file, options } = e.data;
 
   try {
-    const { format, quality = 85, clean = true, lossless = false, bgColor = '#ffffff' } = options || {};
+    const {
+      format,
+      quality = 85,
+      clean = true,
+      lossless = false,
+      bgColor = '#ffffff',
+      outputSizeMode = 'auto',
+      outputSizeLimitKb = 500,
+      compressionTarget = 'limit',
+    } = options || {};
+
     const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
     const isSvg = ext === '.svg';
     const mimeType = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
@@ -64,18 +150,29 @@ self.onmessage = async (e) => {
           ctx.drawImage(imgBitmap, 0, 0, w, h);
           imgBitmap.close();
 
-          let encodeQuality = quality / 100;
-          if (lossless || format === 'png') encodeQuality = 1.0;
+          const encodeRes = await encodeWorkerCanvas(
+            canvas,
+            mimeType,
+            format,
+            quality,
+            lossless,
+            outputSizeMode,
+            outputSizeLimitKb,
+            compressionTarget
+          );
 
-          const outBlob = await canvas.convertToBlob({ type: mimeType, quality: encodeQuality });
           return self.postMessage({
             id,
             success: true,
-            blob: outBlob,
+            blob: encodeRes.blob,
             format,
             width: w,
             height: h,
-            size: outBlob.size
+            size: encodeRes.blob.size,
+            qualityReduced: encodeRes.qualityReduced,
+            originalQuality: encodeRes.originalQuality,
+            finalQuality: encodeRes.finalQuality,
+            limitKb: encodeRes.limitKb
           });
         } catch {
           // OffscreenCanvas may fail to rasterize SVG in some browsers: request main thread fallback
@@ -104,18 +201,29 @@ self.onmessage = async (e) => {
         ctx.drawImage(imgBitmap, 0, 0, w, h);
         imgBitmap.close();
 
-        let encodeQuality = quality / 100;
-        if (lossless || format === 'png') encodeQuality = 1.0;
+        const encodeRes = await encodeWorkerCanvas(
+          canvas,
+          mimeType,
+          format,
+          quality,
+          lossless,
+          outputSizeMode,
+          outputSizeLimitKb,
+          compressionTarget
+        );
 
-        const outBlob = await canvas.convertToBlob({ type: mimeType, quality: encodeQuality });
         return self.postMessage({
           id,
           success: true,
-          blob: outBlob,
+          blob: encodeRes.blob,
           format,
           width: w,
           height: h,
-          size: outBlob.size
+          size: encodeRes.blob.size,
+          qualityReduced: encodeRes.qualityReduced,
+          originalQuality: encodeRes.originalQuality,
+          finalQuality: encodeRes.finalQuality,
+          limitKb: encodeRes.limitKb
         });
       } catch {
         return self.postMessage({ id, success: false, fallbackToMain: true });
@@ -131,3 +239,5 @@ self.onmessage = async (e) => {
     });
   }
 };
+
+

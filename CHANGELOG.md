@@ -2,6 +2,26 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.10.0] - 2026-11-05
+
+### Added
+
+- **Web App 3-Tap Layout Architecture & Landing Page Migration**:
+  - Restructured the primary web application (`public/index.html`, `public/styles.css`, `public/app.js`) to strictly satisfy the 3-Tap doctrine: Tap 1 (Drop file), Tap 2 (Optional settings/quick toggles), Tap 3 (Download).
+  - Migrated marketing showcase, pillars, and comparison matrix from the web application root into the official documentation portal (`zapwebp-docs.vercel.app` / `content/index.md`).
+  - Added streamlined App Header with instant workspace reset via the brand logo (`#brand-reset-btn`), single accessible theme toggle (Sun/Moon), and Settings Gear button (`#settings-btn`).
+  - Added lean App Footer with creator attribution (`⚡ Zapwebp · Convert correctly.`), multilingual toggle (`🌐 EN`), and documentation link.
+- **Output File Size Enforcer & Multi-Mode Compression**:
+  - Integrated four distinct output size modes: Auto (default quality 85, unbounded), Limit strict (iterative quality step-down until $\le \text{limit}$ KB), Target best-effort (5-step binary search to get as close to target KB as possible without exceeding), and Pass-through / Unlimited (Lossless).
+  - Implemented automatic Quality Downgrade Badge (`📉 Quality reduced from X to Y to fit Z KB`) displayed on single result cards, batch rows, and grid cards.
+  - Implemented Lossless & Size Limit Conflict Warning System (`#lossless-conflict-banner`) with one-click resolution actions: `[ Switch to Lossy ]` and `[ Remove Size Limit ]`.
+  - Added Input Size Restriction enforcing rejection of files exceeding configurable threshold (default 50 MB) before processing.
+- **Slide-Over Settings Drawer with Dual-Tab Architecture**:
+  - Upgraded settings interface into a responsive right-side slide-over panel with two distinct tabs:
+    - **Essentials Tab**: Target format (WebP, AVIF, PNG, JPEG), Quality slider (1–100), Output Size Limit (Auto / Custom Limit in KB), Theme (Auto, Light, Dark), and Clean Metadata stripping toggle.
+    - **Advanced Tab**: Compression Target strategy (Limit strict vs Target best-effort), Input Size Restriction (MB), and Lossless Mode with override warnings.
+  - Offloaded compression loops to Web Worker (`public/worker.js`) with automatic canvas fallback.
+
 ## [2.9.0] - 2026-11-05
 
 ### Added
