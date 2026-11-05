@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f7f7f4" id="meta-theme-color" />
     <title>Zapwebp — Transparency-Safe Image Converter | WebP, AVIF, PNG, SVG</title>
     <meta
@@ -182,6 +182,13 @@
           </a>
         </div>
 
+        <!-- Adaptive Header Navigation (Adapts across Mobile, Tablet, Laptop, Desktop) -->
+        <nav class="header-nav adaptive-nav" aria-label="Quick Navigation">
+          <a href="https://zapwebp-docs.vercel.app" class="nav-link nav-link-docs">Docs</a>
+          <a href="https://zapwebp-docs.vercel.app/cli" class="nav-link nav-link-cli">CLI</a>
+          <a href="https://zapwebp-docs.vercel.app/mcp" class="nav-link nav-link-mcp">MCP</a>
+        </nav>
+
         <div class="header-right">
           <!-- Single Theme Toggle (Light / Dark) -->
           <button
@@ -296,7 +303,7 @@
           <input
             id="file-input"
             type="file"
-            accept=".svg,.png,.jpg,.jpeg,.webp,.avif,.gif,.tif,.tiff"
+            accept=".svg,.png,.jpg,.jpeg,.webp,.avif,.gif,.tif,.tiff,image/*"
             multiple
             hidden
           />
@@ -565,10 +572,12 @@
     <footer class="app-footer" role="contentinfo">
       <div class="app-footer-left">
         <span class="footer-bolt" aria-hidden="true">⚡</span>
-        <span>Zapwebp · Convert correctly.</span>
+        <span class="footer-brand-text">Zapwebp · Convert correctly.</span>
       </div>
       <div class="app-footer-right">
-        <button type="button" class="footer-lang-btn" id="footer-lang-btn" aria-label="Toggle language">🌐 EN</button>
+        <button type="button" class="footer-lang-btn" id="footer-lang-btn" aria-label="Toggle language">
+          <span class="lang-icon">🌐</span> <span class="lang-text" id="footer-lang-label">EN</span>
+        </button>
         <a href="https://zapwebp-docs.vercel.app" class="footer-docs-link" target="_blank" rel="noopener noreferrer">Docs ↗</a>
       </div>
     </footer>

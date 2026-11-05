@@ -2,6 +2,24 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.11.0] - 2026-11-05
+
+### Added
+
+- **Full Responsive & Device Optimization Architecture**:
+  - Implemented 6-class responsive layout system: Mobile (`< 640px`), Closed Foldables (`280px – 340px`), Open Foldables (`670px – 730px`), Tablets (`640px – 1024px`), Laptops (`1024px – 1440px`), and Desktops (`> 1440px`).
+  - Added fluid typography tokens (`--text-xs` to `--text-2xl` using `clamp()`) in `tokens.css`.
+  - Enforced strict touch target standard: $\ge 44 \times 44\text{px}$ across all interactive buttons, toggles, chips, and controls on touch devices (`@media (pointer: coarse)`).
+  - Enforced $16\text{px}$ font floor on inputs to prevent iOS Safari auto-zoom on mobile.
+  - Implemented fluid dropzone height (`min-height: calc(100dvh - var(--header-height) - var(--footer-height) - safe-area)`) when idle, collapsing into a compact action bar upon file ingestion.
+  - Added adaptive header navigation: hides secondary links on mobile/closed foldables, exposes Docs link on tablets, and surfaces full developer navigation (Docs, CLI, MCP) on laptops and desktops.
+  - Upgraded settings slide-over into a full-width bottom sheet (`sheetSlideUp` animation, $90\text{dvh}$ height, rounded top) on mobile viewports (`< 640px`), transitioning to variable-width drawers on tablet ($400\text{px}$), foldable ($360\text{px}$), and desktop ($480\text{px}$).
+  - Integrated dual-screen and foldable hinge avoidance using `@media (horizontal-viewport-segments: 2)` and `env(viewport-segment-...)`.
+  - Added native Web Share API (`navigator.share`) integration on single converted cards for one-tap mobile sharing.
+  - Added battery-aware optimization mode (`navigator.getBattery()`) disabling heavy animations and filters when battery level is $< 20\%$ and discharging.
+  - Integrated Progressive Web Application (PWA) offline application shell caching via `sw.js` and updated `site.webmanifest` (`orientation: "any"`).
+  - Added global desktop keyboard shortcuts `Cmd/Ctrl + ,` and `Cmd/Ctrl + K` to open the settings drawer, with `Escape` dismiss.
+
 ## [2.10.0] - 2026-11-05
 
 ### Added

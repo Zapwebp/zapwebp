@@ -21,10 +21,10 @@ Zapwebp's localization engine (`@zapwebp/shared`) delivers zero-dependency inter
 
 ### Supported Locales
 
-| Code | Language | Native Name | Status | Maintainer |
-|:---:|:---|:---|:---:|:---|
-| `en` | English | English | Source of Truth | Core Team |
-| `tl` | Tagalog | Filipino | Verified | Core Team |
+| Code | Language | Native Name |     Status      | Maintainer |
+| :--: | :------- | :---------- | :-------------: | :--------- |
+| `en` | English  | English     | Source of Truth | Core Team  |
+| `tl` | Tagalog  | Filipino    |    Verified     | Core Team  |
 
 ### Translation Rules
 
@@ -51,9 +51,9 @@ locales/
 
 ## Errors
 
-| Code | Cause | Fix |
-|---|---|---|
-| `E_UNSUPPORTED_LOCALE` | Requested locale is not supported in catalog | Choose a supported locale (e.g. `en`, `tl`) |
+| Code                      | Cause                                                 | Fix                                               |
+| ------------------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| `E_UNSUPPORTED_LOCALE`    | Requested locale is not supported in catalog          | Choose a supported locale (e.g. `en`, `tl`)       |
 | `missing_translation_key` | Key exists in base `en` catalog but missing in target | Add missing key and translation to target catalog |
 
 ## For agents

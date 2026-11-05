@@ -251,6 +251,8 @@ function loadSettings() {
   const savedView = localStorage.getItem('zapwebp:view');
   if (savedView && ['grid', 'list'].includes(savedView)) {
     settings.viewMode = savedView;
+  } else if (typeof window !== 'undefined' && window.innerWidth < 640) {
+    settings.viewMode = 'list';
   }
 
   const savedScales = localStorage.getItem('zapwebp_scales');
@@ -596,8 +598,17 @@ if (formatBadgeBtn) {
 window.addEventListener('keydown', (e) => {
   if (e.target.matches('input, textarea, select')) return;
   if (e.key === 'Escape') {
-    closeSettingsModal();
+    closeSettingsSlideover();
     closeConfirmDeleteModal();
+  }
+  if ((e.metaKey || e.ctrlKey) && (e.key === ',' || e.key.toLowerCase() === 'k')) {
+    e.preventDefault();
+    if (settingsSlideover && !settingsSlideover.hidden) {
+      closeSettingsSlideover();
+    } else {
+      openSettingsSlideover();
+    }
+    return;
   }
   const keyMap = { '1': 'webp', '2': 'avif', '3': 'png', '4': 'jpeg' };
   if (keyMap[e.key]) {
@@ -1487,6 +1498,12 @@ function renderResultsView() {
         ` : ''}
       </div>
       <div class="single-actions">
+        ${typeof navigator !== 'undefined' && navigator.share ? `
+          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            <span>Share</span>
+          </button>
+        ` : ''}
         <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           <span>Download</span>
@@ -1496,6 +1513,24 @@ function renderResultsView() {
         </button>
       </div>
     `;
+
+    singleCard.querySelector('.btn-single-share')?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        if (out.blob && navigator.canShare) {
+          const shareFile = new File([out.blob], out.name, { type: out.blob.type || 'image/webp' });
+          if (navigator.canShare({ files: [shareFile] })) {
+            await navigator.share({ files: [shareFile], title: out.name });
+            return;
+          }
+        }
+        await navigator.share({ title: out.name, url: out.url });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          downloadSingleOutput(out);
+        }
+      }
+    });
 
     singleCard.querySelector('.btn-single-download')?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -2502,5 +2537,43 @@ if (langSelect) {
     const chosen = langSelect.value;
     document.documentElement.lang = chosen;
     localStorage.setItem('zapwebp_lang', chosen);
+  });
+}
+
+// ==========================================================================
+// 12. Battery-Aware Optimization & Device Power Profiling
+// ==========================================================================
+if (typeof navigator !== 'undefined' && 'getBattery' in navigator) {
+  navigator.getBattery().then((battery) => {
+    function evaluateBatteryProfile() {
+      const isLowPower = battery.level < 0.20 && !battery.charging;
+      document.documentElement.classList.toggle('power-saver-mode', isLowPower);
+      window.ZAPWEBP_POWER_SAVER = isLowPower;
+    }
+    evaluateBatteryProfile();
+    battery.addEventListener('levelchange', evaluateBatteryProfile);
+    battery.addEventListener('chargingchange', evaluateBatteryProfile);
+  }).catch(() => {});
+}
+
+// ==========================================================================
+// 13. PWA Service Worker Registration (Offline Application Shell)
+// ==========================================================================
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then((reg) => {
+        reg.addEventListener('updatefound', () => {
+          const installingWorker = reg.installing;
+          if (installingWorker) {
+            installingWorker.addEventListener('statechange', () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New content available
+              }
+            });
+          }
+        });
+      })
+      .catch(() => {});
   });
 }
