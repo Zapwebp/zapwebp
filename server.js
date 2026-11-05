@@ -112,7 +112,7 @@ app.use('/content', express.static(contentDir));
 app.use('/locales', express.static(path.join(__dirname, 'locales')));
 app.use('/tokens.css', (_req, res) => {
   res.set('Content-Type', 'text/css');
-  res.sendFile(path.join(__dirname, 'zapwebp-docs', 'public', 'tokens.css'));
+  res.sendFile(path.join(__dirname, 'public', 'tokens.css'));
 });
 
 // Documentation shell routes (Kite SPA)

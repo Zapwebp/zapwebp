@@ -2,6 +2,30 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.9.0] - 2026-11-05
+
+### Added
+
+- **Full Enterprise SEO Suite Across Web Platform**:
+  - Embedded complete canonical link and multilingual `hreflang` alternates (`en`, `tl`, `x-default`).
+  - Added full OpenGraph dimensions (`og:image:width="1200"`, `og:image:height="630"`, `og:image:type="image/svg+xml"`, `og:locale="en_US"`, `og:locale:alternate="tl_PH"`).
+  - Integrated comprehensive Schema.org JSON-LD graph containing `WebApplication`, `Organization`, `WebSite` (with SearchAction), and `FAQPage` rich search snippets.
+  - Dynamic `<meta name="theme-color">` synchronization matching light (`#f7f7f4`) and dark (`#10120f`) themes.
+- **Web App Full Revamp: Single Dropzone & Auto-Detection**:
+  - Auto-detection without manual mode toggling: single file uploads render high-craft focused card (`single-result-card`), while batches of 2+ files render summary header (`X files converted · In → Out (-Z%)`), ZIP export, and Grid/List view toggle.
+  - Offloaded background conversion to dedicated Web Worker (`public/worker.js`) with bounded concurrency (2 threads, dropping to 1 on devices with $< 4\text{GB}$ RAM) and seamless Canvas/DOM fallback.
+  - Persistent queue via IndexedDB (`zapwebp-db`), restoring converted files across tab closes and refreshes.
+  - Keyboard shortcuts (`1` -> WebP, `2` -> AVIF, `3` -> PNG, `4` -> JPEG) and quick format badge toggle.
+  - Minimal Settings Modal (gear icon ⚙️) for default format, quality slider (1–100), theme (Auto/Light/Dark), and clean metadata stripping.
+  - Confirm Delete All modal preventing accidental loss of batch assets.
+
+### Fixed
+
+- **Duplicate Mode Toggle Button**:
+  - Eliminated redundant duplicate `<button id="theme-toggle-btn">` from the top header navigation.
+  - Enforced single accessible theme switcher toggling between Light and Dark mode with Sun/Moon SVGs.
+  - Connected `tokens.css` and added complete `[data-theme="dark"]` token overrides in `styles.css` ensuring full page background and text contrast updates immediately upon toggle.
+
 ## [2.8.0] - 2026-11-05
 
 ### Added

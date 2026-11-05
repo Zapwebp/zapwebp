@@ -73,40 +73,131 @@ const settings = {
   clean: true,
   lossless: false,
   background: '#ffffff',
+  viewMode: 'grid',
 };
 
 // ==========================================================================
-// 1. Theme Management (Dark / Light with Local Persistence)
+// 1. IndexedDB Persistence Layer (zapwebp-db)
 // ==========================================================================
+const DB_NAME = 'zapwebp-db';
+const DB_VERSION = 1;
+let dbPromise = null;
+
+function getDb() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve) => {
+    if (typeof indexedDB === 'undefined') return resolve(null);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('files')) {
+        db.createObjectStore('files', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('settings')) {
+        db.createObjectStore('settings', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+  return dbPromise;
+}
+
+async function dbSaveFile(record) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(record);
+  } catch {}
+}
+
+async function dbDeleteFile(id) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(id);
+  } catch {}
+}
+
+async function dbClearFiles() {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').clear();
+  } catch {}
+}
+
+async function dbGetAllFiles() {
+  try {
+    const db = await getDb();
+    if (!db) return [];
+    return new Promise((resolve) => {
+      const tx = db.transaction('files', 'readonly');
+      const req = tx.objectStore('files').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ==========================================================================
+// 2. Theme Management (Auto / Light / Dark with Meta Sync)
+// ==========================================================================
+const metaThemeColor = document.querySelector('#meta-theme-color');
+
+function applyTheme(theme) {
+  let effective = theme;
+  if (theme === 'auto') {
+    effective = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', effective);
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', effective === 'dark' ? '#10120f' : '#f7f7f4');
+  }
+}
+
 function initTheme() {
-  const savedTheme = localStorage.getItem('zapwebp_theme') || 
-    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', savedTheme);
+  const savedTheme = localStorage.getItem('zapwebp:theme') || localStorage.getItem('zapwebp_theme') || 'auto';
+  applyTheme(savedTheme);
+
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      const currentChoice = localStorage.getItem('zapwebp:theme') || 'auto';
+      if (currentChoice === 'auto') applyTheme('auto');
+    });
+  }
 
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('zapwebp:theme', next);
       localStorage.setItem('zapwebp_theme', next);
+      applyTheme(next);
+      syncSettingsModalUI();
     });
   }
 }
 initTheme();
 
 // ==========================================================================
-// 2. Settings Persistence (localStorage)
+// 3. Settings Persistence (localStorage)
 // ==========================================================================
 function loadSettings() {
   const routeFmt = getTargetFromRoute();
-  const savedFmt = localStorage.getItem('zapwebp_format');
+  const savedFmt = localStorage.getItem('zapwebp:format') || localStorage.getItem('zapwebp_format');
   if (savedFmt && ['webp', 'avif', 'png', 'jpeg'].includes(savedFmt)) {
     settings.format = savedFmt;
   } else if (routeFmt) {
     settings.format = routeFmt;
   }
 
-  const savedQuality = localStorage.getItem('zapwebp_quality');
+  const savedQuality = localStorage.getItem('zapwebp:quality') || localStorage.getItem('zapwebp_quality');
   if (savedQuality) {
     const q = parseInt(savedQuality, 10);
     if (!isNaN(q) && q >= 1 && q <= 100) settings.quality = q;
@@ -117,9 +208,14 @@ function loadSettings() {
     settings.lossless = savedLossless === 'true';
   }
 
-  const savedClean = localStorage.getItem('zapwebp_clean');
+  const savedClean = localStorage.getItem('zapwebp:clean') || localStorage.getItem('zapwebp_clean');
   if (savedClean !== null) {
     settings.clean = savedClean === 'true';
+  }
+
+  const savedView = localStorage.getItem('zapwebp:view');
+  if (savedView && ['grid', 'list'].includes(savedView)) {
+    settings.viewMode = savedView;
   }
 
   const savedScales = localStorage.getItem('zapwebp_scales');
@@ -141,10 +237,14 @@ function loadSettings() {
 
 function persistSettings() {
   try {
+    localStorage.setItem('zapwebp:format', settings.format);
     localStorage.setItem('zapwebp_format', settings.format);
+    localStorage.setItem('zapwebp:quality', String(settings.quality));
     localStorage.setItem('zapwebp_quality', String(settings.quality));
     localStorage.setItem('zapwebp_lossless', String(settings.lossless));
+    localStorage.setItem('zapwebp:clean', String(settings.clean));
     localStorage.setItem('zapwebp_clean', String(settings.clean));
+    localStorage.setItem('zapwebp:view', settings.viewMode);
     localStorage.setItem('zapwebp_scales', JSON.stringify(settings.scales));
     if (bgPicker?.value) {
       settings.background = bgPicker.value;
@@ -154,6 +254,183 @@ function persistSettings() {
 }
 
 loadSettings();
+
+// ==========================================================================
+// 4. Settings Modal & Confirm Delete Modal Controllers
+// ==========================================================================
+const settingsBtn = document.querySelector('#settings-btn');
+const settingsModal = document.querySelector('#settings-modal');
+const settingsModalClose = document.querySelector('#settings-modal-close');
+const settingQualityInput = document.querySelector('#setting-quality-input');
+const settingQualityVal = document.querySelector('#setting-quality-val');
+const settingCleanToggle = document.querySelector('#setting-clean-toggle');
+
+function openSettingsModal() {
+  syncSettingsModalUI();
+  if (settingsModal) settingsModal.hidden = false;
+}
+
+function closeSettingsModal() {
+  if (settingsModal) settingsModal.hidden = true;
+}
+
+function syncSettingsModalUI() {
+  const fmtRadios = document.querySelectorAll('input[name="setting-default-format"]');
+  fmtRadios.forEach((r) => { r.checked = (r.value === settings.format); });
+
+  if (settingQualityInput) settingQualityInput.value = settings.quality;
+  if (settingQualityVal) settingQualityVal.textContent = `${settings.quality}%`;
+
+  const themeChoice = localStorage.getItem('zapwebp:theme') || 'auto';
+  const themeRadios = document.querySelectorAll('input[name="setting-theme"]');
+  themeRadios.forEach((r) => { r.checked = (r.value === themeChoice); });
+
+  if (settingCleanToggle) settingCleanToggle.checked = settings.clean;
+}
+
+if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+if (settingsModalClose) settingsModalClose.addEventListener('click', closeSettingsModal);
+if (settingsModal) {
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettingsModal();
+  });
+}
+
+// Format radios in settings
+document.querySelectorAll('input[name="setting-default-format"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.format = radio.value;
+    persistSettings();
+    syncUiWithSettings();
+    reconvertAllItems();
+  });
+});
+
+// Quality slider in settings
+if (settingQualityInput) {
+  settingQualityInput.addEventListener('input', () => {
+    settings.quality = Number(settingQualityInput.value);
+    if (settingQualityVal) settingQualityVal.textContent = `${settings.quality}%`;
+    persistSettings();
+    clearTimeout(qualityDebounceTimer);
+    qualityDebounceTimer = setTimeout(() => {
+      syncUiWithSettings();
+      reconvertAllItems();
+    }, 200);
+  });
+}
+
+// Theme radios in settings
+document.querySelectorAll('input[name="setting-theme"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    localStorage.setItem('zapwebp:theme', radio.value);
+    applyTheme(radio.value);
+  });
+});
+
+// Clean toggle in settings
+if (settingCleanToggle) {
+  settingCleanToggle.addEventListener('change', () => {
+    settings.clean = settingCleanToggle.checked;
+    persistSettings();
+    syncUiWithSettings();
+    reconvertAllItems();
+  });
+}
+
+// Confirm Delete Modal
+const confirmDeleteModal = document.querySelector('#confirm-delete-modal');
+const confirmDeleteCancel = document.querySelector('#confirm-delete-cancel');
+const confirmDeleteConfirm = document.querySelector('#confirm-delete-confirm');
+
+function openConfirmDeleteModal() {
+  if (confirmDeleteModal) confirmDeleteModal.hidden = false;
+}
+
+function closeConfirmDeleteModal() {
+  if (confirmDeleteModal) confirmDeleteModal.hidden = true;
+}
+
+if (confirmDeleteCancel) confirmDeleteCancel.addEventListener('click', closeConfirmDeleteModal);
+if (confirmDeleteModal) {
+  confirmDeleteModal.addEventListener('click', (e) => {
+    if (e.target === confirmDeleteModal) closeConfirmDeleteModal();
+  });
+}
+if (confirmDeleteConfirm) {
+  confirmDeleteConfirm.addEventListener('click', () => {
+    closeConfirmDeleteModal();
+    clearAllItems();
+  });
+}
+
+// Reset workspace on brand logo click
+const brandResetBtn = document.querySelector('#brand-reset-btn');
+if (brandResetBtn) {
+  brandResetBtn.addEventListener('click', (e) => {
+    if (convertedItems.size > 0) {
+      e.preventDefault();
+      clearAllItems();
+    }
+  });
+}
+
+// Keyboard shortcuts 1–4 and Escape
+const FORMAT_CYCLE = ['webp', 'avif', 'png', 'jpeg'];
+const formatBadgeBtn = document.querySelector('#format-badge-btn');
+const formatBadgeLabel = document.querySelector('#format-badge-label');
+
+if (formatBadgeBtn) {
+  formatBadgeBtn.addEventListener('click', () => {
+    const nextIdx = (FORMAT_CYCLE.indexOf(settings.format) + 1) % FORMAT_CYCLE.length;
+    settings.format = FORMAT_CYCLE[nextIdx];
+    persistSettings();
+    syncUiWithSettings();
+    reconvertAllItems();
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.target.matches('input, textarea, select')) return;
+  if (e.key === 'Escape') {
+    closeSettingsModal();
+    closeConfirmDeleteModal();
+  }
+  const keyMap = { '1': 'webp', '2': 'avif', '3': 'png', '4': 'jpeg' };
+  if (keyMap[e.key]) {
+    e.preventDefault();
+    const newFormat = keyMap[e.key];
+    if (settings.format !== newFormat) {
+      settings.format = newFormat;
+      persistSettings();
+      syncUiWithSettings();
+      reconvertAllItems();
+    }
+  }
+});
+
+// View toggle (Grid / List)
+const viewGridBtn = document.querySelector('#view-grid-btn');
+const viewListBtn = document.querySelector('#view-list-btn');
+
+function setViewMode(mode) {
+  settings.viewMode = mode;
+  try {
+    localStorage.setItem('zapwebp:view', mode);
+  } catch {}
+  if (viewGridBtn) {
+    viewGridBtn.classList.toggle('is-active', mode === 'grid');
+    viewGridBtn.setAttribute('aria-pressed', String(mode === 'grid'));
+  }
+  if (viewListBtn) {
+    viewListBtn.classList.toggle('is-active', mode === 'list');
+    viewListBtn.setAttribute('aria-pressed', String(mode === 'list'));
+  }
+  renderResultsView();
+}
+
+if (viewGridBtn) viewGridBtn.addEventListener('click', () => setViewMode('grid'));
+if (viewListBtn) viewListBtn.addEventListener('click', () => setViewMode('list'));
 
 // Apply Target Lock configuration (hides format picker when locked)
 function applyTargetLockConfig() {
@@ -740,281 +1017,229 @@ async function downloadBatchZip() {
 }
 
 // ==========================================================================
-// 7. Results View Rendering with Non-Destructive Appends & Clear All
+// 7. Results View Rendering with Auto-Detection (Single vs Batch)
 // ==========================================================================
+const batchHeaderBar = document.querySelector('#batch-header-bar');
+const btnDownloadAll = document.querySelector('#btn-download-all');
+const btnDeleteAll = document.querySelector('#btn-delete-all');
+
+if (btnDownloadAll) {
+  btnDownloadAll.addEventListener('click', (e) => {
+    e.stopPropagation();
+    downloadBatchZip();
+  });
+}
+
+if (btnDeleteAll) {
+  btnDeleteAll.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openConfirmDeleteModal();
+  });
+}
+
+function downloadSingleOutput(out) {
+  if (!out?.url) return;
+  const a = document.createElement('a');
+  a.href = out.url;
+  a.download = out.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function renderResultsView() {
   if (!resultsContainer) return;
 
-  if (convertedItems.size === 0) {
+  const itemsList = Array.from(convertedItems.values());
+  const doneItems = itemsList.filter((item) => item.status === 'done');
+
+  // Case 1: Empty state -> Reset workspace to idle dropzone
+  if (itemsList.length === 0) {
     resultsContainer.hidden = true;
     resultsContainer.replaceChildren();
+    if (batchHeaderBar) batchHeaderBar.hidden = true;
     if (convertingState) convertingState.hidden = true;
     if (idleGlyph) idleGlyph.hidden = false;
     return;
   }
 
   if (idleGlyph) idleGlyph.hidden = true;
-  if (convertingState) convertingState.hidden = true;
   resultsContainer.hidden = false;
   resultsContainer.replaceChildren();
 
-  const itemsList = Array.from(convertedItems.values());
-  const doneItems = itemsList.filter((item) => item.status === 'done');
+  // Case 2: Exactly 1 file (Single-file layout)
+  if (itemsList.length === 1 && doneItems.length === 1) {
+    if (batchHeaderBar) batchHeaderBar.hidden = true;
+    const item = doneItems[0];
+    const out = item.outputs?.[0];
+    if (!out) return;
 
-  // Toolbar
-  const header = document.createElement('div');
-  header.className = 'results-header';
+    const savingsPct = item.originalSize > 0 
+      ? Math.round(((item.originalSize - out.size) / item.originalSize) * 100)
+      : 0;
 
-  let totalOutputBytes = 0;
-  for (const item of doneItems) {
-    for (const out of (item.outputs || [])) {
-      totalOutputBytes += out.size || 0;
+    const singleCard = document.createElement('div');
+    singleCard.className = 'single-result-card';
+    singleCard.innerHTML = `
+      <div class="single-thumb-wrap">
+        <img src="${out.url}" alt="${item.name}" />
+      </div>
+      <div class="single-meta-col">
+        <span class="single-title" title="${item.name}">${item.name}</span>
+        <div class="single-sizes">
+          <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
+          <span class="single-savings">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+        </div>
+      </div>
+      <div class="single-actions">
+        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download</span>
+        </button>
+        <button type="button" class="btn-single-delete" data-id="${item.id}" title="Delete file">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+    `;
+
+    singleCard.querySelector('.btn-single-download')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadSingleOutput(out);
+    });
+
+    singleCard.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeItem(item.id);
+    });
+
+    resultsContainer.appendChild(singleCard);
+    return;
+  }
+
+  // Case 3: More than 1 file (Batch layout)
+  if (batchHeaderBar) {
+    batchHeaderBar.hidden = false;
+    let totalIn = 0;
+    let totalOut = 0;
+    for (const it of doneItems) {
+      totalIn += it.originalSize || 0;
+      for (const o of (it.outputs || [])) {
+        totalOut += o.size || 0;
+      }
+    }
+    const batchSavings = totalIn > 0 ? Math.round(((totalIn - totalOut) / totalIn) * 100) : 0;
+    const batchCountEl = document.querySelector('#batch-count');
+    const batchBytesEl = document.querySelector('#batch-bytes');
+    if (batchCountEl) {
+      batchCountEl.textContent = `${doneItems.length} files converted`;
+    }
+    if (batchBytesEl) {
+      batchBytesEl.textContent = `· ${formatKb(totalIn)} → ${formatKb(totalOut)} (${batchSavings > 0 ? '−' : '+'}${Math.abs(batchSavings)}%)`;
+    }
+    const fmtBadgeLabel = document.querySelector('#format-badge-label');
+    if (fmtBadgeLabel) {
+      fmtBadgeLabel.textContent = settings.format.toUpperCase();
     }
   }
 
-  const summaryWrap = document.createElement('div');
-  summaryWrap.className = 'results-summary-text';
-  summaryWrap.innerHTML = `
-    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
-      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-    </svg>
-    <span><strong>${doneItems.length}</strong> file${doneItems.length === 1 ? '' : 's'} converted (${formatKb(totalOutputBytes)}) · 100% in-browser</span>
-  `;
+  const isList = settings.viewMode === 'list';
+  resultsContainer.className = `results-container ${isList ? 'view-list' : 'view-grid'}`;
 
-  const actionsGroup = document.createElement('div');
-  actionsGroup.className = 'results-actions-group';
-
-  // Add More Button
-  const addBtn = document.createElement('button');
-  addBtn.type = 'button';
-  addBtn.className = 'btn-header-action btn-add-more';
-  addBtn.innerHTML = `
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-      <line x1="10" y1="4" x2="10" y2="16"></line>
-      <line x1="4" y1="10" x2="16" y2="10"></line>
-    </svg>
-    <span>Add More</span>
-  `;
-  addBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-  });
-  actionsGroup.appendChild(addBtn);
-
-  // Download All (.ZIP) button
-  const totalOutputsCount = doneItems.reduce((acc, it) => acc + (it.outputs?.length || 0), 0);
-  if (totalOutputsCount > 1 && window.fflate?.zip) {
-    const zipBtn = document.createElement('button');
-    zipBtn.type = 'button';
-    zipBtn.className = 'btn-header-action btn-download-all';
-    zipBtn.innerHTML = `
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-        <path d="M4 4h12v12H4zM4 9h12M9 4v12"/>
-      </svg>
-      <span>Download All (.ZIP)</span>
-    `;
-    zipBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      try {
-        await downloadBatchZip();
-      } catch (err) {
-        showError(err.message);
-      }
-    });
-    actionsGroup.appendChild(zipBtn);
-  }
-
-  // Delete All Files (Clear All) Button
-  const clearBtn = document.createElement('button');
-  clearBtn.type = 'button';
-  clearBtn.className = 'btn-header-action btn-clear-all';
-  clearBtn.innerHTML = `
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-      <path d="M3 6h14M8 6V4h4v2m-7 4v6m6-6v6M5 6l1 11h8l1-11"/>
-    </svg>
-    <span>Delete All Files</span>
-  `;
-  clearBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    clearAllItems();
-  });
-  actionsGroup.appendChild(clearBtn);
-
-  header.append(summaryWrap, actionsGroup);
-  resultsContainer.appendChild(header);
-
-  // Result Cards
   for (const item of itemsList) {
-    const card = document.createElement('div');
-    card.className = 'result-card';
-    card.dataset.itemId = item.id;
-
     if (item.status === 'converting') {
-      card.innerHTML = `
+      const convCard = document.createElement('div');
+      convCard.className = 'result-card';
+      convCard.innerHTML = `
         <div class="converting-skeleton">
           <div class="skeleton-thumb"></div>
           <div class="skeleton-text">Converting...</div>
         </div>
       `;
-      resultsContainer.appendChild(card);
+      resultsContainer.appendChild(convCard);
       continue;
     }
 
     if (item.status === 'error') {
-      card.classList.add('is-error');
-      card.innerHTML = `
-        <button type="button" class="result-card-remove" title="Remove item" aria-label="Remove item">✕</button>
+      const errCard = document.createElement('div');
+      errCard.className = 'result-card is-error';
+      errCard.innerHTML = `
+        <button type="button" class="btn-single-delete" title="Remove" style="position:absolute;top:6px;right:6px;">✕</button>
         <div class="error-badge-icon">!</div>
         <span class="result-name" title="${item.name}">${item.name}</span>
         <span class="result-meta" style="color:var(--error);">${item.error || 'Failed'}</span>
       `;
-      card.querySelector('.result-card-remove').addEventListener('click', (e) => {
+      errCard.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeItem(item.id);
+      });
+      resultsContainer.appendChild(errCard);
+      continue;
+    }
+
+    const out = item.outputs?.[0];
+    if (!out) continue;
+
+    const savingsPct = item.originalSize > 0 
+      ? Math.round(((item.originalSize - out.size) / item.originalSize) * 100)
+      : 0;
+
+    if (isList) {
+      // List View Row
+      const row = document.createElement('div');
+      row.className = 'result-list-row';
+      row.innerHTML = `
+        <div class="list-row-left">
+          <img class="list-row-thumb" src="${out.url}" alt="${item.name}" />
+          <span class="list-row-name" title="${item.name}">${item.name}</span>
+        </div>
+        <div class="list-row-meta">
+          <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+          <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
+        </div>
+        <div class="list-row-actions">
+          <button type="button" class="btn-batch-action btn-batch-download" title="Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Download</span>
+          </button>
+          <button type="button" class="btn-single-delete" title="Delete file">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      `;
+      row.querySelector('.btn-batch-download')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadSingleOutput(out);
+      });
+      row.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeItem(item.id);
+      });
+      resultsContainer.appendChild(row);
+    } else {
+      // Grid View Card
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.dataset.itemId = item.id;
+
+      card.innerHTML = `
+        <img class="result-thumb" src="${out.url}" alt="${item.name}" loading="lazy" />
+        <div class="result-name" title="${item.name}">${item.name}</div>
+        <div class="result-meta">${formatKb(out.size)} <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span></div>
+        <div class="result-actions">
+          <button type="button" class="result-download-btn" title="Download file">⬇</button>
+          <button type="button" class="btn-single-delete" title="Delete file">🗑</button>
+        </div>
+      `;
+      card.querySelector('.result-download-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadSingleOutput(out);
+      });
+      card.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
         e.stopPropagation();
         removeItem(item.id);
       });
       resultsContainer.appendChild(card);
-      continue;
     }
-
-    const primaryOut = item.outputs?.[0];
-    if (!primaryOut) continue;
-
-    // Remove single item button
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'result-card-remove';
-    removeBtn.title = 'Remove file';
-    removeBtn.setAttribute('aria-label', `Remove ${item.name}`);
-    removeBtn.textContent = '✕';
-    removeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeItem(item.id);
-    });
-    card.appendChild(removeBtn);
-
-    // Alpha Indicator Dot
-    if (primaryOut.alphaPreserved) {
-      const alphaDot = document.createElement('span');
-      alphaDot.className = 'result-alpha-dot';
-      alphaDot.title = 'Alpha transparency preserved bit-for-bit';
-      card.appendChild(alphaDot);
-    }
-
-    // Thumbnail Preview Box (Clicking opens interactive preview)
-    const thumbBox = document.createElement('div');
-    thumbBox.className = 'result-thumb-box';
-    thumbBox.title = 'Click to open interactive preview';
-    thumbBox.innerHTML = `
-      <img class="result-thumb" src="${primaryOut.url}" alt="${primaryOut.name}" loading="lazy" />
-      <span class="result-thumb-hover-hint">Preview</span>
-    `;
-    thumbBox.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openPreviewModal(item);
-    });
-    card.appendChild(thumbBox);
-
-    // Title Row
-    const titleRow = document.createElement('div');
-    titleRow.className = 'result-title-row';
-    const nameEl = document.createElement('span');
-    nameEl.className = 'result-name';
-    nameEl.title = primaryOut.name;
-    nameEl.textContent = primaryOut.name;
-    titleRow.appendChild(nameEl);
-    card.appendChild(titleRow);
-
-    // Meta Row (Dimensions, output size, and reduction savings)
-    const metaRow = document.createElement('div');
-    metaRow.className = 'result-meta-row';
-
-    const dimText = document.createElement('span');
-    dimText.textContent = `${primaryOut.width}×${primaryOut.height}`;
-
-    const sizeText = document.createElement('span');
-    sizeText.textContent = formatKb(primaryOut.size);
-
-    metaRow.append(dimText, document.createTextNode('·'), sizeText);
-
-    if (item.originalSize && primaryOut.size < item.originalSize) {
-      const pct = Math.round(((item.originalSize - primaryOut.size) / item.originalSize) * 100);
-      if (pct > 0) {
-        const savingsPill = document.createElement('span');
-        savingsPill.className = 'result-savings-pill';
-        savingsPill.textContent = `-${pct}%`;
-        metaRow.appendChild(savingsPill);
-      }
-    }
-    card.appendChild(metaRow);
-
-    // Multi-scale chips if multiple scales are active
-    if (item.outputs.length > 1) {
-      const scalesWrap = document.createElement('div');
-      scalesWrap.className = 'result-scales-chips';
-      for (const out of item.outputs) {
-        const chip = document.createElement('a');
-        chip.className = 'result-scale-chip';
-        chip.href = out.url;
-        chip.download = out.name;
-        chip.textContent = `@${out.scale}x (${formatKb(out.size)})`;
-        chip.title = `Download @${out.scale}x (${out.width}×${out.height})`;
-        scalesWrap.appendChild(chip);
-      }
-      card.appendChild(scalesWrap);
-    }
-
-    // Actions Row (Preview + Download)
-    const actionsRow = document.createElement('div');
-    actionsRow.className = 'result-actions-row';
-
-    const previewBtn = document.createElement('button');
-    previewBtn.type = 'button';
-    previewBtn.className = 'result-preview-btn';
-    previewBtn.innerHTML = `
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
-        <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7z"/>
-        <circle cx="10" cy="10" r="3"/>
-      </svg>
-      <span>Preview</span>
-    `;
-    previewBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openPreviewModal(item);
-    });
-
-    const downloadBtn = document.createElement('a');
-    downloadBtn.className = 'result-download-btn';
-    downloadBtn.href = primaryOut.url;
-    downloadBtn.download = primaryOut.name;
-    downloadBtn.setAttribute('aria-label', `Download ${primaryOut.name}`);
-    downloadBtn.innerHTML = `
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10 4v10M5 9l5 5 5-5M4 16h12"/>
-      </svg>
-      <span>Download</span>
-    `;
-
-    const cropBtn = document.createElement('button');
-    cropBtn.type = 'button';
-    cropBtn.className = 'result-card-crop-btn';
-    cropBtn.title = 'Crop this image';
-    cropBtn.setAttribute('aria-label', `Crop ${primaryOut.name}`);
-    cropBtn.innerHTML = `
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
-        <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
-      </svg>
-      <span>Crop</span>
-    `;
-    cropBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openCropModal(item);
-    });
-
-    actionsRow.append(previewBtn, cropBtn, downloadBtn);
-    card.appendChild(actionsRow);
-
-    resultsContainer.appendChild(card);
   }
 
   // "+ Add More" Drop Card at the end of the results grid
@@ -1217,21 +1442,38 @@ if (errorClose && errorDialog) {
 }
 
 // ==========================================================================
-// 9. Non-Destructive File Ingestion (Appends to Queue)
+// 9. Non-Destructive File Ingestion (Appends to Queue with Progress & Worker)
 // ==========================================================================
+let cancelBatchRequested = false;
+const btnCancelBatch = document.querySelector('#btn-cancel-batch');
+if (btnCancelBatch) {
+  btnCancelBatch.addEventListener('click', () => {
+    cancelBatchRequested = true;
+  });
+}
+
 async function handleFiles(files) {
   if (!files?.length) return;
 
-  const validFiles = files.filter((f) => SUPPORTED_EXTENSIONS.has(getFileExtension(f.name)));
+  const validFiles = [];
+  for (const f of files) {
+    if (f.size > 20 * 1024 * 1024) {
+      showError(`"${f.name}" exceeds the 20 MB size limit.`);
+      continue;
+    }
+    if (SUPPORTED_EXTENSIONS.has(getFileExtension(f.name))) {
+      validFiles.push(f);
+    }
+  }
+
   if (!validFiles.length) {
     showError('None of the selected files match supported image formats (SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF).');
     return;
   }
 
-  // If first time, hide idle glyph and show skeleton in results
+  // If first time, hide idle glyph
   if (convertedItems.size === 0) {
     if (idleGlyph) idleGlyph.hidden = true;
-    if (convertingState) convertingState.hidden = true;
   }
 
   const target = settings.format;
@@ -1262,11 +1504,40 @@ async function handleFiles(files) {
     newItems.push(item);
   }
 
-  // Render view immediately with converting skeletons
+  // Render view immediately with skeletons
   renderResultsView();
 
+  // Progress Bar initialization
+  cancelBatchRequested = false;
+  const progressFill = document.querySelector('#progress-fill');
+  const progressPercent = document.querySelector('#progress-percent');
+  const progressFilename = document.querySelector('#progress-filename');
+
+  if (convertingState) convertingState.hidden = false;
+  if (progressFill) progressFill.style.width = '0%';
+  if (progressPercent) progressPercent.textContent = '0%';
+
   // 2. Convert each newly added file
-  for (const item of newItems) {
+  const total = newItems.length;
+  for (let idx = 0; idx < total; idx++) {
+    if (cancelBatchRequested) {
+      // Mark remaining unstarted items as canceled
+      for (let j = idx; j < total; j++) {
+        const remaining = newItems[j];
+        if (remaining.status === 'converting') {
+          convertedItems.delete(remaining.id);
+        }
+      }
+      break;
+    }
+
+    const item = newItems[idx];
+    const pct = Math.round(((idx + 1) / total) * 100);
+
+    if (progressFill) progressFill.style.width = `${pct}%`;
+    if (progressPercent) progressPercent.textContent = `${pct}%`;
+    if (progressFilename) progressFilename.textContent = `Converting ${idx + 1} of ${total}: ${item.name}`;
+
     try {
       const outputs = await convertImageFile(
         item.file,
@@ -1280,14 +1551,74 @@ async function handleFiles(files) {
       );
       item.outputs = outputs;
       item.status = 'done';
+
+      // Save to IndexedDB
+      if (outputs.length > 0) {
+        dbSaveFile({
+          id: item.id,
+          name: item.name,
+          format: target,
+          sizeIn: item.originalSize,
+          sizeOut: outputs[0].size,
+          originalBlob: item.file,
+          convertedBlob: outputs[0].blob,
+          alphaPreserved: outputs[0].alphaPreserved,
+          createdAt: Date.now()
+        });
+      }
     } catch (err) {
       item.status = 'error';
       item.error = err.message || 'Conversion failed';
     }
+
     // Update view as each file completes
     renderResultsView();
   }
+
+  if (convertingState) convertingState.hidden = true;
 }
+
+// Restore saved queue from IndexedDB on startup
+async function restoreSavedFiles() {
+  try {
+    const records = await dbGetAllFiles();
+    if (records && records.length) {
+      for (const rec of records) {
+        if (rec.originalBlob && rec.convertedBlob) {
+          const originalUrl = URL.createObjectURL(rec.originalBlob);
+          const convertedUrl = URL.createObjectURL(rec.convertedBlob);
+          const ext = rec.format === 'jpeg' ? 'jpg' : rec.format;
+          const baseName = rec.name.replace(/\.[^.]+$/, '');
+          const outName = `${baseName}.${ext}`;
+          const item = {
+            id: rec.id,
+            file: new File([rec.originalBlob], rec.name, { type: rec.originalBlob.type }),
+            name: rec.name,
+            originalSize: rec.sizeIn,
+            originalUrl,
+            status: 'done',
+            error: null,
+            outputs: [{
+              name: outName,
+              scale: 1,
+              size: rec.sizeOut,
+              originalSize: rec.sizeIn,
+              blob: rec.convertedBlob,
+              url: convertedUrl,
+              alphaPreserved: Boolean(rec.alphaPreserved),
+              format: rec.format,
+              baseName,
+              relativePath: outName
+            }]
+          };
+          convertedItems.set(rec.id, item);
+        }
+      }
+      renderResultsView();
+    }
+  } catch {}
+}
+restoreSavedFiles();
 
 // ==========================================================================
 // 10. Drag & Drop and File Picker Handlers

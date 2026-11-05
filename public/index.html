@@ -3,68 +3,163 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f7f4" />
-    <title>Zapwebp — Transparency-Safe Image Engine</title>
+    <meta name="theme-color" content="#f7f7f4" id="meta-theme-color" />
+    <title>Zapwebp — Transparency-Safe Image Converter | WebP, AVIF, PNG, SVG</title>
     <meta
       name="description"
-      content="Convert correctly. Transparency preserved, metadata stripped, output verified. Zero-footprint in-browser image engine, CLI, REST API, and AI agent integration."
+      content="Convert correctly with 100% privacy and zero server uploads. WebP, AVIF, PNG, JPEG, SVG, GIF with deterministic alpha preservation and metadata stripping."
     />
     <meta
       name="keywords"
-      content="image converter, webp, avif, png, svg to webp, lossless webp, clean metadata, strip exif, transparency safe, image compression, developer image tools, mcp agent"
+      content="image converter, webp converter, avif converter, png to webp, svg to webp, client-side converter, transparency safe, lossless webp, clean exif metadata, privacy first image tools"
     />
     <meta name="author" content="Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href="https://zapwebp.vercel.app/" />
+    <link rel="alternate" hreflang="en" href="https://zapwebp.vercel.app/" />
+    <link rel="alternate" hreflang="tl" href="https://zapwebp.vercel.app/?lang=tl" />
+    <link rel="alternate" hreflang="x-default" href="https://zapwebp.vercel.app/" />
+
+    <!-- Performance & Preconnect -->
+    <link rel="preconnect" href="https://zapwebp-docs.vercel.app" />
+    <link rel="dns-prefetch" href="https://zapwebp-docs.vercel.app" />
 
     <!-- Open Graph (Facebook / LinkedIn) -->
     <meta property="og:site_name" content="Zapwebp" />
-    <meta property="og:title" content="Zapwebp — Transparency-Safe Image Engine" />
+    <meta property="og:title" content="Zapwebp — Transparency-Safe Image Converter" />
     <meta
       property="og:description"
-      content="Convert correctly. Transparency preserved, metadata stripped, output verified. Same engine across the browser, terminal, build tools, and AI agents."
+      content="Drop. Convert. Done. Client-side, privacy-first image converter for WebP, AVIF, PNG, and SVG with deterministic transparency preservation."
     />
     <meta property="og:url" content="https://zapwebp.vercel.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://zapwebp.vercel.app/zapwebp.svg" />
-    <meta property="og:image:alt" content="Zapwebp Image Engine" />
+    <meta property="og:image:secure_url" content="https://zapwebp.vercel.app/zapwebp.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Zapwebp Transparency-Safe Image Converter" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="tl_PH" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@zapwebp" />
     <meta name="twitter:creator" content="@eldrex" />
-    <meta name="twitter:title" content="Zapwebp — Transparency-Safe Image Engine" />
+    <meta name="twitter:title" content="Zapwebp — Transparency-Safe Image Converter" />
     <meta
       name="twitter:description"
-      content="Convert correctly. Transparency preserved, metadata stripped, output verified."
+      content="Drop. Convert. Done. Instant client-side image conversion with zero server uploads."
     />
     <meta name="twitter:image" content="https://zapwebp.vercel.app/zapwebp.svg" />
+    <meta name="twitter:image:alt" content="Zapwebp Image Converter" />
 
     <link rel="icon" type="image/svg+xml" href="/zapwebp.svg" />
     <link rel="manifest" href="/site.webmanifest" />
-    <link rel="stylesheet" href="/styles.css?v=2.2.0" />
+    <link rel="stylesheet" href="/tokens.css" />
+    <link rel="stylesheet" href="/styles.css?v=2.4.0" />
+
+    <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Zapwebp",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Web, Linux, macOS, Windows, Android",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "Convert correctly. Transparency preserved, metadata stripped, output verified.",
-        "url": "https://zapwebp.vercel.app",
-        "softwareVersion": "2.1.0",
-        "license": "https://opensource.org/licenses/MIT",
-        "author": {
-          "@type": "Person",
-          "name": "Eldrex Delos Reyes Bula",
-          "email": "eldrexdelosreyesbula@gmail.com"
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "reviewCount": "128"
-        }
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://zapwebp.vercel.app/#webapp",
+            "name": "Zapwebp",
+            "url": "https://zapwebp.vercel.app",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "All modern browsers (Chrome, Edge, Firefox, Safari)",
+            "browserRequirements": "Requires JavaScript. Runs 100% locally in browser memory.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": "Universal transparency-safe image conversion engine running locally with zero server uploads.",
+            "featureList": [
+              "Deterministic alpha transparency preservation",
+              "100% in-browser client-side conversion (zero cloud storage)",
+              "Multi-format support: SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF",
+              "Clean Mode metadata stripping (EXIF, GPS, C2PA)",
+              "Responsive multipliers (@1x, @2x, @3x) and ZIP archives"
+            ],
+            "softwareVersion": "2.4.0",
+            "license": "https://opensource.org/licenses/MIT",
+            "author": {
+              "@type": "Person",
+              "name": "Eldrex Delos Reyes Bula",
+              "email": "eldrexdelosreyesbula@gmail.com"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "128"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://zapwebp.vercel.app/#organization",
+            "name": "Zapwebp",
+            "url": "https://zapwebp.vercel.app",
+            "logo": "https://zapwebp.vercel.app/zapwebp.svg",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "eldrexdelosreyesbula@gmail.com",
+              "contactType": "Maintainer Support"
+            },
+            "sameAs": [
+              "https://github.com/Zapwebp",
+              "https://www.npmjs.com/org/zapwebp"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://zapwebp.vercel.app/#website",
+            "name": "Zapwebp",
+            "url": "https://zapwebp.vercel.app",
+            "publisher": { "@id": "https://zapwebp.vercel.app/#organization" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://zapwebp.vercel.app/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Does Zapwebp upload my files to any server?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Zapwebp executes 100% locally in your browser memory using Web Workers and Canvas. Your images never leave your device."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does Zapwebp ensure transparency is preserved?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Zapwebp verifies alpha channels deterministically. Transparent inputs (SVG, PNG, WebP, AVIF, GIF) retain their transparency when converted to alpha-capable targets without accidental black or white background artifacts."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What image formats can Zapwebp convert?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Zapwebp converts between SVG, PNG, WebP, AVIF, JPEG, GIF, and TIFF, with options for quality, lossless compression, and Clean Mode metadata stripping."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is Zapwebp free and open source?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, Zapwebp is free and open-source under the MIT License."
+                }
+              }
+            ]
+          }
+        ]
       }
     </script>
   </head>
@@ -86,7 +181,7 @@
     <header class="site-header">
       <div class="header-inner">
         <div class="header-left">
-          <a class="brand-link" href="/" aria-label="Zapwebp home">
+          <a class="brand-link" href="/" id="brand-reset-btn" aria-label="Zapwebp home - Reset workspace">
             <img
               class="brand-logo"
               src="/assets/zapwebp.svg"
@@ -115,12 +210,13 @@
         </nav>
 
         <div class="header-right">
+          <!-- Single Theme Toggle (Light / Dark) -->
           <button
             type="button"
             class="theme-toggle-btn"
             id="theme-toggle-btn"
             aria-label="Toggle dark and light theme"
-            title="Toggle theme"
+            title="Toggle theme (Light / Dark)"
           >
             <svg
               class="theme-icon icon-sun"
@@ -154,26 +250,17 @@
             </svg>
           </button>
 
+          <!-- Settings Button -->
           <button
             type="button"
-            class="theme-toggle-btn"
-            id="theme-toggle-btn"
-            aria-label="Toggle dark and light theme"
-            title="Toggle theme"
+            class="settings-btn"
+            id="settings-btn"
+            aria-label="Open conversion settings"
+            title="Settings (Format, Quality, Clean Mode)"
           >
-            <svg class="theme-icon icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg class="theme-icon icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
 
@@ -271,31 +358,61 @@
               </div>
             </div>
 
-            <!-- Converting State -->
+            <!-- Converting Progress State -->
             <div
               class="converting-state"
               id="converting-state"
               hidden
               aria-live="polite"
             >
-              <div class="converting-spinner-wrap">
+              <div class="converting-progress-box">
                 <div class="progress-track" aria-hidden="true">
                   <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <div class="preview-thumbnail-box">
-                  <img
-                    class="current-thumbnail"
-                    id="current-thumbnail"
-                    alt="Image preview"
-                  />
+                <div class="progress-status-row">
+                  <div class="progress-left-info">
+                    <span class="progress-percent" id="progress-percent">0%</span>
+                    <span class="progress-filename" id="progress-filename">Converting...</span>
+                  </div>
+                  <button type="button" class="btn-cancel-batch" id="btn-cancel-batch" title="Cancel conversion">Cancel</button>
                 </div>
-                <div class="converting-text">Converting...</div>
               </div>
             </div>
 
-            <!-- Converted Results Grid -->
+            <!-- Batch Header & Controls Bar (Auto-revealed when 2+ files are present) -->
+            <div class="batch-header-bar" id="batch-header-bar" hidden>
+              <div class="batch-summary" id="batch-summary">
+                <span class="batch-count" id="batch-count">0 files converted</span>
+                <span class="batch-bytes" id="batch-bytes"></span>
+              </div>
+              <div class="batch-format-badge-wrap">
+                <button type="button" class="format-badge-btn" id="format-badge-btn" title="Click or press 1–4 to change target format">
+                  Format: <strong id="format-badge-label">WebP</strong> <span class="format-badge-hint">(press 1–4)</span>
+                </button>
+              </div>
+              <div class="batch-actions-cluster">
+                <button type="button" class="btn-batch-action btn-batch-download" id="btn-download-all" title="Download all converted files as a ZIP archive">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  <span>Download all (ZIP)</span>
+                </button>
+                <button type="button" class="btn-batch-action btn-batch-delete" id="btn-delete-all" title="Clear all converted files">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Delete all</span>
+                </button>
+                <div class="view-toggle" id="view-toggle" role="group" aria-label="Layout view mode">
+                  <button type="button" class="view-toggle-btn is-active" id="view-grid-btn" data-view="grid" title="Grid View" aria-pressed="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                  </button>
+                  <button type="button" class="view-toggle-btn" id="view-list-btn" data-view="list" title="List View" aria-pressed="false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Converted Results Area (Auto-switches between Single-File Layout and Batch Grid/List) -->
             <div
-              class="results-container"
+              class="results-container view-grid"
               id="results"
               hidden
               aria-live="polite"
@@ -1115,7 +1232,103 @@ curl -X POST https://zapwebp.vercel.app/api/v1/convert \
       </div>
     </dialog>
 
+    <!-- Minimal Settings Modal -->
+    <div class="settings-modal-backdrop" id="settings-modal" hidden>
+      <div class="settings-modal-panel" role="dialog" aria-labelledby="settings-modal-title" aria-modal="true">
+        <div class="settings-modal-header">
+          <h2 class="settings-modal-title" id="settings-modal-title">Settings</h2>
+          <button type="button" class="settings-modal-close" id="settings-modal-close" aria-label="Close settings">✕</button>
+        </div>
+        <div class="settings-modal-body">
+          <!-- Default Format -->
+          <div class="setting-group">
+            <span class="setting-group-label">Default Format</span>
+            <div class="setting-radios-row" id="setting-format-radios" role="radiogroup" aria-label="Default conversion format">
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-default-format" value="webp" checked />
+                <span class="setting-radio-chip">WebP</span>
+              </label>
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-default-format" value="avif" />
+                <span class="setting-radio-chip">AVIF</span>
+              </label>
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-default-format" value="png" />
+                <span class="setting-radio-chip">PNG</span>
+              </label>
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-default-format" value="jpeg" />
+                <span class="setting-radio-chip">JPEG</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Quality Slider -->
+          <div class="setting-group">
+            <div class="setting-slider-header">
+              <span class="setting-group-label">Quality</span>
+              <span class="setting-quality-val" id="setting-quality-val">85%</span>
+            </div>
+            <input
+              type="range"
+              id="setting-quality-input"
+              min="1"
+              max="100"
+              value="85"
+              class="setting-range-slider"
+              aria-label="Default conversion quality"
+            />
+          </div>
+
+          <!-- Theme -->
+          <div class="setting-group">
+            <span class="setting-group-label">Theme</span>
+            <div class="setting-radios-row" id="setting-theme-radios" role="radiogroup" aria-label="Interface theme">
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-theme" value="auto" checked />
+                <span class="setting-radio-chip">Auto</span>
+              </label>
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-theme" value="light" />
+                <span class="setting-radio-chip">Light</span>
+              </label>
+              <label class="setting-radio-item">
+                <input type="radio" name="setting-theme" value="dark" />
+                <span class="setting-radio-chip">Dark</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Clean Metadata -->
+          <div class="setting-group setting-row-toggle">
+            <div class="setting-meta-text">
+              <span class="setting-group-label">Clean Metadata</span>
+              <p class="setting-hint">Strips EXIF, GPS, and C2PA provenance</p>
+            </div>
+            <label class="setting-switch" title="Toggle Clean Mode metadata stripping">
+              <input type="checkbox" id="setting-clean-toggle" checked />
+              <span class="setting-switch-pill" aria-hidden="true">
+                <span class="setting-switch-thumb"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Delete All Modal -->
+    <div class="confirm-modal-backdrop" id="confirm-delete-modal" hidden>
+      <div class="confirm-modal-panel" role="alertdialog" aria-labelledby="confirm-delete-title" aria-describedby="confirm-delete-desc" aria-modal="true">
+        <h3 class="confirm-modal-title" id="confirm-delete-title">Delete all converted files?</h3>
+        <p class="confirm-modal-desc" id="confirm-delete-desc">This cannot be undone. All converted images will be removed from your browser storage.</p>
+        <div class="confirm-modal-actions">
+          <button type="button" class="btn-confirm-cancel" id="confirm-delete-cancel">Cancel</button>
+          <button type="button" class="btn-confirm-delete" id="confirm-delete-confirm">Delete All</button>
+        </div>
+      </div>
+    </div>
+
     <script src="/vendor/fflate.min.js"></script>
-    <script src="/app.js?v=2.2.0" defer></script>
+    <script src="/app.js?v=2.4.0" defer></script>
   </body>
 </html>
