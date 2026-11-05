@@ -2,6 +2,28 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.11.1] - 2026-11-05
+
+### Added
+
+- **Open-Source Icon Standard Across Web Platform**:
+  - Replaced legacy unicode emoji characters with clean, crisp, open-source Lucide/Feather outline SVG icons (`viewBox="0 0 24 24"`, 2px stroke width, rounded caps and joins) for Download, Preview/Inspect, Share, Delete/Trash, Grid View, List View, and Add More.
+  - Added dedicated Inspect & Preview action buttons (`.btn-single-preview`, `.result-preview-btn`, `.btn-row-preview`) directly on single-file cards, grid cards, and list rows, opening the split-view comparison modal on click.
+- **Dedicated Vercel Web Deployment Configuration**:
+  - Created `public/vercel.json` with clean static headers and security policies specifically for `Zapwebp/web` standalone deployments.
+  - Added Vercel Serverless Functions (`public/api/index.js`, `public/api/v1.js`, `public/api/health.js`) providing structured, informative JSON responses describing the client-side local-memory conversion architecture and linking to documentation, eliminating `Cannot GET /server.js` 404 errors.
+- **Dedicated Batch Add More Quick Action**:
+  - Added `#btn-batch-add` button directly inside the batch header bar allowing users to quickly queue additional images into active batches without resetting the workspace.
+
+### Fixed
+
+- **Dropzone Event Bubble & False Upload Trigger**:
+  - Fixed issue where clicking the Grid View or List View toggle buttons, batch action buttons, or card controls bubbled to `#dropzone` and accidentally triggered the system file picker.
+  - Enforced strict event propagation stopping (`e.stopPropagation()` and `e.preventDefault()`) across all view toggles and batch controls.
+  - Added state-aware guard in the dropzone click listener ensuring the file picker only opens when the dropzone is in an idle state.
+- **Dark Mode Transparency Checkerboard**:
+  - Replaced stark high-contrast white-and-black chessboard pattern with a subtle, muted dark-gray geometric grid in dark mode (`#121510` / `#1d211b`), preventing eye strain on transparent SVG and PNG previews.
+
 ## [2.11.0] - 2026-11-05
 
 ### Added

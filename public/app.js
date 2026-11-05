@@ -586,7 +586,9 @@ const formatBadgeBtn = document.querySelector('#format-badge-btn');
 const formatBadgeLabel = document.querySelector('#format-badge-label');
 
 if (formatBadgeBtn) {
-  formatBadgeBtn.addEventListener('click', () => {
+  formatBadgeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
     const nextIdx = (FORMAT_CYCLE.indexOf(settings.format) + 1) % FORMAT_CYCLE.length;
     settings.format = FORMAT_CYCLE[nextIdx];
     persistSettings();
@@ -643,8 +645,20 @@ function setViewMode(mode) {
   renderResultsView();
 }
 
-if (viewGridBtn) viewGridBtn.addEventListener('click', () => setViewMode('grid'));
-if (viewListBtn) viewListBtn.addEventListener('click', () => setViewMode('list'));
+if (viewGridBtn) {
+  viewGridBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setViewMode('grid');
+  });
+}
+if (viewListBtn) {
+  viewListBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setViewMode('list');
+  });
+}
 
 // Apply Target Lock configuration (hides format picker when locked)
 function applyTargetLockConfig() {
@@ -1421,12 +1435,28 @@ async function downloadBatchZip() {
 // 7. Results View Rendering with Auto-Detection (Single vs Batch)
 // ==========================================================================
 const batchHeaderBar = document.querySelector('#batch-header-bar');
+const btnBatchAdd = document.querySelector('#btn-batch-add');
 const btnDownloadAll = document.querySelector('#btn-download-all');
 const btnDeleteAll = document.querySelector('#btn-delete-all');
+
+if (batchHeaderBar) {
+  batchHeaderBar.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
+if (btnBatchAdd) {
+  btnBatchAdd.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    fileInput.click();
+  });
+}
 
 if (btnDownloadAll) {
   btnDownloadAll.addEventListener('click', (e) => {
     e.stopPropagation();
+    e.preventDefault();
     downloadBatchZip();
   });
 }
@@ -1434,6 +1464,7 @@ if (btnDownloadAll) {
 if (btnDeleteAll) {
   btnDeleteAll.addEventListener('click', (e) => {
     e.stopPropagation();
+    e.preventDefault();
     openConfirmDeleteModal();
   });
 }
@@ -1482,7 +1513,7 @@ function renderResultsView() {
     const singleCard = document.createElement('div');
     singleCard.className = 'single-result-card';
     singleCard.innerHTML = `
-      <div class="single-thumb-wrap">
+      <div class="single-thumb-wrap" title="Click to inspect & preview image">
         <img src="${out.url}" alt="${item.name}" />
       </div>
       <div class="single-meta-col">
@@ -1498,21 +1529,35 @@ function renderResultsView() {
         ` : ''}
       </div>
       <div class="single-actions">
+        <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Preview image" aria-label="Preview image">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Preview</span>
+        </button>
         ${typeof navigator !== 'undefined' && navigator.share ? `
-          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted file">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted file" aria-label="Share converted file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
             <span>Share</span>
           </button>
         ` : ''}
-        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file" aria-label="Download converted file">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           <span>Download</span>
         </button>
-        <button type="button" class="btn-single-delete" data-id="${item.id}" title="Delete file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <button type="button" class="btn-single-delete" data-id="${item.id}" title="Delete file" aria-label="Delete file">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
       </div>
     `;
+
+    singleCard.querySelector('.single-thumb-wrap')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPreviewModal(item);
+    });
+
+    singleCard.querySelector('.btn-single-preview')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPreviewModal(item);
+    });
 
     singleCard.querySelector('.btn-single-share')?.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -1618,13 +1663,13 @@ function renderResultsView() {
       const row = document.createElement('div');
       row.className = 'result-list-row';
       row.innerHTML = `
-        <div class="list-row-left">
+        <div class="list-row-left" title="Click to inspect & preview image">
           <img class="list-row-thumb" src="${out.url}" alt="${item.name}" />
           <span class="list-row-name" title="${item.name}">${item.name}</span>
         </div>
         <div class="list-row-meta">
           <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
-          <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
+          <span class="list-row-sizes">${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
           ${out.qualityReduced ? `
             <span class="result-downgrade-badge" title="Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB">
               📉 ${out.originalQuality} → ${out.finalQuality}
@@ -1632,15 +1677,27 @@ function renderResultsView() {
           ` : ''}
         </div>
         <div class="list-row-actions">
-          <button type="button" class="btn-batch-action btn-batch-download" title="Download">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <button type="button" class="btn-batch-action btn-row-preview" title="Inspect & Preview" aria-label="Preview image">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Preview</span>
+          </button>
+          <button type="button" class="btn-batch-action btn-batch-download" title="Download converted file" aria-label="Download file">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             <span>Download</span>
           </button>
-          <button type="button" class="btn-single-delete" title="Delete file">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <button type="button" class="btn-single-delete" title="Delete file" aria-label="Delete file">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </div>
       `;
+      row.querySelector('.list-row-left')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPreviewModal(item);
+      });
+      row.querySelector('.btn-row-preview')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPreviewModal(item);
+      });
       row.querySelector('.btn-batch-download')?.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadSingleOutput(out);
@@ -1657,26 +1714,46 @@ function renderResultsView() {
       card.dataset.itemId = item.id;
 
       card.innerHTML = `
-        <img class="result-thumb" src="${out.url}" alt="${item.name}" loading="lazy" />
-        <div class="result-name" title="${item.name}">${item.name}</div>
-        <div class="result-meta">
-          ${formatKb(out.size)} <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+        <div class="result-thumb-box" title="Click to inspect & preview image">
+          <img class="result-thumb" src="${out.url}" alt="${item.name}" loading="lazy" />
+        </div>
+        <div class="result-info-box">
+          <div class="result-name" title="${item.name}">${item.name}</div>
+          <div class="result-meta">
+            <span class="result-size-text">${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
+            <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+          </div>
           ${out.qualityReduced ? `
             <div class="result-downgrade-badge" title="Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB">
-              📉 ${out.originalQuality} → ${out.finalQuality} (${out.limitKb} KB)
+              📉 ${out.originalQuality} → ${out.finalQuality}
             </div>
           ` : ''}
         </div>
         <div class="result-actions">
-          <button type="button" class="result-download-btn" title="Download file">⬇</button>
-          <button type="button" class="btn-single-delete" title="Delete file">🗑</button>
+          <button type="button" class="result-action-btn result-preview-btn" title="Inspect & Preview" aria-label="Preview image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button type="button" class="result-action-btn result-download-btn" title="Download converted file" aria-label="Download file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button type="button" class="result-action-btn result-delete-btn" title="Remove file" aria-label="Remove file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
         </div>
       `;
+      card.querySelector('.result-thumb-box')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPreviewModal(item);
+      });
+      card.querySelector('.result-preview-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPreviewModal(item);
+      });
       card.querySelector('.result-download-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadSingleOutput(out);
       });
-      card.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+      card.querySelector('.result-delete-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         removeItem(item.id);
       });
@@ -2071,7 +2148,15 @@ restoreSavedFiles();
 // ==========================================================================
 if (dropzone) {
   dropzone.addEventListener('click', (e) => {
-    if (isConverting || (resultsContainer && !resultsContainer.hidden && e.target.closest('#results'))) return;
+    if (isConverting) return;
+    // Guard against clicks on any interactive button, link, badge, toggle, card, or controls
+    if (e.target.closest('button, a, input, select, label, .batch-header-bar, #batch-header-bar, #results, .results-container, .single-result-card, .result-card, .result-list-row, .add-more-card, .interactive-controls')) {
+      return;
+    }
+    // If results are visible or idle glyph is hidden, clicking empty space in dropzone should NOT open file picker
+    if (!idleGlyph || idleGlyph.hidden || (resultsContainer && !resultsContainer.hidden)) {
+      return;
+    }
     fileInput.click();
   });
 
