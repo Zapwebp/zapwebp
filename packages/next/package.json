@@ -1,6 +1,6 @@
 {
   "name": "zapwebp-next",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official first-party Next.js plugin for Zapwebp â€” SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers, and next/image compatibility.",
   "main": "src/index.js",
   "types": "src/index.d.ts",

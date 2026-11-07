@@ -1,6 +1,6 @@
 {
   "name": "@zapwebp/edge",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Edge runtime and fetch handler for transparency-safe target locked image conversion",
   "main": "src/index.js",
   "module": "src/index.js",

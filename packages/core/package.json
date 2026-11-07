@@ -1,6 +1,6 @@
 {
   "name": "@zapwebp/core",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Format-aware image conversion engine with transparency-safe outputs.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
