@@ -301,7 +301,7 @@ function transformCodeBlocks(container: HTMLElement) {
           btn.classList.remove('is-copied');
           if (textSpan) textSpan.textContent = t('code.copy');
         }, 1800);
-      });
+      }).catch(() => {});
     });
 
     pre.replaceWith(card);

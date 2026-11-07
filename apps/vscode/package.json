@@ -21,14 +21,6 @@
     "avif"
   ],
   "activationEvents": [
-    "onCommand:zapwebp.convert",
-    "onCommand:zapwebp.convertToPng",
-    "onCommand:zapwebp.convertToAvif",
-    "onCommand:zapwebp.convertToJpeg",
-    "onCommand:zapwebp.convertPrompt",
-    "onCommand:zapwebp.convertScales",
-    "onCommand:zapwebp.convertScalesPrompt",
-    "onCommand:zapwebp.showOutput",
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",

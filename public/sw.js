@@ -65,7 +65,7 @@ self.addEventListener('fetch', (event) => {
         const responseClone = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);
-        });
+        }).catch(() => {});
         return networkResponse;
       }).catch(() => {
         // Offline HTML navigation fallback
