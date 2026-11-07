@@ -2,8 +2,6 @@
 
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { Resvg } = require('@resvg/resvg-js');
-const sharp = require('sharp');
 const formats = require('./formats');
 const metadata = require('./metadata');
 const {
@@ -19,6 +17,37 @@ const {
   checkPolicyInput,
   evaluateQuality,
 } = require('./policy');
+
+let _sharpInstance = null;
+function getSharp() {
+  if (_sharpInstance) return _sharpInstance;
+  try {
+    _sharpInstance = require('sharp');
+    return _sharpInstance;
+  } catch (err) {
+    throw new ZapwebpError({
+      code: 'E_ENGINE_UNAVAILABLE',
+      message: 'Native raster engine (sharp) is not available in this environment: ' + (err && err.message ? err.message : String(err)),
+      fix: 'Install sharp via "npm install sharp" or ensure native prebuilts are compiled for this architecture.',
+    });
+  }
+}
+
+let _resvgInstance = null;
+function getResvg() {
+  if (_resvgInstance) return _resvgInstance;
+  try {
+    const mod = require('@resvg/resvg-js');
+    _resvgInstance = mod.Resvg || mod;
+    return _resvgInstance;
+  } catch (err) {
+    throw new ZapwebpError({
+      code: 'E_ENGINE_UNAVAILABLE',
+      message: 'Native vector engine (@resvg/resvg-js) is not available in this environment: ' + (err && err.message ? err.message : String(err)),
+      fix: 'Install @resvg/resvg-js or ensure native prebuilts are compiled for this architecture.',
+    });
+  }
+}
 
 const MAX_WIDTH = MAX_DIMENSION;
 const FIT_MODES = Object.freeze(['contain', 'cover', 'fill', 'inside', 'outside']);
@@ -60,6 +89,8 @@ function asBuffer(input) {
 function detectFormat(input) {
   const data = asBuffer(input);
   if (!data.length) throw new Error('The input file is empty.');
+  const registered = formats.detectFormatHandler(data);
+  if (registered) return registered.name;
   if (data.length >= 8 && data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
   if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) return 'jpeg';
   if (data.length >= 6 && (data.subarray(0, 6).toString('ascii') === 'GIF87a' || data.subarray(0, 6).toString('ascii') === 'GIF89a')) return 'gif';
@@ -277,7 +308,7 @@ function generateCleanCertificate(output) {
  */
 async function verifyAlpha(input) {
   const data = asBuffer(input);
-  const { data: raw, info } = await sharp(data, { limitInputPixels: MAX_PIXELS }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data: raw, info } = await getSharp()(data, { limitInputPixels: MAX_PIXELS }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const w = info.width;
   const h = info.height;
 
@@ -448,7 +479,7 @@ async function inspectImage(input) {
     if (width && height && (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0)) throw new Error('The SVG has invalid intrinsic dimensions.');
     return { format, width: width || undefined, height: height || undefined, hasAlpha: true, bytes: data.length, metadata };
   }
-  const meta = await sharp(data, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
+  const meta = await getSharp()(data, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
   checkDimensions(meta.width, meta.height);
   return { format, width: meta.width, height: meta.height, hasAlpha: Boolean(meta.hasAlpha), bytes: data.length, metadata };
 }
@@ -528,11 +559,12 @@ async function convertImage(input, options = {}) {
     checkDimensions(rasterWidth, rasterHeight);
     const resvgOptions = { background: opts.svgBackground ?? 'rgba(0, 0, 0, 0)' };
     resvgOptions.fitTo = { mode: renderMode, value: renderValue };
-    source = new Resvg(svg, resvgOptions).render().asPng();
-    const svgMeta = await sharp(source, { limitInputPixels: MAX_PIXELS }).metadata();
+    const ResvgClass = getResvg();
+    source = new ResvgClass(svg, resvgOptions).render().asPng();
+    const svgMeta = await getSharp()(source, { limitInputPixels: MAX_PIXELS }).metadata();
     sourceHasAlpha = Boolean(svgMeta.hasAlpha);
   } else {
-    const meta = await sharp(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
+    const meta = await getSharp()(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
     checkDimensions(meta.width, meta.height);
     sourceHasAlpha = Boolean(meta.hasAlpha);
   }
@@ -607,10 +639,11 @@ async function convertImage(input, options = {}) {
   if (opts.to === 'jpeg' && targetLossless) throw new Error('JPEG output does not support lossless encoding.');
 
   const createPipeline = () => {
+    const sharpInstance = getSharp();
     if (rawBufferInfo) {
-      return sharp(rawBufferInfo.buffer, { raw: rawBufferInfo.rawOptions });
+      return sharpInstance(rawBufferInfo.buffer, { raw: rawBufferInfo.rawOptions });
     }
-    return sharp(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' });
+    return sharpInstance(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' });
   };
 
   const encodeWithQuality = async (q, isLossless) => {
@@ -764,9 +797,10 @@ async function decodeToRgba(input, format) {
     const width = dims.width || 2048;
     const height = dims.height || 2048;
     checkDimensions(width, height);
-    source = new Resvg(svg, { fitTo: { mode: 'original' }, background: 'rgba(0, 0, 0, 0)' }).render().asPng();
+    const ResvgClass = getResvg();
+    source = new ResvgClass(svg, { fitTo: { mode: 'original' }, background: 'rgba(0, 0, 0, 0)' }).render().asPng();
   }
-  const pipeline = sharp(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).ensureAlpha();
+  const pipeline = getSharp()(source, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).ensureAlpha();
   const { data: raw, info } = await pipeline.raw().toBuffer({ resolveWithObject: true });
   checkDimensions(info.width, info.height);
   return {
@@ -812,7 +846,7 @@ async function encodeFromRgba(image, options = {}) {
     throw new Error('JPEG output does not support lossless encoding.');
   }
 
-  let pipeline = sharp(raw, {
+  let pipeline = getSharp()(raw, {
     raw: {
       width: image.width,
       height: image.height,
@@ -956,6 +990,8 @@ module.exports = {
   registerMetadataHandler: metadata.registerMetadataHandler,
   getMetadataHandlers: metadata.getMetadataHandlers,
   cleanBytes: metadata.cleanBytes,
+  getSharp,
+  getResvg,
   MAX_WIDTH,
   INPUT_FORMATS,
   OUTPUT_FORMATS,

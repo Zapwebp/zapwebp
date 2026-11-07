@@ -2,7 +2,7 @@
   "name": "zapwebp-vscode",
   "displayName": "Zapwebp",
   "description": "Convert images correctly in VS Code. Transparency preserved, metadata stripped, no uploads.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "ebula",
   "license": "MIT",
   "engines": {
@@ -20,7 +20,12 @@
     "png",
     "avif"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:zapwebp.convert",
+    "onCommand:zapwebp.convertScales",
+    "onCommand:zapwebp.showOutput",
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "icon": "icon.png",
   "scripts": {
@@ -50,13 +55,32 @@
       "explorer/context": [
         {
           "command": "zapwebp.convert",
-          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@1"
         },
         {
           "command": "zapwebp.convertScales",
-          "when": "resourceExtname == .svg || resourceExtname == .png",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .SVG || resourceExtname == .PNG",
           "group": "zapwebp@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "zapwebp.convert",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@1"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .SVG || resourceExtname == .PNG",
+          "group": "zapwebp@2"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "zapwebp.convert",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@1"
         }
       ]
     },

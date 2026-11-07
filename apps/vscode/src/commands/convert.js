@@ -13,7 +13,7 @@ const { statusBar } = require('../ui/status-bar');
  * @returns {vscode.Uri}
  */
 function siblingUri(uri, ext) {
-  const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
+  const normalizedExt = ext === 'jpeg' ? 'jpg' : ext.replace(/^\./, '');
   const parts = uri.path.split('/');
   const filename = parts.pop();
   const dotIndex = filename.lastIndexOf('.');
@@ -34,10 +34,18 @@ function registerConvertCommand(context) {
       targets = uris;
     } else if (uri) {
       targets = [uri];
-    } else {
+    } else if (vscode.window.activeTextEditor?.document?.uri) {
+      const activeUri = vscode.window.activeTextEditor.document.uri;
+      const ext = activeUri.path.split('.').pop()?.toLowerCase();
+      if (['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'tif', 'tiff'].includes(ext)) {
+        targets = [activeUri];
+      }
+    }
+
+    if (targets.length === 0) {
       const selected = await vscode.window.showOpenDialog({
         canSelectMany: true,
-        filters: { Images: ['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif'] },
+        filters: { Images: ['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'tif', 'tiff'] },
       });
       if (selected && selected.length > 0) {
         targets = selected;

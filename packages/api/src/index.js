@@ -68,6 +68,18 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     return targets;
   }
 
+  router.get('/', (_req, res) => res.json({
+    ok: true,
+    service: 'zapwebp',
+    version: '1.1.0',
+    endpoints: {
+      health: 'GET /api/v1/health',
+      convert: 'POST /api/v1/convert',
+      inspect: 'POST /api/v1/inspect',
+      batch: 'POST /api/v1/batch',
+    },
+    docs: 'https://zapwebp-docs.vercel.app',
+  }));
   router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
   router.post('/convert', upload.single('svg'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Attach an image in the `svg` form field.' });

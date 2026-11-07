@@ -1,7 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
-
 /** @type {import('./registry').FormatHandler} */
 const avifHandler = {
   name: 'avif',
@@ -22,6 +20,7 @@ const avifHandler = {
   },
 
   async decode(bytes) {
+    const sharp = require('sharp');
     const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false })
       .ensureAlpha()
       .raw()
@@ -35,6 +34,7 @@ const avifHandler = {
   },
 
   async encode(image, options = {}) {
+    const sharp = require('sharp');
     const raw = Buffer.isBuffer(image.data)
       ? image.data
       : Buffer.from(image.data.buffer, image.data.byteOffset, image.data.byteLength);

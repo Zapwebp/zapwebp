@@ -47,3 +47,4 @@ try {
     fs.rmSync(tmp, { recursive: true, force: true });
   } catch {}
 }
+

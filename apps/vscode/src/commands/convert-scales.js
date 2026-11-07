@@ -19,7 +19,15 @@ function registerConvertScalesCommand(context) {
       targets = uris;
     } else if (uri) {
       targets = [uri];
-    } else {
+    } else if (vscode.window.activeTextEditor?.document?.uri) {
+      const activeUri = vscode.window.activeTextEditor.document.uri;
+      const ext = activeUri.path.split('.').pop()?.toLowerCase();
+      if (['svg', 'png'].includes(ext)) {
+        targets = [activeUri];
+      }
+    }
+
+    if (targets.length === 0) {
       const selected = await vscode.window.showOpenDialog({
         canSelectMany: true,
         filters: { Images: ['svg', 'png'] },

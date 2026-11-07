@@ -1,8 +1,5 @@
 'use strict';
 
-const { Resvg } = require('@resvg/resvg-js');
-const sharp = require('sharp');
-
 /**
  * Validates an SVG input buffer or string.
  * @param {Buffer | Uint8Array | string} input
@@ -55,6 +52,8 @@ const svgHandler = {
   },
 
   async decode(bytes) {
+    const { Resvg } = require('@resvg/resvg-js');
+    const sharp = require('sharp');
     const svg = validateSvgString(bytes);
     const dims = getSvgDimensions(svg);
     const width = dims.width || 2048;

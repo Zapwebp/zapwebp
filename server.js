@@ -6,6 +6,14 @@ const { createApiRouter } = require('@zapwebp/api');
 const { DEFAULT_PORT, MAX_DIMENSION: MAX_ALLOWED_WIDTH } = require('@zapwebp/shared');
 
 const app = express();
+
+app.use((req, res, next) => {
+  if (req.url === '/server.js' || req.url.startsWith('/server.js?') || req.url.startsWith('/server.js/')) {
+    const original = req.headers['x-matched-path'] || req.headers['x-now-route-matches'] || req.headers['x-forwarded-uri'] || req.url.replace(/^\/server\.js/, '') || '/';
+    req.url = original;
+  }
+  next();
+});
 const MEBIBYTE = 1024 * 1024;
 const IS_VERCEL = process.env.VERCEL === '1';
 const DEFAULT_MAX_FILE_BYTES = IS_VERCEL ? 4 * MEBIBYTE : 5 * MEBIBYTE;

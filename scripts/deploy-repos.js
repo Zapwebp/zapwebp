@@ -35,10 +35,13 @@ function sleep(ms) {
   while (Date.now() < end) {}
 }
 
-function copyRecursive(src, dest) {
+function copyRecursive(src, dest, isVsCode = false) {
   const entries = fs.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'dist' || entry.name.endsWith('.vsix')) {
+    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name.endsWith('.vsix')) {
+      continue;
+    }
+    if (entry.name === 'dist' && !isVsCode) {
       continue;
     }
     const srcPath = path.join(src, entry.name);
@@ -46,7 +49,7 @@ function copyRecursive(src, dest) {
 
     if (entry.isDirectory()) {
       fs.mkdirSync(destPath, { recursive: true });
-      copyRecursive(srcPath, destPath);
+      copyRecursive(srcPath, destPath, isVsCode);
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
@@ -72,7 +75,7 @@ async function deployOne(item) {
     }
 
     // Copy all files from source directory
-    copyRecursive(item.dir, tmp);
+    copyRecursive(item.dir, tmp, item.dir === 'apps/vscode');
 
     // Ensure LICENSE
     if (!fs.existsSync(path.join(tmp, 'LICENSE'))) {
@@ -86,7 +89,10 @@ async function deployOne(item) {
 
     // Ensure .gitignore
     if (!fs.existsSync(path.join(tmp, '.gitignore'))) {
-      fs.writeFileSync(path.join(tmp, '.gitignore'), 'node_modules/\ndist/\n*.vsix\n.env\npnpm-debug.log\n');
+      const gitignore = item.dir === 'apps/vscode'
+        ? 'node_modules/\n*.vsix\n.env\npnpm-debug.log\n'
+        : 'node_modules/\ndist/\n*.vsix\n.env\npnpm-debug.log\n';
+      fs.writeFileSync(path.join(tmp, '.gitignore'), gitignore);
     }
 
     // Git add and status

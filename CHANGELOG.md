@@ -2,6 +2,28 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.12.0] - 2026-11-07
+
+### Added
+
+- **Resilient Multi-Tier VS Code Extension Architecture (`apps/vscode` v1.2.0)**:
+  - Implemented multi-tier conversion fallback: executes via in-process `@zapwebp/core` when native bindings are present, and seamlessly falls back to CLI execution (`zap`, `zapwebp`, or `npx zapwebp`) if running in environments lacking Electron-rebuilt native addons.
+  - Added full editor context menu integration (`editor/context` and `editor/title/context`) enabling right-click conversions directly from open editor tabs.
+  - Added complete format matrix support in VS Code Explorer and Editor menus: added `.gif`, `.tiff`, and `.tif` alongside SVG, PNG, JPEG, WebP, and AVIF with case-insensitive matching.
+  - Added `onStartupFinished` activation trigger to ensure convert-on-save watcher and status bar metrics initialize immediately upon opening a workspace.
+  - Added Command Palette active editor context support (`zapwebp.convert` and `zapwebp.convertScales`).
+  - Packaged clean, self-contained `zapwebp-vscode-1.2.0.vsix` excluding symlinked `node_modules` and workspace secrets.
+- **REST API Route & Vercel Serverless Path Normalization**:
+  - Added `GET /` route to `createApiRouter` in `@zapwebp/api` returning structured API metadata, available endpoints (`/health`, `/convert`, `/inspect`, `/batch`), and documentation links.
+  - Added Vercel rewrite URL normalization middleware in `server.js` preventing `Cannot GET /server.js` 404 errors when invoking `/api/v1` routes.
+
+### Fixed
+
+- **Core Native Engine Lazy Loading (`@zapwebp/core`)**:
+  - Replaced top-level static `require('sharp')` and `require('@resvg/resvg-js')` with lazy loader functions `getSharp()` and `getResvg()` across core index, all 7 format handlers, and metadata registry.
+  - Enabled `@zapwebp/core` to be imported cleanly in any Node or Electron environment without throwing `MODULE_NOT_FOUND` or ABI mismatch errors when native modules are absent.
+  - Updated `detectFormat()` in core to consult format registry handlers first, ensuring dynamic format plugins are sniffed accurately.
+
 ## [2.11.1] - 2026-11-05
 
 ### Added

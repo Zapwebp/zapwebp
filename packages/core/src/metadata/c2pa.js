@@ -1,7 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
-
 /** @type {import('./registry').MetadataHandler} */
 const c2paHandler = {
   name: 'c2pa',
@@ -19,6 +17,7 @@ const c2paHandler = {
   async strip(bytes) {
     const data = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
     try {
+      const sharp = require('sharp');
       const meta = await sharp(data).metadata();
       if (!meta.format) return data;
       return await sharp(data).toBuffer();

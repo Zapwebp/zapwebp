@@ -1,7 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
-
 /** @type {import('./registry').MetadataHandler} */
 const xmpHandler = {
   name: 'xmp',
@@ -32,6 +30,7 @@ const xmpHandler = {
       return Buffer.from(cleaned, 'utf8');
     }
     try {
+      const sharp = require('sharp');
       const meta = await sharp(data).metadata();
       if (!meta.format) return data;
       return await sharp(data).toBuffer();

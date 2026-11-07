@@ -1,7 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
-
 /** @type {import('./registry').MetadataHandler} */
 const pngTextHandler = {
   name: 'png-text',
@@ -21,6 +19,7 @@ const pngTextHandler = {
   async strip(bytes) {
     const data = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
     try {
+      const sharp = require('sharp');
       const meta = await sharp(data).metadata();
       if (!meta.format) return data;
       return await sharp(data).toBuffer();

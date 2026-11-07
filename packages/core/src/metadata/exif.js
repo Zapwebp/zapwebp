@@ -1,7 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
-
 /** @type {import('./registry').MetadataHandler} */
 const exifHandler = {
   name: 'exif',
@@ -33,6 +31,7 @@ const exifHandler = {
   async strip(bytes) {
     const data = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
     try {
+      const sharp = require('sharp');
       // Re-encode via sharp without metadata to strip EXIF
       const meta = await sharp(data).metadata();
       if (!meta.format) return data;

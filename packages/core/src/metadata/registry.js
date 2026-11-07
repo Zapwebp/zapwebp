@@ -1,6 +1,5 @@
 'use strict';
 
-const sharp = require('sharp');
 const { ZapwebpError } = require('@zapwebp/shared');
 
 /**
@@ -132,6 +131,7 @@ class MetadataRegistry {
     try {
       if (current.length >= 16) {
         // Check raster parseability
+        const sharp = require('sharp');
         await sharp(current, { failOn: 'none' }).metadata();
       }
     } catch {
