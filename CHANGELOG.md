@@ -2,6 +2,31 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.13.0] - 2026-11-07
+
+### Added
+
+- **Centralized Zero-Trust SSRF Defense Module (`@zapwebp/shared/security`)**:
+  - Implemented `isPrivateIp` and `validateSafeUrl` enforcing Rule 6.3 across all subsystems.
+  - Automatically blocks IPv4 loopback (`127.0.0.0/8`), private networks (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), cloud metadata services (`169.254.0.0/16`, `169.254.169.254`), CGNAT (`100.64.0.0/10`), IPv6 loopback (`::1`), link-local (`fe80::/10`), unique local (`fc00::/7`), and IPv4-mapped IPv6 ranges (`::ffff:...`).
+  - Integrated into `@zapwebp/mcp` (`fetchUrlImage`), `@zapwebp/sdk` (`resolveInput`), and `@zapwebp/edge` (`createZapHandler`).
+- **Self-Contained Standalone Runner in VS Code Extension (`apps/vscode`)**:
+  - Bundled `dist/zap.js` directly into the VS Code extension package via `esbuild`, providing a complete local runner inside `dist/`.
+  - Added `resolveNodeExecutable()` resolving the platform Node.js binary (`C:\Program Files\nodejs\node.exe`, standard paths) to safely execute the runner without command shell wrapping or Node CVE-2024-27980 restrictions.
+  - Repackaged `zapwebp-vscode-1.2.0.vsix` with zero external runner requirements, supporting SVG, PNG, WebP, AVIF, JPEG, GIF, and TIFF across any workspace folder.
+
+### Fixed
+
+- **Cyclic Workspace Dependencies (`@zapwebp/crop` & `@zapwebp/plugin-sdk`)**:
+  - Removed devDependency loop between `@zapwebp/crop` and `@zapwebp/plugin-sdk`, resolving all cyclic dependency warnings during pnpm package installation.
+- **REST API Multipart Field & Extension Flexibility (`@zapwebp/api`)**:
+  - Updated `/api/v1/convert` to accept image payloads across `file`, `image`, and `svg` form fields via `upload.fields`.
+  - Relaxed extension validation for generic binary blobs (`.bin`) when magic bytes correspond to a supported raster/vector format.
+- **SDK Remote API Mode Multipart Payload Alignment (`@zapwebp/sdk`)**:
+  - Fixed remote conversion payload generation to infer extension from magic bytes (`detectFormat`) and populate both `file` and `svg` fields, ensuring seamless compatibility with any Zapwebp API endpoint.
+- **Web App Modal i18n Translation Attributes (`public/index.html`)**:
+  - Re-attached localized `data-i18n` attributes across preview modal view tabs, metrics, and action buttons (`modal.tab_converted`, `modal.tab_original`, `modal.tab_side_by_side`, `modal.dimensions`, `modal.file_size`, `modal.reduction`, `modal.btn_crop`, `modal.btn_download`).
+
 ## [2.12.0] - 2026-11-07
 
 ### Added

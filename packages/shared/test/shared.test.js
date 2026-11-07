@@ -14,6 +14,8 @@ const {
   DEFAULT_PORT,
   MAX_DIMENSION,
   ERROR_CATALOG,
+  isPrivateIp,
+  validateSafeUrl,
 } = require('../src/index.js');
 
 test('Shared: exports canonical origin and format definitions', () => {
@@ -51,4 +53,33 @@ test('Shared: defaults and constants match expected boundaries', () => {
   assert.equal(DEFAULT_PORT, 3000);
   assert.equal(MAX_DIMENSION, 4096);
   assert.ok(ERROR_CATALOG.alpha_loss_forbidden);
+});
+
+test('Shared: isPrivateIp detects loopback, link-local, and private subnets', () => {
+  assert.equal(isPrivateIp('127.0.0.1'), true);
+  assert.equal(isPrivateIp('localhost'), true);
+  assert.equal(isPrivateIp('169.254.169.254'), true);
+  assert.equal(isPrivateIp('10.0.0.1'), true);
+  assert.equal(isPrivateIp('192.168.1.1'), true);
+  assert.equal(isPrivateIp('172.16.0.1'), true);
+  assert.equal(isPrivateIp('::1'), true);
+  assert.equal(isPrivateIp('fe80::1'), true);
+  assert.equal(isPrivateIp('fc00::1'), true);
+  assert.equal(isPrivateIp('example.com'), false);
+  assert.equal(isPrivateIp('8.8.8.8'), false);
+});
+
+test('Shared: validateSafeUrl permits safe public URLs and rejects private/unsupported URLs', () => {
+  const safe = validateSafeUrl('https://example.com/image.png');
+  assert.equal(safe.hostname, 'example.com');
+
+  assert.throws(() => validateSafeUrl('http://169.254.169.254/latest/meta-data'), {
+    code: 'E_UNSAFE_URL',
+  });
+  assert.throws(() => validateSafeUrl('http://localhost:3000/secret.png'), {
+    code: 'E_UNSAFE_URL',
+  });
+  assert.throws(() => validateSafeUrl('file:///etc/passwd'), {
+    code: 'E_UNSAFE_URL',
+  });
 });

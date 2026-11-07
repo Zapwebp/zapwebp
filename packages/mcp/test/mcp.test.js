@@ -225,6 +225,13 @@ test('MCP server initializes, lists tools, converts images and enforces root san
   const listTxRes = await client.send('tools/call', { name: 'list_transactions', arguments: { status: 'all' } });
   assert.ok(!listTxRes.result.isError);
 
+  // 11. convert_url tool rejects private subnet / loopback URLs with SSRF protection
+  const ssrfRes = await client.send('tools/call', {
+    name: 'convert_url',
+    arguments: { url: 'http://169.254.169.254/latest/meta-data', outputPath: 'metadata.webp' },
+  });
+  assert.equal(ssrfRes.result.isError, true);
+
   // Undo the last transaction (the batch_convert run)
   const undoRes = await client.send('tools/call', { name: 'undo_last', arguments: {} });
   assert.ok(!undoRes.result.isError);

@@ -19,6 +19,7 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
     "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*",
     "zapwebp": "workspace:*",
     "zod": "^4.0.0"
   },

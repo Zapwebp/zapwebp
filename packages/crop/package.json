@@ -16,9 +16,6 @@
   "dependencies": {
     "@zapwebp/shared": "workspace:*"
   },
-  "devDependencies": {
-    "@zapwebp/plugin-sdk": "workspace:*"
-  },
   "engines": {
     "node": ">=20"
   },

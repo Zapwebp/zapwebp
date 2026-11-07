@@ -1,7 +1,7 @@
 'use strict';
 
 const { convertImage, detectFormat } = require('@zapwebp/core');
-const { getMimeType, OUTPUT_FORMATS, ZapwebpError } = require('@zapwebp/shared');
+const { getMimeType, OUTPUT_FORMATS, ZapwebpError, validateSafeUrl } = require('@zapwebp/shared');
 
 /**
  * Creates an edge request handler for locked target format conversions.
@@ -51,6 +51,7 @@ function createZapHandler(config = {}) {
         const url = new URL(request.url);
         const subPath = url.pathname.replace(/^\/img\//, '').replace(/^\//, '');
         const sourceUrl = `${config.source.replace(/\/$/, '')}/${subPath}`;
+        validateSafeUrl(sourceUrl);
         const fetched = await fetch(sourceUrl);
         if (!fetched.ok) {
           return new Response(`Source image not found: ${fetched.status}`, { status: fetched.status });

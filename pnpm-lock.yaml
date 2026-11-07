@@ -101,10 +101,6 @@ importers:
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:../shared
-    devDependencies:
-      '@zapwebp/plugin-sdk':
-        specifier: workspace:*
-        version: link:../plugin-sdk
 
   packages/edge:
     dependencies:
@@ -152,6 +148,9 @@ importers:
       '@zapwebp/core':
         specifier: workspace:*
         version: link:../core
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
       zapwebp:
         specifier: workspace:*
         version: link:../cli
@@ -182,6 +181,9 @@ importers:
       '@zapwebp/core':
         specifier: workspace:*
         version: link:../core
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/shared: {}
 

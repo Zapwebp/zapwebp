@@ -13,6 +13,7 @@ const {
   ZAPWEBP_USER_AGENT,
 } = require('./constants');
 const { ERROR_CATALOG, ZapwebpError } = require('./errors');
+const { isPrivateIp, validateSafeUrl } = require('./security');
 const i18n = require('./i18n');
 
 const INPUT_FORMATS = Object.freeze(['svg', 'png', 'jpeg', 'webp', 'avif', 'gif', 'tiff']);
@@ -116,4 +117,6 @@ module.exports = {
   supportsAlpha,
   getMimeType,
   getCanonicalUrl,
+  isPrivateIp,
+  validateSafeUrl,
 };

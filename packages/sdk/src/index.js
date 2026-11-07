@@ -4,6 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const core = require('@zapwebp/core');
+const { validateSafeUrl } = require('@zapwebp/shared');
 
 const { convertImage, convert, inspectImage, detectFormat, outputName, INPUT_FORMATS, OUTPUT_FORMATS } = core;
 
@@ -21,6 +22,7 @@ async function resolveInput(input) {
   }
   if (typeof input === 'string') {
     if (/^https?:\/\//i.test(input)) {
+      validateSafeUrl(input);
       const res = await fetch(input);
       if (!res.ok) throw new Error(`Failed to fetch image from URL: ${input} (${res.status} ${res.statusText})`);
       const arrayBuf = await res.arrayBuffer();
@@ -75,8 +77,15 @@ class Zap {
     }
 
     // Remote API mode
+    let uploadName = 'input.png';
+    try {
+      const inputFmt = detectFormat(buffer);
+      uploadName = `input.${inputFmt === 'jpeg' ? 'jpg' : inputFmt}`;
+    } catch {}
+
     const formData = new FormData();
-    formData.append('svg', new Blob([buffer]), 'input.bin');
+    formData.append('file', new Blob([buffer]), uploadName);
+    formData.append('svg', new Blob([buffer]), uploadName);
     if (options.to) formData.append('to', options.to);
     if (options.width) formData.append('width', String(options.width));
     if (options.height) formData.append('height', String(options.height));

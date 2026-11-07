@@ -188,11 +188,35 @@ function sniffInputExtension(bytes) {
 }
 
 /**
+ * Resolves system Node.js binary path on Windows or POSIX.
+ * @returns {string}
+ */
+function resolveNodeExecutable() {
+  if (process.platform === 'win32') {
+    const candidates = [
+      'C:\\Program Files\\nodejs\\node.exe',
+      'C:\\Program Files (x86)\\nodejs\\node.exe',
+      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'nodejs', 'node.exe'),
+      path.join(process.env.APPDATA || '', 'npm', 'node.exe'),
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c)) {
+        return c;
+      }
+    }
+  }
+  return 'node';
+}
+
+/**
  * Searches open workspace folders and package directories for a local Zap CLI runner.
  * @returns {string|null} Absolute path to executable CLI script, or null.
  */
 function findLocalCli() {
   const candidates = [];
+
+  // Priority 1: Self-bundled zap runner inside the extension dist
+  candidates.push(path.join(__dirname, 'zap.js'));
 
   try {
     const vscode = require('vscode');
@@ -240,8 +264,9 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
     // Tier 1: Local workspace CLI via direct node execution (bypasses Windows .cmd spawn EINVAL)
     const localCli = findLocalCli();
     if (localCli) {
+      const nodeBin = resolveNodeExecutable();
       try {
-        execFile('node', [localCli, ...args], (err) => {
+        execFile(nodeBin, [localCli, ...args], (err) => {
           if (!err && fs.existsSync(outputPath)) {
             return resolve(outputPath);
           }

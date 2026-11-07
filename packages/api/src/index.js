@@ -81,16 +81,25 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     docs: 'https://zapwebp-docs.vercel.app',
   }));
   router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
-  router.post('/convert', upload.single('svg'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'Attach an image in the `svg` form field.' });
+  const convertUpload = upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+    { name: 'svg', maxCount: 1 },
+  ]);
+
+  router.post('/convert', convertUpload, async (req, res) => {
+    const file = req.files?.file?.[0] || req.files?.image?.[0] || req.files?.svg?.[0] || req.file;
+    if (!file) return res.status(400).json({ error: 'Attach an image in the `file`, `image`, or `svg` form field.' });
     try {
-      const inputFormat = detectFormat(req.file.buffer);
-      const extension = path.extname(req.file.originalname).toLowerCase();
+      const inputFormat = detectFormat(file.buffer);
+      const extension = path.extname(file.originalname).toLowerCase();
       const allowedExtensions = inputFormat === 'jpeg' ? ['.jpg', '.jpeg'] : inputFormat === 'tiff' ? ['.tif', '.tiff'] : [`.${inputFormat}`];
-      if (!allowedExtensions.includes(extension)) throw new Error('The file extension does not match its image data.');
-      const converted = await convertImage(req.file.buffer, parseOptions(req.body));
+      if (extension && extension !== '.bin' && !allowedExtensions.includes(extension)) {
+        throw new Error('The file extension does not match its image data.');
+      }
+      const converted = await convertImage(file.buffer, parseOptions(req.body));
       if (converted.size > maxResponseBytes) return res.status(413).json({ error: 'Converted output is too large for this host response limit. Reduce the width or use a smaller SVG.' });
-      const base = path.basename(req.file.originalname, path.extname(req.file.originalname)) || 'image';
+      const base = path.basename(file.originalname, path.extname(file.originalname)) || 'image';
       const filename = outputName(`${base}.input`, converted.format);
       res.set({
         'Content-Type': `image/${converted.format === 'jpeg' ? 'jpeg' : converted.format}`,

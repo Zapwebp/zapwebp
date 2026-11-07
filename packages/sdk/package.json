@@ -23,7 +23,8 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@zapwebp/core": "workspace:*"
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

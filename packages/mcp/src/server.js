@@ -6,6 +6,8 @@ import { randomUUID, createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import core from '@zapwebp/core';
+import shared from '@zapwebp/shared';
+const { validateSafeUrl } = shared;
 import {
   listTransactions,
   writeTransaction,
@@ -53,7 +55,7 @@ const ERROR_CATALOG = {
     title: 'JPEG Cannot Store Transparency',
     cause: 'The target format is JPEG, which lacks an alpha channel. Converting transparent images without an explicit background flattens transparent pixels into black boxes.',
     fix: "Pass an explicit background color (e.g. background: '#ffffff') or choose an alpha-capable target format ('webp', 'png', 'avif').",
-    docs: 'https://zapwebp.vercel.app/docs#black-background',
+    docs: 'https://zapwebp-docs.vercel.app/backgrounds',
     suggestedFix: { background: '#ffffff' },
   },
   outside_root: {
@@ -61,49 +63,49 @@ const ERROR_CATALOG = {
     title: 'Path Escapes Project Root Sandbox',
     cause: 'The requested input or output path traverses outside the MCP server workspace boundary.',
     fix: 'Ensure all paths are relative to or inside the project root directory.',
-    docs: 'https://zapwebp.vercel.app/docs#outside-root',
+    docs: 'https://zapwebp-docs.vercel.app/security',
   },
   unsafe_svg: {
     code: 'unsafe_svg',
     title: 'Unsafe SVG Content Rejected',
     cause: 'The SVG contains active scripts, inline event handlers (onload, onclick), external stylesheet imports, or XXE entity declarations.',
     fix: 'Sanitize the SVG to remove scripts and inline handlers, and embed external raster images as data URIs.',
-    docs: 'https://zapwebp.vercel.app/docs#svg-safety',
+    docs: 'https://zapwebp-docs.vercel.app/safety',
   },
   unsupported_format: {
     code: 'unsupported_format',
     title: 'Unsupported Image Format',
     cause: 'The image container or target format is not supported by the conversion engine.',
     fix: `Choose from supported input formats (${INPUT_FORMATS.join(', ')}) and output formats (${OUTPUT_FORMATS.join(', ')}).`,
-    docs: 'https://zapwebp.vercel.app/docs#formats',
+    docs: 'https://zapwebp-docs.vercel.app/formats',
   },
   too_large: {
     code: 'too_large',
     title: 'File Exceeds Size Cap',
     cause: `The input file exceeds the ${MAX_MCP_FILE_BYTES / (1024 * 1024)}MB maximum file limit.`,
     fix: 'Optimize or resize the source asset before processing.',
-    docs: 'https://zapwebp.vercel.app/docs#limits',
+    docs: 'https://zapwebp-docs.vercel.app/policy',
   },
   overwrite_conflict: {
     code: 'overwrite_conflict',
     title: 'Output Would Overwrite Input',
     cause: 'The destination file resolves to the same path as the source image without overwrite: true.',
     fix: 'Specify a different destination filename, target format, or outDir.',
-    docs: 'https://zapwebp.vercel.app/docs#overwrite',
+    docs: 'https://zapwebp-docs.vercel.app/cli',
   },
   not_found: {
     code: 'not_found',
     title: 'File Not Found',
     cause: 'The specified input path does not exist or is not a readable file.',
     fix: 'Verify the file path exists relative to the project root.',
-    docs: 'https://zapwebp.vercel.app/docs#not-found',
+    docs: 'https://zapwebp-docs.vercel.app/errors',
   },
   invalid_url: {
     code: 'invalid_url',
     title: 'Invalid Image URL',
-    cause: 'The URL is malformed, uses an unsupported protocol, or failed to return HTTP 200.',
-    fix: 'Ensure the URL starts with http:// or https:// and points directly to a valid image asset.',
-    docs: 'https://zapwebp.vercel.app/docs#invalid-url',
+    cause: 'The URL is malformed, uses an unsupported protocol, targets a private subnet, or failed to return HTTP 200.',
+    fix: 'Ensure the URL starts with http:// or https://, points to a public host, and returns a valid image.',
+    docs: 'https://zapwebp-docs.vercel.app/security',
   },
 };
 
@@ -243,15 +245,8 @@ function detectAiProvenance(metadata, inputBuffer) {
 }
 
 async function fetchUrlImage(urlStr, maxBytes = 10 * 1024 * 1024) {
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(urlStr);
-  } catch {
-    throw new Error(`Invalid URL: ${urlStr}`);
-  }
-  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-    throw new Error('Only HTTP and HTTPS URLs are supported.');
-  }
+  // Validate protocol and reject private/loopback/metadata subnets (SSRF defense)
+  validateSafeUrl(urlStr);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
