@@ -784,29 +784,254 @@
       </section>
     </main>
 
-    <!-- 3-Tap App Footer -->
+    <!-- Rich App Footer & Documentation Sitemap -->
     <footer class="app-footer" role="contentinfo">
-      <div class="app-footer-left">
-        <span class="footer-bolt" aria-hidden="true">⚡</span>
-        <span class="footer-brand-text">Zapwebp · Convert correctly.</span>
-      </div>
-      <div class="app-footer-right">
-        <button
-          type="button"
-          class="footer-lang-btn"
-          id="footer-lang-btn"
-          aria-label="Toggle language"
-        >
-          <span class="lang-icon">🌐</span>
-          <span class="lang-text" id="footer-lang-label">EN</span>
-        </button>
-        <a
-          href="https://zapwebp-docs.vercel.app"
-          class="footer-docs-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Docs ↗</a
-        >
+      <div class="footer-container">
+        <!-- Brand & Mission Header -->
+        <div class="footer-brand-section">
+          <div class="footer-brand-row">
+            <a href="/" class="footer-brand-link" title="Zapwebp Home">
+              <img
+                src="/zapwebp.svg"
+                class="footer-brand-logo"
+                width="30"
+                height="30"
+                alt="Zapwebp logo"
+              />
+              <span class="footer-brand-name">Zapwebp</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Documentation & Sitemap Directory -->
+        <nav class="footer-sitemap-grid" aria-label="Documentation Sitemap">
+          <div class="footer-col">
+            <h4 class="footer-col-title">Ecosystem & Tools</h4>
+            <ul class="footer-links-list">
+              <li>
+                <a href="/" class="footer-link">Web Converter (In-Browser)</a>
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/vscode"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >VS Code Extension</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/cli"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >CLI Tool (`zapwebp`)</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/mcp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >MCP Server (AI Agents)</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >REST API & Edge Runtime</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4 class="footer-col-title">Guides & Formats</h4>
+            <ul class="footer-links-list">
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/getting-started"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Getting Started</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/formats"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Supported Formats Matrix</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/transparency"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Transparency & Alpha Rules</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/clean-mode"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Clean Mode & EXIF Stripping</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/multipliers"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Multi-Scale Retina (@1x/@2x/@3x)</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4 class="footer-col-title">Developer SDKs</h4>
+            <ul class="footer-links-list">
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/sdk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >JavaScript/TypeScript SDK</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/vite"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Vite Plugin</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/next"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Next.js Plugin</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/storage"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Cloud Storage Adapters</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/github-action"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >GitHub Actions CI/CD</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4 class="footer-col-title">Open Platform</h4>
+            <ul class="footer-links-list">
+              <li>
+                <a
+                  href="https://zapwebp-docs.vercel.app/security"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Zero-Trust Security Model</a
+                >
+              </li>
+              <li>
+                <a
+                  href="/llms.txt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >Machine-Readable Spec (llms.txt)</a
+                >
+              </li>
+              <li>
+                <a
+                  href="/openapi.json"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >OpenAPI Specification</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/Zapwebp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >GitHub Organization</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/Zapwebp/zapwebp/blob/main/LICENSE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  >MIT License</a
+                >
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Footer Bottom Bar -->
+        <div class="footer-bottom-bar">
+          <div class="footer-bottom-left">
+            <span
+              >© 2026 Zapwebp. Maintained by
+              <strong>Eldrex Delos Reyes Bula</strong>. Republic of the
+              Philippines.</span
+            >
+          </div>
+          <div class="footer-bottom-right">
+            <button
+              type="button"
+              class="footer-lang-btn"
+              id="footer-lang-btn"
+              aria-label="Toggle language"
+            >
+              <span class="lang-icon">🌐</span>
+              <span class="lang-text" id="footer-lang-label">EN</span>
+            </button>
+            <a
+              href="https://zapwebp-docs.vercel.app"
+              class="footer-docs-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Full Docs Portal ↗</a
+            >
+          </div>
+        </div>
       </div>
     </footer>
 

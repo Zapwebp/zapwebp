@@ -24,7 +24,7 @@
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
-  "icon": "icon.png",
+  "icon": "zapwebp_logo.png",
   "scripts": {
     "build": "node ./build.js",
     "test": "node --test",

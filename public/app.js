@@ -1489,6 +1489,7 @@ function renderResultsView() {
   if (itemsList.length === 0) {
     resultsContainer.hidden = true;
     resultsContainer.replaceChildren();
+    resultsContainer.classList.remove('is-single-file');
     if (batchHeaderBar) batchHeaderBar.hidden = true;
     if (convertingState) convertingState.hidden = true;
     if (idleGlyph) idleGlyph.hidden = false;
@@ -1502,6 +1503,8 @@ function renderResultsView() {
   // Case 2: Exactly 1 file (Single-file layout)
   if (itemsList.length === 1 && doneItems.length === 1) {
     if (batchHeaderBar) batchHeaderBar.hidden = true;
+    resultsContainer.classList.add('is-single-file');
+    resultsContainer.classList.remove('view-grid', 'view-list');
     const item = doneItems[0];
     const out = item.outputs?.[0];
     if (!out) return;
@@ -1513,38 +1516,54 @@ function renderResultsView() {
     const singleCard = document.createElement('div');
     singleCard.className = 'single-result-card';
     singleCard.innerHTML = `
-      <div class="single-thumb-wrap" title="Click to inspect & preview image">
-        <img src="${out.url}" alt="${item.name}" />
-      </div>
-      <div class="single-meta-col">
-        <span class="single-title" title="${item.name}">${item.name}</span>
-        <div class="single-sizes">
-          <span>${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
-          <span class="single-savings">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
+      <div class="single-card-top">
+        <div class="single-status-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Converted</span>
         </div>
-        ${out.qualityReduced ? `
-          <div class="quality-downgrade-badge" title="Quality was automatically reduced to fit file size target">
-            📉 Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB.
-          </div>
-        ` : ''}
+        <div class="single-fmt-pill">${(item.originalFormat || 'SRC').toUpperCase()} → ${out.format.toUpperCase()}</div>
       </div>
-      <div class="single-actions">
-        <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Preview image" aria-label="Preview image">
+      <div class="single-card-main">
+        <div class="single-thumb-wrap" title="Click to inspect & compare image" role="button" tabindex="0">
+          <img src="${out.url}" alt="${item.name}" />
+          <div class="single-thumb-overlay" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+        </div>
+        <div class="single-details-col">
+          <div class="single-filename" title="${item.name}">${item.name}</div>
+          <div class="single-stats-row">
+            <span class="single-size-from">${formatKb(item.originalSize)}</span>
+            <svg class="single-arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <span class="single-size-to">${formatKb(out.size)}</span>
+            <span class="single-savings-badge ${savingsPct >= 0 ? 'is-saved' : 'is-grown'}">
+              ${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%
+            </span>
+          </div>
+          ${out.qualityReduced ? `
+            <div class="quality-downgrade-badge" title="Quality was automatically reduced to fit file size target">
+              📉 Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB.
+            </div>
+          ` : ''}
+        </div>
+      </div>
+      <div class="single-card-actions">
+        <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Compare in Split View" aria-label="Inspect & Compare">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>Preview</span>
+          <span>Inspect</span>
         </button>
         ${typeof navigator !== 'undefined' && navigator.share ? `
-          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted file" aria-label="Share converted file">
+          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted image" aria-label="Share">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
             <span>Share</span>
           </button>
         ` : ''}
-        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download converted file" aria-label="Download converted file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          <span>Download</span>
+        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download ${out.name}" aria-label="Download ${out.name}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download ${out.format.toUpperCase()}</span>
         </button>
         <button type="button" class="btn-single-delete" data-id="${item.id}" title="Delete file" aria-label="Delete file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </div>
     `;
@@ -1592,6 +1611,8 @@ function renderResultsView() {
   }
 
   // Case 3: More than 1 file (Batch layout)
+  resultsContainer.classList.remove('is-single-file');
+  resultsContainer.classList.add(currentViewMode === 'list' ? 'view-list' : 'view-grid');
   if (batchHeaderBar) {
     batchHeaderBar.hidden = false;
     let totalIn = 0;

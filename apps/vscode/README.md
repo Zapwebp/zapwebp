@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./icon.png" width="128" height="128" alt="Zapwebp VS Code logo" />
+  <img src="./zapwebp_logo.png" width="128" height="128" alt="Zapwebp VS Code logo" />
 </p>
 
 # Zapwebp for VS Code
