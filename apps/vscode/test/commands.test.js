@@ -88,3 +88,102 @@ test('commands.convertScales generates @1x, @2x, and @3x outputs', async () => {
   assert.ok(mock._virtualFs.get('/workspace/media/hero@2x.webp'), 'hero@2x.webp must exist');
   assert.ok(mock._virtualFs.get('/workspace/media/hero@3x.webp'), 'hero@3x.webp must exist');
 });
+
+test('commands.convertToPng converts SVG to PNG preserving alpha', async () => {
+  const mock = resetMock();
+  const context = { subscriptions: [] };
+  registerConvertCommand(context);
+
+  const pngHandler = mock._registeredCommands.get('zapwebp.convertToPng');
+  assert.ok(typeof pngHandler === 'function');
+
+  const sourcePath = '/workspace/src/icon.svg';
+  const outputPath = '/workspace/src/icon.png';
+  mock._virtualFs.set(sourcePath, Buffer.from(SVG_FIXTURE, 'utf8'));
+
+  await pngHandler(vscode.Uri.file(sourcePath));
+
+  const output = mock._virtualFs.get(outputPath);
+  assert.ok(output, 'PNG output must exist');
+  assert.equal(output.subarray(1, 4).toString('ascii'), 'PNG');
+});
+
+test('commands.convertToAvif converts SVG to AVIF', async () => {
+  const mock = resetMock();
+  const context = { subscriptions: [] };
+  registerConvertCommand(context);
+
+  const avifHandler = mock._registeredCommands.get('zapwebp.convertToAvif');
+  assert.ok(typeof avifHandler === 'function');
+
+  const sourcePath = '/workspace/src/graphic.svg';
+  const outputPath = '/workspace/src/graphic.avif';
+  mock._virtualFs.set(sourcePath, Buffer.from(SVG_FIXTURE, 'utf8'));
+
+  await avifHandler(vscode.Uri.file(sourcePath));
+
+  const output = mock._virtualFs.get(outputPath);
+  assert.ok(output, 'AVIF output must exist');
+});
+
+test('commands.convertToJpeg flattens SVG with specified background color', async () => {
+  const mock = resetMock();
+  const context = { subscriptions: [] };
+  registerConvertCommand(context);
+
+  const jpegHandler = mock._registeredCommands.get('zapwebp.convertToJpeg');
+  assert.ok(typeof jpegHandler === 'function');
+
+  mock._inputBoxHandler = () => '#ff0000';
+
+  const sourcePath = '/workspace/src/photo.svg';
+  const outputPath = '/workspace/src/photo.jpg';
+  mock._virtualFs.set(sourcePath, Buffer.from(SVG_FIXTURE, 'utf8'));
+
+  await jpegHandler(vscode.Uri.file(sourcePath));
+
+  const output = mock._virtualFs.get(outputPath);
+  assert.ok(output, 'JPEG output must exist');
+  assert.equal(output[0], 0xff);
+  assert.equal(output[1], 0xd8);
+});
+
+test('commands.convertPrompt allows interactive format selection', async () => {
+  const mock = resetMock();
+  const context = { subscriptions: [] };
+  registerConvertCommand(context);
+
+  const promptHandler = mock._registeredCommands.get('zapwebp.convertPrompt');
+  assert.ok(typeof promptHandler === 'function');
+
+  mock._quickPickHandler = (items) => items.find((i) => i.format === 'png');
+
+  const sourcePath = '/workspace/src/dialog.svg';
+  const outputPath = '/workspace/src/dialog.png';
+  mock._virtualFs.set(sourcePath, Buffer.from(SVG_FIXTURE, 'utf8'));
+
+  await promptHandler(vscode.Uri.file(sourcePath));
+
+  const output = mock._virtualFs.get(outputPath);
+  assert.ok(output, 'dialog.png must exist');
+});
+
+test('commands.convertScalesPrompt generates multi-scale assets for chosen format', async () => {
+  const mock = resetMock();
+  const context = { subscriptions: [] };
+  registerConvertScalesCommand(context);
+
+  const promptHandler = mock._registeredCommands.get('zapwebp.convertScalesPrompt');
+  assert.ok(typeof promptHandler === 'function');
+
+  mock._quickPickHandler = (items) => items.find((i) => i.format === 'png');
+
+  const sourcePath = '/workspace/src/banner.svg';
+  mock._virtualFs.set(sourcePath, Buffer.from(SVG_FIXTURE, 'utf8'));
+
+  await promptHandler(vscode.Uri.file(sourcePath));
+
+  assert.ok(mock._virtualFs.get('/workspace/src/banner.png'), 'banner.png must exist');
+  assert.ok(mock._virtualFs.get('/workspace/src/banner@2x.png'), 'banner@2x.png must exist');
+  assert.ok(mock._virtualFs.get('/workspace/src/banner@3x.png'), 'banner@3x.png must exist');
+});

@@ -7,6 +7,10 @@ This changelog records the changes included in each Zapwebp version.
 ### Added
 
 - **Resilient Multi-Tier VS Code Extension Architecture (`apps/vscode` v1.2.0)**:
+  - Added complete multi-format conversion commands: `Zap to PNG` (`zapwebp.convertToPng`), `Zap to AVIF` (`zapwebp.convertToAvif`), `Zap to JPEG` (`zapwebp.convertToJpeg`), and `Zap to Any Format...` (`zapwebp.convertPrompt`).
+  - Added dedicated `Zap Image To...` submenu in Explorer context menu, Editor context menu, and Editor tab title menu.
+  - Added interactive multi-scale format prompt (`zapwebp.convertScalesPrompt`) for generating retina scale variants in WebP, PNG, or AVIF.
+  - Added background flattening prompt on JPEG conversion (defaulting to `#ffffff`) to strictly prevent accidental black background artifacts on transparent inputs.
   - Implemented multi-tier conversion fallback: executes via in-process `@zapwebp/core` when native bindings are present, and seamlessly falls back to CLI execution (`zap`, `zapwebp`, or `npx zapwebp`) if running in environments lacking Electron-rebuilt native addons.
   - Added full editor context menu integration (`editor/context` and `editor/title/context`) enabling right-click conversions directly from open editor tabs.
   - Added complete format matrix support in VS Code Explorer and Editor menus: added `.gif`, `.tiff`, and `.tif` alongside SVG, PNG, JPEG, WebP, and AVIF with case-insensitive matching.

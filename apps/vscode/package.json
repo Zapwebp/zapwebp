@@ -22,7 +22,12 @@
   ],
   "activationEvents": [
     "onCommand:zapwebp.convert",
+    "onCommand:zapwebp.convertToPng",
+    "onCommand:zapwebp.convertToAvif",
+    "onCommand:zapwebp.convertToJpeg",
+    "onCommand:zapwebp.convertPrompt",
     "onCommand:zapwebp.convertScales",
+    "onCommand:zapwebp.convertScalesPrompt",
     "onCommand:zapwebp.showOutput",
     "onStartupFinished"
   ],
@@ -34,6 +39,12 @@
     "vscode:prepublish": "pnpm run build"
   },
   "contributes": {
+    "submenus": [
+      {
+        "id": "zapwebp.convertSubmenu",
+        "label": "Zap Image To..."
+      }
+    ],
     "commands": [
       {
         "command": "zapwebp.convert",
@@ -41,8 +52,33 @@
         "category": "Zapwebp"
       },
       {
+        "command": "zapwebp.convertToPng",
+        "title": "Zap to PNG",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.convertToAvif",
+        "title": "Zap to AVIF",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.convertToJpeg",
+        "title": "Zap to JPEG",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.convertPrompt",
+        "title": "Zap to Any Format...",
+        "category": "Zapwebp"
+      },
+      {
         "command": "zapwebp.convertScales",
         "title": "Zap to WebP (@1x, @2x, @3x)",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.convertScalesPrompt",
+        "title": "Zap Multi-Scale (@1x, @2x, @3x)...",
         "category": "Zapwebp"
       },
       {
@@ -59,9 +95,14 @@
           "group": "zapwebp@1"
         },
         {
-          "command": "zapwebp.convertScales",
-          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .SVG || resourceExtname == .PNG",
+          "submenu": "zapwebp.convertSubmenu",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@2"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@3"
         }
       ],
       "editor/context": [
@@ -71,9 +112,14 @@
           "group": "zapwebp@1"
         },
         {
-          "command": "zapwebp.convertScales",
-          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .SVG || resourceExtname == .PNG",
+          "submenu": "zapwebp.convertSubmenu",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@2"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@3"
         }
       ],
       "editor/title/context": [
@@ -81,6 +127,37 @@
           "command": "zapwebp.convert",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@1"
+        },
+        {
+          "submenu": "zapwebp.convertSubmenu",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@2"
+        }
+      ],
+      "zapwebp.convertSubmenu": [
+        {
+          "command": "zapwebp.convert",
+          "group": "1_formats@1"
+        },
+        {
+          "command": "zapwebp.convertToPng",
+          "group": "1_formats@2"
+        },
+        {
+          "command": "zapwebp.convertToAvif",
+          "group": "1_formats@3"
+        },
+        {
+          "command": "zapwebp.convertToJpeg",
+          "group": "1_formats@4"
+        },
+        {
+          "command": "zapwebp.convertPrompt",
+          "group": "2_actions@1"
+        },
+        {
+          "command": "zapwebp.convertScalesPrompt",
+          "group": "2_actions@2"
         }
       ]
     },

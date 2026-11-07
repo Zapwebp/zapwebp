@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2026-11-07
 
 ### Added
+- Complete multi-format conversion commands: `Zap to PNG` (`zapwebp.convertToPng`), `Zap to AVIF` (`zapwebp.convertToAvif`), `Zap to JPEG` (`zapwebp.convertToJpeg`), and `Zap to Any Format...` (`zapwebp.convertPrompt`).
+- Dedicated `Zap Image To...` submenu in Explorer context menu, Editor context menu, and Editor tab title menu.
+- Interactive multi-scale format prompt (`zapwebp.convertScalesPrompt`) for generating retina scale variants in WebP, PNG, or AVIF.
+- Background flattening prompt on JPEG conversion (defaulting to `#ffffff`) to strictly prevent accidental black background artifacts on transparent inputs.
 - Multi-tier execution engine: seamless in-process conversion with automated CLI / `npx zapwebp` fallback when native Electron binaries are unavailable.
 - Expanded editor context menus: right-click in editor tab or title bar to convert images.
 - Full format support: added `.gif`, `.tiff`, and `.tif` support across Explorer and Editor menus.

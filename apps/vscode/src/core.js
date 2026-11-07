@@ -96,12 +96,13 @@ function validateSvgSecurity(bytes) {
  */
 async function convertViaCli(inputPath, outputPath, options = {}) {
   return new Promise((resolve, reject) => {
-    const { to = 'webp', quality = 85, clean = true, width, height } = options;
+    const { to = 'webp', quality = 85, clean = true, width, height, background } = options;
     const args = [inputPath, '-o', outputPath, '--to', to, '--quality', String(quality)];
     if (clean) args.push('--clean');
     else args.push('--no-clean');
     if (width) args.push('--width', String(width));
     if (height) args.push('--height', String(height));
+    if (background) args.push('--background', String(background));
 
     const zapBin = process.platform === 'win32' ? 'zap.cmd' : 'zap';
     execFile(zapBin, args, (err) => {
@@ -126,12 +127,15 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
  * @param {number} [width=512] - Target pixel width.
  * @param {number} [quality=85] - Lossy quality level.
  * @param {boolean} [clean=true] - Whether to strip metadata.
+ * @param {string} [background] - Optional background color for flattening (required for JPEG).
  * @returns {Promise<Buffer>} - Converted image byte buffer.
  * @throws {ZapError}
  */
-async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, clean = true) {
+async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, clean = true, background = undefined) {
   await init();
   validateSvgSecurity(bytes);
+
+  const bg = format === 'jpeg' ? (background || '#ffffff') : background;
 
   const core = getCore();
   if (core && typeof core.convertImage === 'function') {
@@ -141,6 +145,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
         width,
         quality,
         clean,
+        background: bg,
         verify: true,
       });
       return result.data;
@@ -167,7 +172,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
 
   try {
     await fs.promises.writeFile(inPath, bytes);
-    await convertViaCli(inPath, outPath, { to: format, width, quality, clean });
+    await convertViaCli(inPath, outPath, { to: format, width, quality, clean, background: bg });
     return await fs.promises.readFile(outPath);
   } catch (err) {
     throw new ZapError('E_CONVERSION_FAILED', err.message || 'CLI conversion failed.');
@@ -184,9 +189,11 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
  * @param {number} [baseWidth=512] - Base width for @1x.
  * @param {number} [quality=85] - Lossy quality level.
  * @param {boolean} [clean=true] - Whether to strip metadata.
+ * @param {'webp'|'png'|'avif'|'jpeg'} [targetFormat='webp'] - Target format for scales.
+ * @param {string} [background] - Optional background color.
  * @returns {Promise<Array<{ scale: number, filename: string, data: Buffer }>>}
  */
-async function convertScalesBuffer(bytes, sourceName, baseWidth = 512, quality = 85, clean = true) {
+async function convertScalesBuffer(bytes, sourceName, baseWidth = 512, quality = 85, clean = true, targetFormat = 'webp', background = undefined) {
   await init();
   validateSvgSecurity(bytes);
   const scales = [1, 2, 3];
@@ -194,8 +201,8 @@ async function convertScalesBuffer(bytes, sourceName, baseWidth = 512, quality =
 
   for (const scale of scales) {
     const width = Math.round(baseWidth * scale);
-    const data = await convertBuffer(bytes, 'webp', width, quality, clean);
-    const filename = outputName(sourceName, 'webp', scale);
+    const data = await convertBuffer(bytes, targetFormat, width, quality, clean, background);
+    const filename = outputName(sourceName, targetFormat, scale);
     results.push({ scale, filename, data });
   }
 

@@ -75,6 +75,18 @@ const activeMock = {
       return Promise.resolve();
     },
     showOpenDialog: () => Promise.resolve([]),
+    showQuickPick: (items, options) => {
+      if (typeof activeMock._quickPickHandler === 'function') {
+        return Promise.resolve(activeMock._quickPickHandler(items, options));
+      }
+      return Promise.resolve(Array.isArray(items) ? items[0] : undefined);
+    },
+    showInputBox: (options) => {
+      if (typeof activeMock._inputBoxHandler === 'function') {
+        return Promise.resolve(activeMock._inputBoxHandler(options));
+      }
+      return Promise.resolve(options?.value ?? '#ffffff');
+    },
     withProgress: async (opts, task) => {
       return task({ report: () => {} });
     },
@@ -148,6 +160,8 @@ function resetMock(initialConfig = {}) {
   delete activeMock._hoverProvider;
   delete activeMock._watcher;
   delete activeMock._onSave;
+  delete activeMock._quickPickHandler;
+  delete activeMock._inputBoxHandler;
 
   for (const k of Object.keys(config)) {
     delete config[k];
