@@ -8,10 +8,32 @@ const { DEFAULT_PORT, MAX_DIMENSION: MAX_ALLOWED_WIDTH } = require('@zapwebp/sha
 const app = express();
 
 app.use((req, res, next) => {
-  if (req.url === '/server.js' || req.url.startsWith('/server.js?') || req.url.startsWith('/server.js/')) {
-    const original = req.headers['x-matched-path'] || req.headers['x-now-route-matches'] || req.headers['x-forwarded-uri'] || req.url.replace(/^\/server\.js/, '') || '/';
-    req.url = original;
+  // 1. Explicit query parameter passed by Vercel rewrite rules
+  const parsed = new URL(req.url, 'http://localhost');
+  const zapUrl = parsed.searchParams.get('__zap_url');
+  if (zapUrl) {
+    parsed.searchParams.delete('__zap_url');
+    const remaining = parsed.searchParams.toString();
+    req.url = zapUrl + (remaining ? `?${remaining}` : '');
+    return next();
   }
+
+  // 2. Check headers passed by proxies / Vercel (excluding literal /server.js)
+  const forwarded = req.headers['x-forwarded-uri'] || req.headers['x-original-url'] || req.headers['x-rewrite-url'];
+  if (forwarded && forwarded !== '/server.js') {
+    req.url = forwarded;
+    return next();
+  }
+
+  // 3. If req.url starts with /server.js, strip the script name
+  if (req.url === '/server.js') {
+    req.url = '/';
+  } else if (req.url.startsWith('/server.js/')) {
+    req.url = req.url.slice(10);
+  } else if (req.url.startsWith('/server.js?')) {
+    req.url = '/' + req.url.slice(10);
+  }
+
   next();
 });
 const MEBIBYTE = 1024 * 1024;
@@ -236,6 +258,10 @@ app.all('/mcp', async (req, res, next) => {
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'zapwebp', version: '1.1.0' });
+});
+
+app.get('/api', (_req, res) => {
+  res.redirect(301, '/api/v1');
 });
 
 app.use('/api/v1', createApiRouter({ maxFileBytes, maxBatchBytes, maxFiles: 20, maxWidth, maxResponseBytes }));

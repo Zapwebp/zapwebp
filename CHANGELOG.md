@@ -23,6 +23,13 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **VS Code Extension Windows `spawn EINVAL` & Workspace CLI Discovery (`apps/vscode`)**:
+  - Fixed `Error: spawn EINVAL` on Windows when invoking `zap.cmd` or `npx.cmd` from `child_process.execFile` by passing `{ shell: process.platform === 'win32' }` and prioritizing direct `execFile('node', [localCli, ...args])`.
+  - Added workspace and relative path discovery for `@zapwebp/core` and `packages/cli/bin/zap.js` in `getCore()` and `findLocalCli()`, enabling instant in-process or local node CLI conversion without relying on globally installed binaries or network calls.
+  - Added buffer magic byte format sniffing (`sniffInputExtension`) for temporary files during CLI fallback to ensure format-specific CLI handlers correctly identify the input format.
+- **Vercel Serverless Function Rewrite Normalization (`vercel.json` & `server.js`)**:
+  - Fixed `Cannot GET /server.js` 404 error when navigating to `zapwebp.vercel.app/api/v1` or `/health` by passing explicit `__zap_url` parameter in `vercel.json` rewrites and properly parsing it in `server.js` middleware before routing.
+  - Added automatic 301 redirect from `/api` to `/api/v1` for consistent API discovery.
 - **Core Native Engine Lazy Loading (`@zapwebp/core`)**:
   - Replaced top-level static `require('sharp')` and `require('@resvg/resvg-js')` with lazy loader functions `getSharp()` and `getResvg()` across core index, all 7 format handlers, and metadata registry.
   - Enabled `@zapwebp/core` to be imported cleanly in any Node or Electron environment without throwing `MODULE_NOT_FOUND` or ABI mismatch errors when native modules are absent.

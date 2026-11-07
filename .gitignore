@@ -9,3 +9,10 @@ dist/
 
 # Local-only EA architecture and governance docs (never pushed to GitHub)
 docs/
+
+# >>> zapwebp >>>
+# Converted image outputs — regenerate with `zap`
+public/img/
+# Reversible conversion journal — machine-local, do not commit
+.zapwebp/
+# <<< zapwebp <<<

@@ -11,11 +11,47 @@ let coreAttempted = false;
 function getCore() {
   if (coreAttempted) return coreModule;
   coreAttempted = true;
+
   try {
     coreModule = require('@zapwebp/core');
   } catch {
     coreModule = null;
   }
+
+  if (!coreModule) {
+    try {
+      const vscode = require('vscode');
+      if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+        for (const folder of vscode.workspace.workspaceFolders) {
+          const root = folder.uri.fsPath;
+          const pkgPath = path.join(root, 'packages/core');
+          if (fs.existsSync(pkgPath)) {
+            try {
+              coreModule = require(pkgPath);
+              if (coreModule) break;
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (!coreModule) {
+    const relCandidates = [
+      path.resolve(__dirname, '../../packages/core'),
+      path.resolve(__dirname, '../../../packages/core'),
+      path.resolve(__dirname, '../packages/core'),
+    ];
+    for (const rel of relCandidates) {
+      if (fs.existsSync(rel)) {
+        try {
+          coreModule = require(rel);
+          if (coreModule) break;
+        } catch {}
+      }
+    }
+  }
+
   return coreModule;
 }
 
@@ -88,7 +124,58 @@ function validateSvgSecurity(bytes) {
 }
 
 /**
- * CLI fallback runner for environments without native Node addons.
+ * Detects file extension from image buffer magic bytes or text.
+ * @param {Buffer|Uint8Array} bytes
+ * @returns {string}
+ */
+function sniffInputExtension(bytes) {
+  if (!bytes || bytes.length < 4) return 'png';
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'png';
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'jpg';
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'gif';
+  if ((bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
+      (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a)) return 'tiff';
+  if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'webp';
+  if (bytes.length >= 12 && bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) return 'avif';
+  const head = bytes.slice(0, 100).toString('utf8').trim();
+  if (head.startsWith('<svg') || head.startsWith('<?xml')) return 'svg';
+  return 'png';
+}
+
+/**
+ * Searches open workspace folders and package directories for a local Zap CLI runner.
+ * @returns {string|null} Absolute path to executable CLI script, or null.
+ */
+function findLocalCli() {
+  const candidates = [];
+
+  try {
+    const vscode = require('vscode');
+    if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+      for (const folder of vscode.workspace.workspaceFolders) {
+        const root = folder.uri.fsPath;
+        candidates.push(path.join(root, 'packages/cli/bin/zap.js'));
+        candidates.push(path.join(root, 'node_modules/@zapwebp/cli/bin/zap.js'));
+        candidates.push(path.join(root, 'node_modules/.bin/zap'));
+      }
+    }
+  } catch {}
+
+  candidates.push(path.resolve(__dirname, '../../packages/cli/bin/zap.js'));
+  candidates.push(path.resolve(__dirname, '../../../packages/cli/bin/zap.js'));
+  candidates.push(path.resolve(__dirname, '../packages/cli/bin/zap.js'));
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * CLI fallback runner with Windows spawn EINVAL prevention and local workspace CLI discovery.
  * @param {string} inputPath
  * @param {string} outputPath
  * @param {object} options
@@ -104,19 +191,39 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
     if (height) args.push('--height', String(height));
     if (background) args.push('--background', String(background));
 
-    const zapBin = process.platform === 'win32' ? 'zap.cmd' : 'zap';
-    execFile(zapBin, args, (err) => {
-      if (!err && fs.existsSync(outputPath)) {
-        return resolve(outputPath);
-      }
-      const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-      execFile(npxCmd, ['--yes', 'zapwebp', ...args], (npxErr) => {
-        if (!npxErr && fs.existsSync(outputPath)) {
+    const isWin = process.platform === 'win32';
+
+    // Tier 1: Local workspace CLI via direct node execution (bypasses Windows .cmd spawn EINVAL)
+    const localCli = findLocalCli();
+    if (localCli) {
+      execFile('node', [localCli, ...args], (err) => {
+        if (!err && fs.existsSync(outputPath)) {
           return resolve(outputPath);
         }
-        reject(new ZapError('E_CONVERSION_FAILED', (npxErr || err).message));
+        trySystemCli();
       });
-    });
+      return;
+    }
+
+    trySystemCli();
+
+    function trySystemCli() {
+      // Tier 2: System zap binary (shell: true on Windows prevents spawn EINVAL)
+      const zapBin = isWin ? 'zap.cmd' : 'zap';
+      execFile(zapBin, args, { shell: isWin }, (err) => {
+        if (!err && fs.existsSync(outputPath)) {
+          return resolve(outputPath);
+        }
+        // Tier 3: npx zapwebp runner (shell: true on Windows prevents spawn EINVAL)
+        const npxCmd = isWin ? 'npx.cmd' : 'npx';
+        execFile(npxCmd, ['--yes', 'zapwebp', ...args], { shell: isWin }, (npxErr) => {
+          if (!npxErr && fs.existsSync(outputPath)) {
+            return resolve(outputPath);
+          }
+          reject(new ZapError('E_CONVERSION_FAILED', (npxErr || err).message));
+        });
+      });
+    }
   });
 }
 
@@ -166,9 +273,10 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
   // CLI fallback via temporary file pair
   const tmpDir = os.tmpdir();
   const id = `zap_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const ext = format === 'jpeg' ? 'jpg' : format;
-  const inPath = path.join(tmpDir, `${id}.input`);
-  const outPath = path.join(tmpDir, `${id}.${ext}`);
+  const inExt = sniffInputExtension(bytes);
+  const outExt = format === 'jpeg' ? 'jpg' : format;
+  const inPath = path.join(tmpDir, `${id}.${inExt}`);
+  const outPath = path.join(tmpDir, `${id}.${outExt}`);
 
   try {
     await fs.promises.writeFile(inPath, bytes);

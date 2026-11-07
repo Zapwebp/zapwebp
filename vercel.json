@@ -6,12 +6,13 @@
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/server.js" },
-    { "source": "/health", "destination": "/server.js" },
-    { "source": "/feed.xml", "destination": "/server.js" },
-    { "source": "/(.*\\.md)", "destination": "/server.js" },
-    { "source": "/plugins/(.*\\.md)", "destination": "/server.js" },
-    { "source": "/sdk/(.*\\.md)", "destination": "/server.js" }
+    { "source": "/api", "destination": "/server.js?__zap_url=/api" },
+    { "source": "/api/(.*)", "destination": "/server.js?__zap_url=/api/$1" },
+    { "source": "/health", "destination": "/server.js?__zap_url=/health" },
+    { "source": "/feed.xml", "destination": "/server.js?__zap_url=/feed.xml" },
+    { "source": "/(.*\\.md)", "destination": "/server.js?__zap_url=/$1" },
+    { "source": "/plugins/(.*\\.md)", "destination": "/server.js?__zap_url=/plugins/$1" },
+    { "source": "/sdk/(.*\\.md)", "destination": "/server.js?__zap_url=/sdk/$1" }
   ],
   "headers": [
     {
