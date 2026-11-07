@@ -230,21 +230,35 @@
           <a
             href="https://zapwebp-docs.vercel.app"
             class="nav-link nav-link-docs"
+            data-i18n="nav.docs"
             >Docs</a
           >
           <a
             href="https://zapwebp-docs.vercel.app/cli"
             class="nav-link nav-link-cli"
+            data-i18n="nav.cli"
             >CLI</a
           >
           <a
             href="https://zapwebp-docs.vercel.app/mcp"
             class="nav-link nav-link-mcp"
+            data-i18n="nav.mcp"
             >MCP</a
           >
         </nav>
 
         <div class="header-right">
+          <!-- Language Toggle Button (Header) -->
+          <button
+            type="button"
+            class="header-lang-btn"
+            id="header-lang-btn"
+            aria-label="Toggle language"
+            title="Switch language (EN / TL)"
+          >
+            🌐 EN
+          </button>
+
           <!-- Single Theme Toggle (Light / Dark) -->
           <button
             type="button"
@@ -340,11 +354,11 @@
       <section class="hero-section tool-workspace">
         <div class="hero-header-wrap tool-header-wrap">
           <br />
-          <h1 class="hero-headline tool-headline">
+          <h1 class="hero-headline tool-headline" data-i18n="hero.title">
             Convert<span class="accent-gradient"> correctly.</span>
           </h1>
 
-          <p class="hero-description tool-description">
+          <p class="hero-description tool-description" data-i18n="hero.description">
             Transparency preserved. Metadata stripped. Zero server uploads.
           </p>
         </div>
@@ -420,12 +434,12 @@
                 </svg>
               </div>
 
-              <div class="drop-title">
+              <div class="drop-title" data-i18n="dropzone.title">
                 <span class="highlight-action">Drop images here</span> or
                 <span class="browse-link">browse files</span>
               </div>
 
-              <p class="drop-subtitle">
+              <p class="drop-subtitle" data-i18n="dropzone.subtitle">
                 Select single files, batches, or folders.
               </p>
 
@@ -511,7 +525,7 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  <span>Add more</span>
+                  <span data-i18n="batch.add_more">Add more</span>
                 </button>
                 <button
                   type="button"
@@ -533,7 +547,7 @@
                       d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
                     />
                   </svg>
-                  <span>Download all (ZIP)</span>
+                  <span data-i18n="batch.download_all">Download all (ZIP)</span>
                 </button>
                 <button
                   type="button"
@@ -556,7 +570,7 @@
                       d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
                     ></path>
                   </svg>
-                  <span>Delete all</span>
+                  <span data-i18n="batch.delete_all">Delete all</span>
                 </button>
                 <div
                   class="view-toggle"
@@ -633,7 +647,7 @@
           <div class="cockpit-bar">
             <!-- Target Format Control -->
             <div class="bar-control-item">
-              <span class="bar-control-label">Format</span>
+              <span class="bar-control-label" data-i18n="cockpit.format">Format</span>
               <div
                 class="format-pills"
                 id="format-pills"
@@ -681,7 +695,7 @@
 
             <!-- Background Flatten Color (Visible when JPEG target is selected) -->
             <div class="bar-control-item bar-bg-item" id="bar-bg-item" hidden>
-              <span class="bar-control-label">Background</span>
+              <span class="bar-control-label" data-i18n="cockpit.background">Background</span>
               <div class="bg-picker-wrap">
                 <input
                   type="color"
@@ -697,7 +711,7 @@
 
             <!-- Scale Multipliers -->
             <div class="bar-control-item">
-              <span class="bar-control-label">Scales</span>
+              <span class="bar-control-label" data-i18n="cockpit.scales">Scales</span>
               <div
                 class="scale-toggles"
                 id="scale-toggles"
@@ -734,7 +748,7 @@
             <!-- Quality Slider -->
             <div class="bar-control-item bar-slider-item">
               <div class="slider-label-row">
-                <span class="bar-control-label">Quality</span>
+                <span class="bar-control-label" data-i18n="cockpit.quality">Quality</span>
                 <span class="quality-display" id="quality-display">85%</span>
               </div>
               <input
@@ -750,7 +764,7 @@
 
             <!-- Dual Modes (Lossless & Clean Mode Toggles) -->
             <div class="bar-control-item bar-modes-item">
-              <span class="bar-control-label">Modes</span>
+              <span class="bar-control-label" data-i18n="cockpit.modes">Modes</span>
               <div class="toggles-cluster">
                 <!-- Lossless Switch Toggle -->
                 <label
@@ -762,7 +776,7 @@
                   <span class="switch-pill" aria-hidden="true">
                     <span class="switch-pill-thumb"></span>
                   </span>
-                  <span class="switch-title">Lossless</span>
+                  <span class="switch-title" data-i18n="cockpit.lossless">Lossless</span>
                 </label>
 
                 <!-- Clean Mode Switch Toggle -->
@@ -775,7 +789,7 @@
                   <span class="switch-pill" aria-hidden="true">
                     <span class="switch-pill-thumb"></span>
                   </span>
-                  <span class="switch-title">Clean Mode</span>
+                  <span class="switch-title" data-i18n="cockpit.clean_mode">Clean Mode</span>
                 </label>
               </div>
             </div>
@@ -806,10 +820,10 @@
         <!-- Documentation & Sitemap Directory -->
         <nav class="footer-sitemap-grid" aria-label="Documentation Sitemap">
           <div class="footer-col">
-            <h4 class="footer-col-title">Ecosystem & Tools</h4>
+            <h4 class="footer-col-title" data-i18n="footer.col_ecosystem">Ecosystem & Tools</h4>
             <ul class="footer-links-list">
               <li>
-                <a href="/" class="footer-link">Web Converter (In-Browser)</a>
+                <a href="/" class="footer-link" data-i18n="footer.web_converter">Web Converter (In-Browser)</a>
               </li>
               <li>
                 <a
@@ -817,7 +831,28 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
-                  >VS Code Extension</a
+                  data-i18n="footer.vscode_docs"
+                  >VS Code Extension (Docs)</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://open-vsx.org/extension/ebula/zapwebp-vscode"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  data-i18n="footer.open_vsx"
+                  >VS Code (Open VSX)</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-link"
+                  data-i18n="footer.vs_marketplace"
+                  >VS Code (VS Marketplace)</a
                 >
               </li>
               <li>
@@ -826,6 +861,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.cli"
                   >CLI Tool (`zapwebp`)</a
                 >
               </li>
@@ -835,6 +871,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.mcp"
                   >MCP Server (AI Agents)</a
                 >
               </li>
@@ -844,6 +881,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.api"
                   >REST API & Edge Runtime</a
                 >
               </li>
@@ -851,7 +889,7 @@
           </div>
 
           <div class="footer-col">
-            <h4 class="footer-col-title">Guides & Formats</h4>
+            <h4 class="footer-col-title" data-i18n="footer.col_guides">Guides & Formats</h4>
             <ul class="footer-links-list">
               <li>
                 <a
@@ -859,6 +897,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.getting_started"
                   >Getting Started</a
                 >
               </li>
@@ -868,6 +907,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.formats"
                   >Supported Formats Matrix</a
                 >
               </li>
@@ -877,6 +917,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.transparency"
                   >Transparency & Alpha Rules</a
                 >
               </li>
@@ -886,6 +927,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.clean_mode"
                   >Clean Mode & EXIF Stripping</a
                 >
               </li>
@@ -895,6 +937,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.multipliers"
                   >Multi-Scale Retina (@1x/@2x/@3x)</a
                 >
               </li>
@@ -902,7 +945,7 @@
           </div>
 
           <div class="footer-col">
-            <h4 class="footer-col-title">Developer SDKs</h4>
+            <h4 class="footer-col-title" data-i18n="footer.col_sdks">Developer SDKs</h4>
             <ul class="footer-links-list">
               <li>
                 <a
@@ -910,6 +953,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.sdk"
                   >JavaScript/TypeScript SDK</a
                 >
               </li>
@@ -919,6 +963,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.vite"
                   >Vite Plugin</a
                 >
               </li>
@@ -928,6 +973,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.next"
                   >Next.js Plugin</a
                 >
               </li>
@@ -937,6 +983,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.storage"
                   >Cloud Storage Adapters</a
                 >
               </li>
@@ -946,6 +993,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.github_action"
                   >GitHub Actions CI/CD</a
                 >
               </li>
@@ -953,7 +1001,7 @@
           </div>
 
           <div class="footer-col">
-            <h4 class="footer-col-title">Open Platform</h4>
+            <h4 class="footer-col-title" data-i18n="footer.col_platform">Open Platform</h4>
             <ul class="footer-links-list">
               <li>
                 <a
@@ -961,6 +1009,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.security"
                   >Zero-Trust Security Model</a
                 >
               </li>
@@ -970,6 +1019,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.llms"
                   >Machine-Readable Spec (llms.txt)</a
                 >
               </li>
@@ -979,6 +1029,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.openapi"
                   >OpenAPI Specification</a
                 >
               </li>
@@ -988,6 +1039,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.github"
                   >GitHub Organization</a
                 >
               </li>
@@ -997,6 +1049,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="footer-link"
+                  data-i18n="footer.license"
                   >MIT License</a
                 >
               </li>
@@ -1007,7 +1060,7 @@
         <!-- Footer Bottom Bar -->
         <div class="footer-bottom-bar">
           <div class="footer-bottom-left">
-            <span
+            <span data-i18n="footer.copyright"
               >© 2026 Zapwebp. Maintained by
               <strong>Eldrex Delos Reyes Bula</strong>. Republic of the
               Philippines.</span
@@ -1019,6 +1072,7 @@
               class="footer-lang-btn"
               id="footer-lang-btn"
               aria-label="Toggle language"
+              title="Switch language (EN / TL)"
             >
               <span class="lang-icon">🌐</span>
               <span class="lang-text" id="footer-lang-label">EN</span>
@@ -1028,8 +1082,11 @@
               class="footer-docs-link"
               target="_blank"
               rel="noopener noreferrer"
+              data-i18n="footer.full_docs"
               >Full Docs Portal ↗</a
             >
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -1072,6 +1129,7 @@
               id="view-tab-converted"
               role="tab"
               aria-selected="true"
+              data-i18n="modal.converted"
             >
               Converted
             </button>
@@ -1081,6 +1139,7 @@
               id="view-tab-original"
               role="tab"
               aria-selected="false"
+              data-i18n="modal.original"
             >
               Original
             </button>
@@ -1090,6 +1149,7 @@
               id="view-tab-split"
               role="tab"
               aria-selected="false"
+              data-i18n="modal.split"
             >
               Side-by-Side
             </button>
@@ -1113,15 +1173,15 @@
         <div class="preview-modal-bottom">
           <div class="preview-metrics">
             <div class="metric-block">
-              <span class="metric-label">Dimensions</span>
+              <span class="metric-label" data-i18n="modal.dimensions">Dimensions</span>
               <span class="metric-value" id="preview-dim-val">0 × 0</span>
             </div>
             <div class="metric-block">
-              <span class="metric-label">File Size</span>
+              <span class="metric-label" data-i18n="modal.fileSize">File Size</span>
               <span class="metric-value" id="preview-size-val">0 KB</span>
             </div>
             <div class="metric-block" id="preview-savings-wrap">
-              <span class="metric-label">Reduction</span>
+              <span class="metric-label" data-i18n="modal.reduction">Reduction</span>
               <span class="metric-value metric-savings" id="preview-savings-val"
                 >0%</span
               >
@@ -1149,7 +1209,7 @@
                 <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
                 <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
               </svg>
-              <span>Crop</span>
+              <span data-i18n="modal.crop">Crop</span>
             </button>
             <a
               href="#"
@@ -1167,7 +1227,7 @@
               >
                 <path d="M10 4v10M5 9l5 5 5-5M4 16h12" />
               </svg>
-              <span>Download File</span>
+              <span data-i18n="modal.download">Download File</span>
             </a>
           </div>
         </div>

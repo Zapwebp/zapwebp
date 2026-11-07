@@ -4,6 +4,18 @@
 
 # Zapwebp for VS Code
 
+<p align="center">
+  <a href="https://open-vsx.org/extension/ebula/zapwebp-vscode">
+    <img src="https://img.shields.io/badge/Open%20VSX-ebula%2Fzapwebp--vscode-007acc?style=flat-square&logo=visualstudiocode" alt="Open VSX" />
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode">
+    <img src="https://img.shields.io/badge/VS%20Marketplace-ebula.zapwebp--vscode-8957e5?style=flat-square&logo=visualstudio" alt="Visual Studio Marketplace" />
+  </a>
+</p>
+
+- **Open VSX Registry**: [https://open-vsx.org/extension/ebula/zapwebp-vscode](https://open-vsx.org/extension/ebula/zapwebp-vscode)
+- **Visual Studio Marketplace**: [https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode](https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode)
+
 Covers: converting images inside VS Code. Commands, settings, transparency behavior.
 
 Does not cover: CLI, MCP server, build plugins.
@@ -20,16 +32,16 @@ A converted file appears next to the source in the same directory. Transparency 
 
 ## Commands
 
-| Command | Action | Description |
-|---|---|---|
-| `Zap to WebP` | Quick Action | Convert one or more images directly to WebP. |
-| `Zap to PNG` | Quick Action | Convert one or more images to lossless PNG. |
-| `Zap to AVIF` | Quick Action | Convert one or more images to next-gen AVIF. |
-| `Zap to JPEG` | Quick Action | Convert one or more images to JPEG (prompts for background flatten color). |
-| `Zap to Any Format...` | Interactive Prompt | QuickPick menu to choose target format with visual format guidance. |
-| `Zap to WebP (@1x, @2x, @3x)` | Scale Variants | Generate retina multi-scale WebP assets. |
-| `Zap Multi-Scale (@1x, @2x, @3x)...` | Scale Variants | Interactive format prompt for retina scale assets. |
-| `Show Conversion Logs` | Diagnostic | View real-time Zapwebp output channel logs. |
+| Command                              | Action             | Description                                                                |
+| ------------------------------------ | ------------------ | -------------------------------------------------------------------------- |
+| `Zap to WebP`                        | Quick Action       | Convert one or more images directly to WebP.                               |
+| `Zap to PNG`                         | Quick Action       | Convert one or more images to lossless PNG.                                |
+| `Zap to AVIF`                        | Quick Action       | Convert one or more images to next-gen AVIF.                               |
+| `Zap to JPEG`                        | Quick Action       | Convert one or more images to JPEG (prompts for background flatten color). |
+| `Zap to Any Format...`               | Interactive Prompt | QuickPick menu to choose target format with visual format guidance.        |
+| `Zap to WebP (@1x, @2x, @3x)`        | Scale Variants     | Generate retina multi-scale WebP assets.                                   |
+| `Zap Multi-Scale (@1x, @2x, @3x)...` | Scale Variants     | Interactive format prompt for retina scale assets.                         |
+| `Show Conversion Logs`               | Diagnostic         | View real-time Zapwebp output channel logs.                                |
 
 ## Supported Formats
 
@@ -39,13 +51,13 @@ A converted file appears next to the source in the same directory. Transparency 
 
 ## Settings
 
-| Setting | Type | Default | What it does |
-|---|---|---|---|
-| `zapwebp.convertOnSave` | boolean | `false` | Auto-convert on save |
-| `zapwebp.baseWidth` | number | `512` | Base width for @1x |
-| `zapwebp.quality` | number | `85` | Lossy quality (0–100) |
-| `zapwebp.clean` | boolean | `true` | Strip EXIF, XMP, C2PA |
-| `zapwebp.outputExtension` | string | `"webp"` | Target format (`webp`, `png`, `avif`, `jpeg`) |
+| Setting                   | Type    | Default  | What it does                                  |
+| ------------------------- | ------- | -------- | --------------------------------------------- |
+| `zapwebp.convertOnSave`   | boolean | `false`  | Auto-convert on save                          |
+| `zapwebp.baseWidth`       | number  | `512`    | Base width for @1x                            |
+| `zapwebp.quality`         | number  | `85`     | Lossy quality (0–100)                         |
+| `zapwebp.clean`           | boolean | `true`   | Strip EXIF, XMP, C2PA                         |
+| `zapwebp.outputExtension` | string  | `"webp"` | Target format (`webp`, `png`, `avif`, `jpeg`) |
 
 ## How it works
 
@@ -60,11 +72,11 @@ All conversion runs locally in the extension host using the same WASM engine as 
 
 ## Errors
 
-| Error | Cause | Fix |
-|---|---|---|
-| `E_UNSAFE_SVG` | SVG contains scripts | Remove them, or use CLI with `--allow-unsafe` |
-| `E_UNSUPPORTED_FORMAT` | Not a supported image | Check the extension list |
-| `E_WRITE_FAILED` | No write permission | Check file/folder permissions |
+| Error                  | Cause                 | Fix                                           |
+| ---------------------- | --------------------- | --------------------------------------------- |
+| `E_UNSAFE_SVG`         | SVG contains scripts  | Remove them, or use CLI with `--allow-unsafe` |
+| `E_UNSUPPORTED_FORMAT` | Not a supported image | Check the extension list                      |
+| `E_WRITE_FAILED`       | No write permission   | Check file/folder permissions                 |
 
 ## For agents
 
@@ -93,5 +105,5 @@ All conversion runs locally in the extension host using the same WASM engine as 
 
 ## Related
 
-- [CLI](/cli): Same engine, terminal.
-- [MCP](/mcp): Same engine, AI agents.
+- [CLI](https://zapwebp-docs.vercel.app/cli): Same engine, terminal.
+- [MCP](https://zapwebp-docs.vercel.app/mcp): Same engine, AI agents.

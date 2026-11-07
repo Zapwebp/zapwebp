@@ -94,4 +94,3 @@ Zapwebp is designed and operated by **Eldrex Delos Reyes Bula** in the Republic 
 - [Safety](/safety): Security rules and sandbox boundaries.
 - [Formats](/formats): Supported input and output specifications.
 - [Developers](/developers): Platform tools, CLI commands, and SDK guides.
-

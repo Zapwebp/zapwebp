@@ -232,11 +232,11 @@ body {
 }
 
 .theme-toggle-btn,
-.settings-btn {
+.settings-btn,
+.header-lang-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
   height: 34px;
   border-radius: 8px;
   border: 1px solid var(--border-mid);
@@ -246,10 +246,24 @@ body {
   transition: all 120ms var(--ease-snap);
 }
 
+.theme-toggle-btn,
+.settings-btn {
+  width: 34px;
+}
+
+.header-lang-btn {
+  padding: 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .theme-toggle-btn:hover,
-.settings-btn:hover {
+.settings-btn:hover,
+.header-lang-btn:hover {
   background: var(--bg-dropzone-hover);
   border-color: var(--green-primary);
+  color: var(--green-primary);
 }
 
 .theme-icon {

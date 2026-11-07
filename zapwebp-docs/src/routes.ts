@@ -316,3 +316,15 @@ DOC_ROUTES.forEach((r) => {
 // Root alias
 ROUTE_MAP['/'] = DOC_ROUTES[0];
 
+// Sitemap canonical URL aliases (Ecosystem & Tools, Guides & Formats, Developer SDKs, Open Platform)
+if (ROUTE_MAP['/plugins/vscode']) ROUTE_MAP['/vscode'] = ROUTE_MAP['/plugins/vscode'];
+if (ROUTE_MAP['/docs']) ROUTE_MAP['/getting-started'] = ROUTE_MAP['/docs'];
+if (ROUTE_MAP['/safety']) ROUTE_MAP['/transparency'] = ROUTE_MAP['/safety'];
+if (ROUTE_MAP['/clean']) ROUTE_MAP['/clean-mode'] = ROUTE_MAP['/clean'];
+if (ROUTE_MAP['/cli']) ROUTE_MAP['/multipliers'] = ROUTE_MAP['/cli'];
+if (ROUTE_MAP['/sdk/core']) ROUTE_MAP['/sdk'] = ROUTE_MAP['/sdk/core'];
+if (ROUTE_MAP['/plugins/vite']) ROUTE_MAP['/vite'] = ROUTE_MAP['/plugins/vite'];
+if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
+if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];
+if (ROUTE_MAP['/plugins/github-action']) ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
+

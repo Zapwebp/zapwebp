@@ -3,7 +3,51 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
+const Module = require('node:module');
 const { execFile } = require('node:child_process');
+
+/**
+ * Dynamically hooks Module._resolveFilename so in-process @zapwebp/core can locate
+ * native modules (sharp, @resvg/resvg-js) from open workspace folders, extensions,
+ * or parent node_modules directories.
+ */
+function setupNativeResolution() {
+  const extraDirs = [];
+  try {
+    const vscode = require('vscode');
+    if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+      for (const folder of vscode.workspace.workspaceFolders) {
+        const root = folder.uri.fsPath;
+        extraDirs.push(path.join(root, 'node_modules'));
+        extraDirs.push(path.join(root, 'apps', 'vscode', 'node_modules'));
+        extraDirs.push(path.join(root, 'packages', 'core', 'node_modules'));
+      }
+    }
+  } catch {}
+
+  extraDirs.push(path.resolve(__dirname, '../../node_modules'));
+  extraDirs.push(path.resolve(__dirname, '../../../node_modules'));
+  extraDirs.push(path.resolve(__dirname, '../node_modules'));
+
+  const origResolve = Module._resolveFilename;
+  Module._resolveFilename = function(request, parent, isMain, options) {
+    try {
+      return origResolve.call(this, request, parent, isMain, options);
+    } catch (err) {
+      if (request === 'sharp' || request === '@resvg/resvg-js' || request.startsWith('@resvg/')) {
+        for (const dir of extraDirs) {
+          if (fs.existsSync(dir)) {
+            try {
+              return origResolve.call(this, request, { paths: Module._nodeModulePaths(dir) }, isMain, options);
+            } catch {}
+          }
+        }
+      }
+      throw err;
+    }
+  };
+}
+setupNativeResolution();
 
 let coreModule = null;
 let coreAttempted = false;
@@ -196,33 +240,50 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
     // Tier 1: Local workspace CLI via direct node execution (bypasses Windows .cmd spawn EINVAL)
     const localCli = findLocalCli();
     if (localCli) {
-      execFile('node', [localCli, ...args], (err) => {
-        if (!err && fs.existsSync(outputPath)) {
-          return resolve(outputPath);
-        }
-        trySystemCli();
-      });
-      return;
+      try {
+        execFile('node', [localCli, ...args], (err) => {
+          if (!err && fs.existsSync(outputPath)) {
+            return resolve(outputPath);
+          }
+          trySystemCli(err);
+        });
+        return;
+      } catch (nodeSyncErr) {
+        trySystemCli(nodeSyncErr);
+        return;
+      }
     }
 
     trySystemCli();
 
-    function trySystemCli() {
+    function trySystemCli(priorErr) {
       // Tier 2: System zap binary (shell: true on Windows prevents spawn EINVAL)
       const zapBin = isWin ? 'zap.cmd' : 'zap';
-      execFile(zapBin, args, { shell: isWin }, (err) => {
-        if (!err && fs.existsSync(outputPath)) {
-          return resolve(outputPath);
-        }
-        // Tier 3: npx zapwebp runner (shell: true on Windows prevents spawn EINVAL)
-        const npxCmd = isWin ? 'npx.cmd' : 'npx';
+      try {
+        execFile(zapBin, args, { shell: isWin }, (err) => {
+          if (!err && fs.existsSync(outputPath)) {
+            return resolve(outputPath);
+          }
+          tryNpx(err || priorErr);
+        });
+      } catch (zapSyncErr) {
+        tryNpx(zapSyncErr || priorErr);
+      }
+    }
+
+    function tryNpx(priorErr) {
+      // Tier 3: npx zapwebp runner (shell: true on Windows prevents spawn EINVAL)
+      const npxCmd = isWin ? 'npx.cmd' : 'npx';
+      try {
         execFile(npxCmd, ['--yes', 'zapwebp', ...args], { shell: isWin }, (npxErr) => {
           if (!npxErr && fs.existsSync(outputPath)) {
             return resolve(outputPath);
           }
-          reject(new ZapError('E_CONVERSION_FAILED', (npxErr || err).message));
+          reject(new ZapError('E_CONVERSION_FAILED', (npxErr || priorErr || new Error('CLI fallback failed')).message));
         });
-      });
+      } catch (npxSyncErr) {
+        reject(new ZapError('E_CONVERSION_FAILED', (npxSyncErr || priorErr || new Error('CLI fallback failed')).message));
+      }
     }
   });
 }

@@ -6,25 +6,26 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Full Web Platform Real-Time i18n Translation Engine (`public/app.js`, `public/locales`)**:
+  - Implemented client-side translation engine supporting English (`en`) and Tagalog (`tl`) across hero, navigation, dropzone, cockpit controls, results cards, batch header, preview modal, crop dialog, and footer sitemap.
+  - Added real-time language toggling via `#header-lang-btn` and `#footer-lang-btn` with localStorage persistence and immediate DOM updates without page reloads.
+  - Added static JSON locale mirrors in `public/locales/` ensuring static host compatibility on Vercel (`Zapwebp/web`).
+- **Open VSX & VS Marketplace Badges and Canonical Links**:
+  - Added direct extension download links for Open VSX (`https://open-vsx.org/extension/ebula/zapwebp-vscode`) and VS Marketplace (`https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode`) in the web sitemap footer, `content/plugins/vscode.md`, `zapwebp-docs/public/content/plugins/vscode.md`, and `apps/vscode/README.md`.
+- **Docs Canonical Sitemap URL Aliases (`zapwebp-docs/src/routes.ts`)**:
+  - Added canonical alias mappings in `ROUTE_MAP` for `/vscode`, `/getting-started`, `/transparency`, `/clean-mode`, `/multipliers`, `/sdk`, `/vite`, `/next`, `/storage`, and `/github-action`, ensuring direct navigation without broken routes.
 - **Resilient Multi-Tier VS Code Extension Architecture (`apps/vscode` v1.2.0)**:
   - Added complete multi-format conversion commands: `Zap to PNG` (`zapwebp.convertToPng`), `Zap to AVIF` (`zapwebp.convertToAvif`), `Zap to JPEG` (`zapwebp.convertToJpeg`), and `Zap to Any Format...` (`zapwebp.convertPrompt`).
   - Added dedicated `Zap Image To...` submenu in Explorer context menu, Editor context menu, and Editor tab title menu.
   - Added interactive multi-scale format prompt (`zapwebp.convertScalesPrompt`) for generating retina scale variants in WebP, PNG, or AVIF.
   - Added background flattening prompt on JPEG conversion (defaulting to `#ffffff`) to strictly prevent accidental black background artifacts on transparent inputs.
-  - Implemented multi-tier conversion fallback: executes via in-process `@zapwebp/core` when native bindings are present, and seamlessly falls back to CLI execution (`zap`, `zapwebp`, or `npx zapwebp`) if running in environments lacking Electron-rebuilt native addons.
-  - Added full editor context menu integration (`editor/context` and `editor/title/context`) enabling right-click conversions directly from open editor tabs.
-  - Added complete format matrix support in VS Code Explorer and Editor menus: added `.gif`, `.tiff`, and `.tif` alongside SVG, PNG, JPEG, WebP, and AVIF with case-insensitive matching.
-  - Added `onStartupFinished` activation trigger to ensure convert-on-save watcher and status bar metrics initialize immediately upon opening a workspace.
-  - Added Command Palette active editor context support (`zapwebp.convert` and `zapwebp.convertScales`).
-  - Packaged clean, self-contained `zapwebp-vscode-1.2.0.vsix` excluding symlinked `node_modules` and workspace secrets.
-- **REST API Route & Vercel Serverless Path Normalization**:
-  - Added `GET /` route to `createApiRouter` in `@zapwebp/api` returning structured API metadata, available endpoints (`/health`, `/convert`, `/inspect`, `/batch`), and documentation links.
-  - Added Vercel rewrite URL normalization middleware in `server.js` preventing `Cannot GET /server.js` 404 errors when invoking `/api/v1` routes.
+  - Added dynamic `Module._resolveFilename` native resolution hook enabling in-process `@zapwebp/core` and `sharp` execution directly from workspace and extension node_modules, bypassing subprocess overhead.
+  - Packaged clean, self-contained `zapwebp-vscode-1.2.0.vsix` with verified multi-format conversion across SVG, PNG, WebP, AVIF, JPEG, GIF, and TIFF.
 
 ### Fixed
 
 - **VS Code Extension Windows `spawn EINVAL` & Workspace CLI Discovery (`apps/vscode`)**:
-  - Fixed `Error: spawn EINVAL` on Windows when invoking `zap.cmd` or `npx.cmd` from `child_process.execFile` by passing `{ shell: process.platform === 'win32' }` and prioritizing direct `execFile('node', [localCli, ...args])`.
+  - Eliminated `Error: spawn EINVAL` on Windows by wrapping all `execFile` invocations in synchronous try-catch blocks, enforcing `{ shell: process.platform === 'win32' }`, and prioritizing direct in-process conversion via the `Module._resolveFilename` native module resolution hook.
   - Added workspace and relative path discovery for `@zapwebp/core` and `packages/cli/bin/zap.js` in `getCore()` and `findLocalCli()`, enabling instant in-process or local node CLI conversion without relying on globally installed binaries or network calls.
   - Added buffer magic byte format sniffing (`sniffInputExtension`) for temporary files during CLI fallback to ensure format-specific CLI handlers correctly identify the input format.
 - **Vercel Serverless Function Rewrite Normalization (`vercel.json` & `server.js`)**:

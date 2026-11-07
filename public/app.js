@@ -567,18 +567,253 @@ if (brandResetBtn) {
   });
 }
 
-// Footer Language Button
+// ==========================================================================
+// Comprehensive Web i18n Translation Engine (EN / TL)
+// ==========================================================================
+const I18N_DICTIONARIES = {
+  en: {
+    'nav.docs': 'Docs',
+    'nav.cli': 'CLI',
+    'nav.mcp': 'MCP',
+    'hero.title': 'Convert<span class="accent-gradient"> correctly.</span>',
+    'hero.description': 'Transparency preserved. Metadata stripped. Zero server uploads.',
+    'dropzone.title': '<span class="highlight-action">Drop images here</span> or <span class="browse-link">browse files</span>',
+    'dropzone.subtitle': 'Select single files, batches, or folders.',
+    'dropzone.converting': 'Converting in browser...',
+    'batch.files_converted': 'files converted',
+    'batch.format_prefix': 'Format: ',
+    'batch.press_hint': '(press 1–4)',
+    'batch.add_more': 'Add more',
+    'batch.download_all': 'Download all (ZIP)',
+    'batch.delete_all': 'Delete all',
+    'cockpit.format': 'Format',
+    'cockpit.background': 'Background',
+    'cockpit.scales': 'Scales',
+    'cockpit.quality': 'Quality',
+    'cockpit.modes': 'Modes',
+    'cockpit.lossless': 'Lossless',
+    'cockpit.clean_mode': 'Clean Mode',
+    'single.converted': 'Converted',
+    'single.preview': 'Inspect',
+    'single.share': 'Share',
+    'single.download': 'Download',
+    'single.delete': 'Delete',
+    'card.preview': 'Preview',
+    'card.download': 'Download',
+    'card.delete': 'Delete',
+    'card.add_more_title': 'Add More Images',
+    'card.add_more_hint': 'Drop files here or click',
+    'modal.title': 'Inspection & Comparison',
+    'modal.tab_converted': 'Converted',
+    'modal.converted': 'Converted',
+    'modal.tab_original': 'Original',
+    'modal.original': 'Original',
+    'modal.tab_side_by_side': 'Side-by-Side',
+    'modal.split': 'Side-by-Side',
+    'modal.tab_swipe': 'Swipe',
+    'modal.btn_crop': 'Crop',
+    'modal.crop': 'Crop',
+    'modal.btn_download': 'Download File',
+    'modal.download': 'Download File',
+    'modal.dimensions': 'Dimensions',
+    'modal.file_size': 'File Size',
+    'modal.fileSize': 'File Size',
+    'modal.reduction': 'Reduction',
+    'modal.original_label': 'Original',
+    'modal.converted_label': 'Converted',
+    'modal.alpha_preserved': 'Alpha Preserved',
+    'modal.opaque': 'Opaque',
+    'footer.col_ecosystem': 'Ecosystem & Tools',
+    'footer.col_guides': 'Guides & Formats',
+    'footer.col_sdks': 'Developer SDKs',
+    'footer.col_platform': 'Open Platform',
+    'footer.web_converter': 'Web Converter (In-Browser)',
+    'footer.vscode_docs': 'VS Code Extension (Docs)',
+    'footer.open_vsx': 'VS Code (Open VSX)',
+    'footer.vs_marketplace': 'VS Code (VS Marketplace)',
+    'footer.cli': 'CLI Tool (`zapwebp`)',
+    'footer.mcp': 'MCP Server (AI Agents)',
+    'footer.api': 'REST API & Edge Runtime',
+    'footer.getting_started': 'Getting Started',
+    'footer.formats': 'Supported Formats Matrix',
+    'footer.transparency': 'Transparency & Alpha Rules',
+    'footer.clean_mode': 'Clean Mode & EXIF Stripping',
+    'footer.multipliers': 'Multi-Scale Retina (@1x/@2x/@3x)',
+    'footer.sdk': 'JavaScript/TypeScript SDK',
+    'footer.vite': 'Vite Plugin',
+    'footer.next': 'Next.js Plugin',
+    'footer.storage': 'Cloud Storage Adapters',
+    'footer.github_action': 'GitHub Actions CI/CD',
+    'footer.security': 'Zero-Trust Security Model',
+    'footer.llms': 'Machine-Readable Spec (llms.txt)',
+    'footer.openapi': 'OpenAPI Specification',
+    'footer.github': 'GitHub Organization',
+    'footer.license': 'MIT License',
+    'footer.copyright': '© 2026 Zapwebp. Maintained by <strong>Eldrex Delos Reyes Bula</strong>. Republic of the Philippines.',
+    'footer.full_docs': 'Full Docs Portal ↗',
+  },
+  tl: {
+    'nav.docs': 'Mga Gabay',
+    'nav.cli': 'CLI',
+    'nav.mcp': 'MCP',
+    'hero.title': 'Mag-convert<span class="accent-gradient"> nang tama.</span>',
+    'hero.description': 'Nananatili ang aninag. Tinanggal ang metadata. Walang server uploads.',
+    'dropzone.title': '<span class="highlight-action">I-drop ang mga larawan dito</span> o <span class="browse-link">mag-browse ng file</span>',
+    'dropzone.subtitle': 'Pumili ng isang file, maramihan, o buong folder.',
+    'dropzone.converting': 'Kasalukuyang kino-convert sa browser...',
+    'batch.files_converted': '(na) file na-convert',
+    'batch.format_prefix': 'Format: ',
+    'batch.press_hint': '(pindutin 1–4)',
+    'batch.add_more': 'Magdagdag pa',
+    'batch.download_all': 'I-download lahat (ZIP)',
+    'batch.delete_all': 'Burahin lahat',
+    'cockpit.format': 'Format',
+    'cockpit.background': 'Background',
+    'cockpit.scales': 'Mga Sukat',
+    'cockpit.quality': 'Kalidad',
+    'cockpit.modes': 'Mga Mode',
+    'cockpit.lossless': 'Walang bawas',
+    'cockpit.clean_mode': 'Malinis na Mode',
+    'single.converted': 'Na-convert',
+    'single.preview': 'Pagsusuri',
+    'single.share': 'Ibahagi',
+    'single.download': 'I-download',
+    'single.delete': 'Burahin',
+    'card.preview': 'Pagsusuri',
+    'card.download': 'I-download',
+    'card.delete': 'Burahin',
+    'card.add_more_title': 'Magdagdag Pa ng Larawan',
+    'card.add_more_hint': 'I-drop dito o i-click',
+    'modal.title': 'Pagsusuri at Paghahambing',
+    'modal.tab_converted': 'Na-convert',
+    'modal.converted': 'Na-convert',
+    'modal.tab_original': 'Orihinal',
+    'modal.original': 'Orihinal',
+    'modal.tab_side_by_side': 'Magkatabi',
+    'modal.split': 'Magkatabi',
+    'modal.tab_swipe': 'I-swipe',
+    'modal.btn_crop': 'I-crop',
+    'modal.crop': 'I-crop',
+    'modal.btn_download': 'I-download ang File',
+    'modal.download': 'I-download ang File',
+    'modal.dimensions': 'Mga Sukat',
+    'modal.file_size': 'Laki ng File',
+    'modal.fileSize': 'Laki ng File',
+    'modal.reduction': 'Nabawas',
+    'modal.original_label': 'Orihinal',
+    'modal.converted_label': 'Na-convert',
+    'modal.alpha_preserved': 'Nananatiling Transparent',
+    'modal.opaque': 'Opaque (May Kulay)',
+    'footer.col_ecosystem': 'Ekosistema at Mga Kagamitan',
+    'footer.col_guides': 'Mga Gabay at Format',
+    'footer.col_sdks': 'Mga SDK para sa Developer',
+    'footer.col_platform': 'Bukas na Plataporma',
+    'footer.web_converter': 'Web Converter (Sa Browser)',
+    'footer.vscode_docs': 'VS Code Extension (Mga Gabay)',
+    'footer.open_vsx': 'VS Code (Open VSX)',
+    'footer.vs_marketplace': 'VS Code (VS Marketplace)',
+    'footer.cli': 'CLI Tool (`zapwebp`)',
+    'footer.mcp': 'MCP Server (AI Agents)',
+    'footer.api': 'REST API & Edge Runtime',
+    'footer.getting_started': 'Pagsisimula',
+    'footer.formats': 'Talaan ng Suportadong Format',
+    'footer.transparency': 'Mga Patakaran sa Aninag at Alpha',
+    'footer.clean_mode': 'Malinis na Mode at Pag-alis ng EXIF',
+    'footer.multipliers': 'Multi-Scale Retina (@1x/@2x/@3x)',
+    'footer.sdk': 'JavaScript/TypeScript SDK',
+    'footer.vite': 'Vite Plugin',
+    'footer.next': 'Next.js Plugin',
+    'footer.storage': 'Cloud Storage Adapters',
+    'footer.github_action': 'GitHub Actions CI/CD',
+    'footer.security': 'Zero-Trust Model ng Seguridad',
+    'footer.llms': 'Spec para sa Makina (llms.txt)',
+    'footer.openapi': 'OpenAPI Specification',
+    'footer.github': 'Organisasyon sa GitHub',
+    'footer.license': 'Lisensyang MIT',
+    'footer.copyright': '© 2026 Zapwebp. Pinapanatili ni <strong>Eldrex Delos Reyes Bula</strong>. Republika ng Pilipinas.',
+    'footer.full_docs': 'Buong Portal ng Docs ↗',
+  }
+};
+
+function getActiveLanguage() {
+  return localStorage.getItem('zapwebp_lang')
+    || localStorage.getItem('zapwebp:lang')
+    || (navigator.language?.startsWith('tl') ? 'tl' : 'en');
+}
+
+function t(key, defaultVal) {
+  const currentLang = getActiveLanguage();
+  return I18N_DICTIONARIES[currentLang]?.[key] || I18N_DICTIONARIES.en[key] || defaultVal || key;
+}
+
+function applyTranslations(lang) {
+  const activeLang = lang || getActiveLanguage();
+  document.documentElement.lang = activeLang;
+  localStorage.setItem('zapwebp_lang', activeLang);
+  localStorage.setItem('zapwebp:lang', activeLang);
+
+  // Update footer button
+  const footerLangLabel = document.querySelector('#footer-lang-label');
+  if (footerLangLabel) {
+    footerLangLabel.textContent = activeLang.toUpperCase();
+  }
+  const footerLangBtn = document.querySelector('#footer-lang-btn');
+  if (footerLangBtn) {
+    footerLangBtn.setAttribute('title', activeLang === 'en' ? 'Switch to Tagalog (TL)' : 'Switch to English (EN)');
+    footerLangBtn.setAttribute('aria-label', activeLang === 'en' ? 'Switch to Tagalog' : 'Switch to English');
+  }
+
+  // Update header button if present
+  const headerLangBtn = document.querySelector('#header-lang-btn');
+  if (headerLangBtn) {
+    headerLangBtn.textContent = activeLang === 'en' ? '🌐 EN' : '🌐 TL';
+    headerLangBtn.setAttribute('title', activeLang === 'en' ? 'Switch to Tagalog (TL)' : 'Switch to English (EN)');
+  }
+
+  // Translate all DOM elements tagged with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    const translation = I18N_DICTIONARIES[activeLang]?.[key] || I18N_DICTIONARIES.en[key];
+    if (translation !== undefined) {
+      if (translation.includes('<')) {
+        el.innerHTML = translation;
+      } else {
+        el.textContent = translation;
+      }
+    }
+  });
+
+  // Re-render results cards so dynamic text adopts the current language
+  if (typeof renderResultsView === 'function' && convertedItems.size > 0) {
+    renderResultsView();
+  }
+}
+
+function toggleLanguage() {
+  const current = getActiveLanguage();
+  const next = current === 'en' ? 'tl' : 'en';
+  applyTranslations(next);
+}
+
+// Bind Header & Footer Language Toggle Buttons
 const footerLangBtn = document.querySelector('#footer-lang-btn');
 if (footerLangBtn) {
-  footerLangBtn.addEventListener('click', () => {
-    const currentLang = localStorage.getItem('zapwebp:lang') || 'en';
-    const newLang = currentLang === 'en' ? 'tl' : 'en';
-    localStorage.setItem('zapwebp:lang', newLang);
-    footerLangBtn.textContent = newLang === 'en' ? '🌐 EN' : '🌐 TL';
+  footerLangBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleLanguage();
   });
-  const currentLang = localStorage.getItem('zapwebp:lang') || 'en';
-  footerLangBtn.textContent = currentLang === 'en' ? '🌐 EN' : '🌐 TL';
 }
+
+const headerLangBtn = document.querySelector('#header-lang-btn');
+if (headerLangBtn) {
+  headerLangBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleLanguage();
+  });
+}
+
+// Initial application of language on boot
+applyTranslations();
 
 // Keyboard shortcuts 1–4 and Escape
 const FORMAT_CYCLE = ['webp', 'avif', 'png', 'jpeg'];
@@ -1519,7 +1754,7 @@ function renderResultsView() {
       <div class="single-card-top">
         <div class="single-status-badge">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Converted</span>
+          <span>${t('single.converted', 'Converted')}</span>
         </div>
         <div class="single-fmt-pill">${(item.originalFormat || 'SRC').toUpperCase()} → ${out.format.toUpperCase()}</div>
       </div>
@@ -1550,19 +1785,19 @@ function renderResultsView() {
       <div class="single-card-actions">
         <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Compare in Split View" aria-label="Inspect & Compare">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>Inspect</span>
+          <span>${t('single.preview', 'Inspect')}</span>
         </button>
         ${typeof navigator !== 'undefined' && navigator.share ? `
           <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted image" aria-label="Share">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            <span>Share</span>
+            <span>${t('single.share', 'Share')}</span>
           </button>
         ` : ''}
         <button type="button" class="btn-single-download" data-id="${item.id}" title="Download ${out.name}" aria-label="Download ${out.name}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Download ${out.format.toUpperCase()}</span>
+          <span>${t('single.download', 'Download')} ${out.format.toUpperCase()}</span>
         </button>
-        <button type="button" class="btn-single-delete" data-id="${item.id}" title="Delete file" aria-label="Delete file">
+        <button type="button" class="btn-single-delete" data-id="${item.id}" title="${t('single.delete', 'Delete file')}" aria-label="${t('single.delete', 'Delete file')}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </div>
@@ -1627,7 +1862,7 @@ function renderResultsView() {
     const batchCountEl = document.querySelector('#batch-count');
     const batchBytesEl = document.querySelector('#batch-bytes');
     if (batchCountEl) {
-      batchCountEl.textContent = `${doneItems.length} files converted`;
+      batchCountEl.textContent = `${doneItems.length} ${t('batch.files_converted', 'files converted')}`;
     }
     if (batchBytesEl) {
       batchBytesEl.textContent = `· ${formatKb(totalIn)} → ${formatKb(totalOut)} (${batchSavings > 0 ? '−' : '+'}${Math.abs(batchSavings)}%)`;
@@ -1648,7 +1883,7 @@ function renderResultsView() {
       convCard.innerHTML = `
         <div class="converting-skeleton">
           <div class="skeleton-thumb"></div>
-          <div class="skeleton-text">Converting...</div>
+          <div class="skeleton-text">${t('dropzone.converting', 'Converting...')}</div>
         </div>
       `;
       resultsContainer.appendChild(convCard);
@@ -1659,7 +1894,7 @@ function renderResultsView() {
       const errCard = document.createElement('div');
       errCard.className = 'result-card is-error';
       errCard.innerHTML = `
-        <button type="button" class="btn-single-delete" title="Remove" style="position:absolute;top:6px;right:6px;">✕</button>
+        <button type="button" class="btn-single-delete" title="${t('single.delete', 'Remove')}" style="position:absolute;top:6px;right:6px;">✕</button>
         <div class="error-badge-icon">!</div>
         <span class="result-name" title="${item.name}">${item.name}</span>
         <span class="result-meta" style="color:var(--error);">${item.error || 'Failed'}</span>
@@ -1698,15 +1933,15 @@ function renderResultsView() {
           ` : ''}
         </div>
         <div class="list-row-actions">
-          <button type="button" class="btn-batch-action btn-row-preview" title="Inspect & Preview" aria-label="Preview image">
+          <button type="button" class="btn-batch-action btn-row-preview" title="${t('card.preview', 'Inspect & Preview')}" aria-label="Preview image">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <span>Preview</span>
+            <span>${t('card.preview', 'Preview')}</span>
           </button>
-          <button type="button" class="btn-batch-action btn-batch-download" title="Download converted file" aria-label="Download file">
+          <button type="button" class="btn-batch-action btn-batch-download" title="${t('card.download', 'Download converted file')}" aria-label="Download file">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            <span>Download</span>
+            <span>${t('card.download', 'Download')}</span>
           </button>
-          <button type="button" class="btn-single-delete" title="Delete file" aria-label="Delete file">
+          <button type="button" class="btn-single-delete" title="${t('single.delete', 'Delete file')}" aria-label="Delete file">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </div>
@@ -1751,13 +1986,13 @@ function renderResultsView() {
           ` : ''}
         </div>
         <div class="result-actions">
-          <button type="button" class="result-action-btn result-preview-btn" title="Inspect & Preview" aria-label="Preview image">
+          <button type="button" class="result-action-btn result-preview-btn" title="${t('card.preview', 'Inspect & Preview')}" aria-label="Preview image">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
-          <button type="button" class="result-action-btn result-download-btn" title="Download converted file" aria-label="Download file">
+          <button type="button" class="result-action-btn result-download-btn" title="${t('card.download', 'Download converted file')}" aria-label="Download file">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
-          <button type="button" class="result-action-btn result-delete-btn" title="Remove file" aria-label="Remove file">
+          <button type="button" class="result-action-btn result-delete-btn" title="${t('single.delete', 'Remove file')}" aria-label="Remove file">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </div>
@@ -1795,8 +2030,8 @@ function renderResultsView() {
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
     </div>
-    <span class="add-more-text">Add More Images</span>
-    <span class="add-more-subtext">Drop files here or click</span>
+    <span class="add-more-text">${t('card.add_more_title', 'Add More Images')}</span>
+    <span class="add-more-subtext">${t('card.add_more_hint', 'Drop files here or click')}</span>
   `;
   addCard.addEventListener('click', (e) => {
     e.stopPropagation();

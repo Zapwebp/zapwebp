@@ -104,4 +104,3 @@ $ npx zapwebp-mcp
 - [Formats](/formats): Comprehensive format capability and alpha channel matrix.
 - [Safety](/safety): Zero-trust security, SVG sanitization, and SSRF prevention.
 - [Errors](/errors): Complete machine and human-readable error catalog.
-

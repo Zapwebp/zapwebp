@@ -8,11 +8,15 @@ Applies to: `zapwebp-vscode` v1.1.0 and later, VS Code 1.85+.
 
 ## Quick start
 
+Install from your preferred extension registry:
+- **[Download on Open VSX](https://open-vsx.org/extension/ebula/zapwebp-vscode)** (VSCodium, Cursor, Windsurf, Gitpod)
+- **[Download on Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode)** (VS Code)
+
 1. Open your editor's Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`).
-2. Search for **`zapwebp`** on the Open VSX Registry.
+2. Search for **`zapwebp`**.
 3. Click **Install**.
-4. In Explorer, right-click any `.svg`, `.png`, or `.jpg` file.
-5. Select **Zap to WebP** or **Zap to WebP (@1x, @2x, @3x)**.
+4. In Explorer or Editor tab, right-click any `.svg`, `.png`, `.jpg`, `.webp`, `.avif`, `.gif`, or `.tiff` file.
+5. Select **Zap to WebP**, **Zap Image To...**, or **Zap to WebP (@1x, @2x, @3x)**.
 
 Converted files appear immediately adjacent to the source asset with transparency preserved and metadata stripped.
 
