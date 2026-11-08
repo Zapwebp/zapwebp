@@ -12,7 +12,7 @@
     "@kitelet/core": "^1.0.0",
     "marked": "^18.1.2",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^8.3.5"
   },
   "license": "MIT",
   "homepage": "https://zapwebp-docs.vercel.app",

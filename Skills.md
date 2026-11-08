@@ -14,7 +14,7 @@
 
 ## 2. Libraries & Tools (and architectural justification)
 
-- `sharp` (^0.33.5) — High-performance libvips wrapper for raster encoding, decoding, resizing, and metadata stripping.
+- `sharp` (^0.35.5) — High-performance libvips wrapper for raster encoding, decoding, resizing, and metadata stripping.
 - `@resvg/resvg-js` (^2.6.2) — Native Rust-based SVG rasterizer ensuring compliant, vector-pure alpha rendering without browser DOM dependency.
 - `@modelcontextprotocol/server` (^2.4.0) — Official SDK for exposing standard JSON-RPC tools, prompts, and resources to AI agent runtimes.
 - `zod` (^4.0.0) — Strict runtime validation and JSON-schema generation for MCP tool inputs.

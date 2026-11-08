@@ -78,24 +78,17 @@ function createZapStore(initialConfig = {}) {
 
     try {
       const uploadHandler = options.uploader || initialConfig.uploader;
-      let result = null;
-
-      if (typeof uploadHandler === 'function') {
-        setState({ status: 'converting', progress: 50 });
-        result = await uploadHandler(files, {
-          targetFormat: state.targetFormat,
-          ...options,
-        });
-      } else {
-        // Default simulated progress if no uploader callback is provided
-        setState({ status: 'converting', progress: 75 });
-        result = files.map((f) => ({
-          name: f.name,
-          size: f.size,
-          format: state.targetFormat,
-          url: typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function' && typeof Blob !== 'undefined' && (f instanceof Blob) ? URL.createObjectURL(f) : null,
-        }));
+      if (typeof uploadHandler !== 'function') {
+        const err = new Error('E_UPLOADER_REQUIRED: createZapStore requires an active conversion handler to convert images.');
+        err.code = 'E_UPLOADER_REQUIRED';
+        throw err;
       }
+
+      setState({ status: 'converting', progress: 50 });
+      const result = await uploadHandler(files, {
+        targetFormat: state.targetFormat,
+        ...options,
+      });
 
       setState({
         status: 'done',

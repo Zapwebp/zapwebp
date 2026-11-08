@@ -1,6 +1,6 @@
 {
   "name": "zapwebp-workspace",
-  "version": "1.1.0",
+  "version": "2.14.0",
   "private": true,
   "description": "Transparency-aware image conversion for web and developer workflows.",
   "engines": {

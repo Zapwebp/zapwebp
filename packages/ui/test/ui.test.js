@@ -193,7 +193,10 @@ test('UI Primitives: renders new Error & Upload components', () => {
 });
 
 test('UI State: createZapStore transitions states and tracks conversions', async () => {
-  const store = ui.createZapStore({ targetFormat: 'webp' });
+  const store = ui.createZapStore({
+    targetFormat: 'webp',
+    uploader: async (files, opts) => files.map((f) => ({ name: f.name, size: 512, format: opts.targetFormat })),
+  });
   assert.equal(store.status, 'idle');
   assert.equal(store.progress, 0);
   assert.deepEqual(store.errors, []);
@@ -210,13 +213,23 @@ test('UI State: createZapStore transitions states and tracks conversions', async
   assert.equal(store.progress, 100);
   assert.equal(store.lastResult.length, 1);
   assert.equal(store.lastResult[0].name, 'logo.svg');
+  assert.equal(store.lastResult[0].format, 'webp');
 
   // Reset
   store.reset();
   assert.equal(store.status, 'idle');
   assert.equal(store.progress, 0);
 
-  // Error handling in store
+  // Error handling: requires explicit uploader function (anti-simulation)
+  const bareStore = ui.createZapStore({ targetFormat: 'webp' });
+  await assert.rejects(async () => {
+    await bareStore.upload(mockFiles);
+  }, /E_UPLOADER_REQUIRED/);
+  assert.equal(bareStore.status, 'error');
+  assert.equal(bareStore.errors.length, 1);
+  assert.equal(bareStore.errors[0].code, 'E_UPLOADER_REQUIRED');
+
+  // Error handling: custom failure
   const failingStore = ui.createZapStore({
     uploader: async () => {
       const err = new Error('File exceeds limit');

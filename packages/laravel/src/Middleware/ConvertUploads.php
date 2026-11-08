@@ -81,7 +81,8 @@ class ConvertUploads
                 null,
                 true // test mode to allow simulated uploaded file
             );
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Zapwebp failed to convert {$realPath}: " . $e->getMessage());
             // Fail open: retain original upload if conversion cannot proceed
             return null;
         }

@@ -22,6 +22,14 @@ function formatBytes(bytes, decimals = 1) {
  * Maps every structured error code to human messages, actionable fixes, component targets, and retry metadata.
  */
 const ERROR_MAP = {
+  E_UPLOADER_REQUIRED: {
+    title: 'Conversion handler required',
+    message: 'createZapStore requires an active conversion handler to convert images.',
+    fix: 'Provide an uploader callback function in initialConfig or upload options.',
+    component: 'toast',
+    severity: 'error',
+    retryable: false,
+  },
   E_UNSAFE_SVG: {
     title: 'Unsafe SVG detected',
     message: 'This SVG contains a script tag, external reference, or entity expansion.',

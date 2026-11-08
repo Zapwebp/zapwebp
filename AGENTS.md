@@ -22,7 +22,7 @@ Zapwebp provides transparency-safe, high-performance image conversion across dev
 - **Language / Runtime:** Node.js >=22.0.0
 - **Module Formats:** Dual CommonJS & ESM (ES2023)
 - **Package Manager:** pnpm 11.9.0
-- **Core Raster Engine:** `sharp` ^0.33.5 (libvips)
+- **Core Raster Engine:** `sharp` ^0.35.5 (libvips)
 - **Core Vector Engine:** `@resvg/resvg-js` ^2.6.2 (Rust SVG)
 - **AI Agent Protocol:** Model Context Protocol (`@modelcontextprotocol/server` ^2.4.0, `zod` ^4.0.0)
 - **HTTP Server:** Express ^4.21.2

@@ -29,6 +29,16 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **UI State Store Anti-Simulation (`@zapwebp/ui`)**:
+  - Removed simulated progress and fallback object generation in `packages/ui/src/state/index.js` when no `uploader` callback was provided.
+  - Implemented explicit fail-fast rejection throwing `E_UPLOADER_REQUIRED` with dedicated error mapping in `ERROR_MAP`.
+- **Laravel Upload Middleware Logging (`@zapwebp/laravel`)**:
+  - Added `\Illuminate\Support\Facades\Log::warning` to `ConvertUploads.php` to log conversion exceptions before falling open.
+- **Dependency Security Patches & Sharp Upgrade**:
+  - Upgraded `sharp` to `^0.35.5` in `@zapwebp/core` and `apps/vscode`, resolving inherited `libvips` (CVE-2026-33327, CVE-2026-33328, CVE-2026-35590) and `libheif` vulnerabilities.
+  - Upgraded `vite` in `zapwebp-docs` to `^8.3.5`, achieving clean zero-vulnerability audit (`pnpm audit`).
+- **Workspace Version Synchronization**:
+  - Synchronized root `package.json` version from `1.1.0` to `2.14.0` matching `CHANGELOG.md` and release governance.
 - **Schema Resolution & SPA Rewrite Conflict (`zapwebp-docs/vercel.json`, `vercel.json`)**:
   - Fixed `Parse error at offset 0` in VS Code and IDE schema validators caused by documentation catch-all rewrite rules serving HTML (`index.html`) on schema requests.
   - Deployed `agent-manifest.json` and `plugins.schema.json` to static assets directories across `zapwebp-docs` and root web app.
