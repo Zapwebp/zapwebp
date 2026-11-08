@@ -26,6 +26,9 @@ This changelog records the changes included in each Zapwebp version.
   - Implemented official Next.js image custom loader `zapwebpLoader` for `<Image loader={zapwebpLoader} ... />` and `images.loaderFile`.
   - Added parallel multi-format asset generation (`formats: ['webp', 'avif']`).
   - Updated Webpack asset rules for all raster and vector extensions.
+- **Comprehensive Common FAQs Documentation (`content/faq.md`, `zapwebp-docs/content/faq.md`, `locales/tl/docs/faq.md`, `zapwebp-docs/src/routes.ts`)**:
+  - Authored definitive, multi-lingual troubleshooting and FAQ guide covering official package naming scopes, npm and npx 404 resolution, Socket.dev dependency alerts interpretation (sharp CVE patches, young publisher heuristics, native binary install scripts), VS Code extension multi-tier execution (`zap.cmd` elimination), deterministic alpha transparency preservation (`E_ALPHA_NOT_REPRESENTABLE`), SVG defensive gates (`E_UNSAFE_SVG`), fail-open Laravel middleware, and AI agent MCP configurations.
+  - Registered `/faq` route and `/faqs` canonical alias with bilingual i18n support in `zapwebp-docs` and `llms.txt`.
 
 ### Fixed
 

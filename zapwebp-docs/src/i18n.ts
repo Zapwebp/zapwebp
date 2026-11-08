@@ -75,6 +75,7 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Code of Conduct': 'Code of Conduct',
     'title.Contributing': 'Contributing',
     'title.Translators': 'Translators',
+    'title.Common FAQs': 'Common FAQs',
   },
   tl: {
     'header.search_placeholder': 'Maghanap sa dokumentasyon...',
@@ -139,6 +140,7 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Code of Conduct': 'Alituntunin ng Pagkilos (Code of Conduct)',
     'title.Contributing': 'Pag-ambag (Contributing)',
     'title.Translators': 'Mga Tagasalin (Translators)',
+    'title.Common FAQs': 'Mga Karaniwang Tanong (FAQ)',
   }
 };
 

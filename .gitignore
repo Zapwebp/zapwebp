@@ -8,7 +8,7 @@ dist/
 .vsix
 
 # Local-only EA architecture and governance docs (never pushed to GitHub)
-docs/
+/docs/
 
 # >>> zapwebp >>>
 # Converted image outputs — regenerate with `zap`

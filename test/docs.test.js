@@ -27,6 +27,7 @@ const pages = [
   'code-of-conduct',
   'contributing',
   'translators',
+  'faq',
   'plugins/vite',
   'plugins/next',
   'plugins/github-action',

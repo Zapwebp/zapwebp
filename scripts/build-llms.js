@@ -49,6 +49,7 @@ const out = `# Zapwebp
 - [Code of Conduct](https://zapwebp-docs.vercel.app/code-of-conduct): Community standards and pledge.
 - [Security](https://zapwebp-docs.vercel.app/security): Security policy and vulnerability disclosure.
 - [Translators](https://zapwebp-docs.vercel.app/translators): Translation guide and recognized contributors.
+- [Common FAQs](https://zapwebp-docs.vercel.app/faq): Frequently asked questions and troubleshooting.
 - [GitHub](https://github.com/Zapwebp): Source code repository.
 - [Discussions](https://github.com/Zapwebp/discussions): Developer discussions and Q&A.
 
@@ -81,6 +82,7 @@ const out = `# Zapwebp
 - [Code of Conduct Raw](/code-of-conduct.md): Contributor Covenant standards.
 - [Contributing Raw](/contributing.md): Developer guide and PR checklist.
 - [Translators Raw](/translators.md): Internationalization guide and contributors.
+- [Common FAQs Raw](/faq.md): Frequently asked questions and troubleshooting.
 `;
 
 fs.mkdirSync(publicDir, { recursive: true });

@@ -306,6 +306,15 @@ export const DOC_ROUTES: DocRoute[] = [
     category: 'Platform',
     description: 'Internationalization standards, translation catalog layout, and recognized community translators directory.',
     keywords: ['translators', 'i18n', 'localization', 'tagalog', 'locales', 'contribute translation']
+  },
+  {
+    path: '/faq',
+    file: 'faq',
+    title: 'Common FAQs',
+    category: 'Platform',
+    badge: 'Help',
+    description: 'Frequently asked questions regarding package scopes, npm 404s, security alerts, VS Code execution, and alpha safety.',
+    keywords: ['faq', 'faqs', 'troubleshooting', 'socket.dev', 'cve', 'zap.cmd', 'mcp', 'alpha', 'transparency', 'sharp']
   }
 ];
 
@@ -327,4 +336,5 @@ if (ROUTE_MAP['/plugins/vite']) ROUTE_MAP['/vite'] = ROUTE_MAP['/plugins/vite'];
 if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
 if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];
 if (ROUTE_MAP['/plugins/github-action']) ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
+if (ROUTE_MAP['/faq']) ROUTE_MAP['/faqs'] = ROUTE_MAP['/faq'];
 
