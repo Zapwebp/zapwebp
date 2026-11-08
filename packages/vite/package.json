@@ -1,6 +1,6 @@
 {
   "name": "zapwebp-vite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official first-party Vite plugin for Zapwebp - zero-config image and vector asset conversion with transparency safety, retina multipliers, and modern picture markup.",
   "main": "src/index.js",
   "types": "src/index.d.ts",

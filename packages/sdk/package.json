@@ -1,6 +1,6 @@
 {
   "name": "@zapwebp/sdk",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Official TypeScript and JavaScript SDK for Zap / Zapwebp.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
