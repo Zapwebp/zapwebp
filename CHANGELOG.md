@@ -63,6 +63,16 @@ This changelog records the changes included in each Zapwebp version.
 - **Brand Identity & Footer Design Redesign (`public/zapwebp.svg`, `public/index.html`, `public/styles.css`)**:
   - Restored authentic brand vector logo across all public and documentation asset directories.
   - Fixed footer link color overrides in dark mode and corrected `data-i18n` span targeting preventing text destruction.
+- **Documentation SPA Rewrites & 404 Resolution (`zapwebp-docs/vercel.json`)**:
+  - Fixed Vercel routing 404 error on `/cli`, `/mcp`, and documentation sub-pages by eliminating unsupported negative lookahead PCRE regex patterns in `source`.
+  - Configured explicit static bypass rules for `/schemas/*`, `/content/*`, `/locales/*`, and `/assets/*`, while routing documentation routes to `/index.html`.
+- **Custom Branded 404 Pages (`public/404.html`, `zapwebp-docs/public/404.html`)**:
+  - Implemented standalone, zero-dependency, theme-reactive custom 404 error pages for both the web app and docs portal.
+  - Features the authentic brand vector logo, high-contrast status badge, and recovery navigation to the Web Converter and Documentation Overview.
+- **Visual Spacing & Screen-Reader Typography (`public/styles.css`)**:
+  - Defined standard accessible `.sr-only` utility class ensuring semantic heading tags remain 100% visually hidden with zero layout impact.
+  - Eliminated vertical over-stretching on mobile dropzone (`calc(100dvh - ...)`) in favor of balanced `230px` natural height.
+  - Optimized desktop `.page-content` alignment and padding, eliminating excessive top/bottom voids.
 
 ## [2.13.1] - 2026-11-08
 

@@ -68,6 +68,19 @@
   display: none !important;
 }
 
+/* Screen Reader Only Utility (WCAG 2.2 AA compliant hidden text) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -3219,6 +3232,19 @@ body {
   display: none !important;
 }
 
+/* Screen Reader Only Utility (WCAG 2.2 AA compliant hidden text) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .settings-modal-panel {
   width: 100%;
   max-width: 420px;
@@ -3486,12 +3512,12 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
-  max-width: 980px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 24px 20px 32px;
+  padding: 36px 20px 48px;
   box-sizing: border-box;
 }
 
@@ -4344,7 +4370,7 @@ body {
   }
 
   .hero-section.tool-workspace {
-    padding: 16px 12px 24px;
+    padding: 8px 4px 16px;
   }
 
   .tool-headline {
@@ -4359,14 +4385,15 @@ body {
     border-radius: 16px;
   }
 
-  /* Fluid Dropzone Height when Idle */
+  /* Natural Dropzone Height on Mobile */
   .dropzone-area {
-    min-height: calc(100dvh - var(--header-height) - var(--footer-height) - var(--safe-top) - var(--safe-bottom) - 80px);
+    min-height: 230px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 32px 16px;
+    padding: 24px 14px;
+    gap: 10px;
   }
 
   /* Collapsed dropzone state when results are loaded */

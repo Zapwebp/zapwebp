@@ -3,7 +3,11 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/((?!schemas/|content/|assets/|locales/|.*\\..*).*$)", "destination": "/index.html" }
+    { "source": "/schemas/(.*)", "destination": "/schemas/$1" },
+    { "source": "/content/(.*)", "destination": "/content/$1" },
+    { "source": "/locales/(.*)", "destination": "/locales/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
