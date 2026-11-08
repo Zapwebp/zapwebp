@@ -176,3 +176,4 @@ Solusyon: Linisin ang SVG gamit ang SVGO o alisin ang mga script bago mag-conver
 - [CLI](/cli): Gabay sa paggamit ng terminal executable.
 - [MCP Agent](/mcp): Pagsasaayos ng Model Context Protocol.
 - [VS Code Extension](/plugins/vscode): Paggamit ng extension sa editor.
+

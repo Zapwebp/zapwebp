@@ -21,6 +21,8 @@ const losslessToggle = document.querySelector('#lossless-toggle');
 const formatPills = document.querySelectorAll('.fmt-select-btn');
 const scaleButtons = document.querySelectorAll('.scale-btn');
 const themeToggleBtn = document.querySelector('#theme-toggle-btn');
+const cockpitToggleBtn = document.querySelector('#cockpit-toggle-btn');
+const cockpitAdvancedControls = document.querySelector('#cockpit-advanced-controls');
 
 // Background color picker for JPEG flattening
 const bgItem = document.getElementById('bar-bg-item');
@@ -575,8 +577,9 @@ const I18N_DICTIONARIES = {
     'nav.docs': 'Docs',
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
+    'hero.badge': '100% In-Browser · Zero Server Uploads',
     'hero.title': 'Convert<span class="accent-gradient"> correctly.</span>',
-    'hero.description': 'Transparency preserved. Metadata stripped. Zero server uploads.',
+    'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Transparency preserved</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Metadata stripped</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Zero server uploads</span>',
     'dropzone.title': '<span class="highlight-action">Drop images here</span> or <span class="browse-link">browse files</span>',
     'dropzone.subtitle': 'Select single files, batches, or folders.',
     'dropzone.converting': 'Converting in browser...',
@@ -587,6 +590,7 @@ const I18N_DICTIONARIES = {
     'batch.download_all': 'Download all (ZIP)',
     'batch.delete_all': 'Delete all',
     'cockpit.format': 'Format',
+    'cockpit.settings': 'Settings',
     'cockpit.background': 'Background',
     'cockpit.scales': 'Scales',
     'cockpit.quality': 'Quality',
@@ -617,6 +621,7 @@ const I18N_DICTIONARIES = {
     'modal.converted_label': 'Converted',
     'modal.alpha_preserved': 'Alpha Preserved',
     'modal.opaque': 'Opaque',
+    'footer.tagline': 'Transparency-safe image conversion across developer terminals, AI agents, code editors, and browsers with zero server uploads.',
     'footer.col_ecosystem': 'Ecosystem & Tools',
     'footer.col_guides': 'Guides & Formats',
     'footer.col_sdks': 'Developer SDKs',
@@ -633,6 +638,7 @@ const I18N_DICTIONARIES = {
     'footer.transparency': 'Transparency & Alpha Rules',
     'footer.clean_mode': 'Clean Mode & EXIF Stripping',
     'footer.multipliers': 'Multi-Scale Retina (@1x/@2x/@3x)',
+    'footer.faq': 'Common FAQs',
     'footer.sdk': 'JavaScript/TypeScript SDK',
     'footer.vite': 'Vite Plugin',
     'footer.next': 'Next.js Plugin',
@@ -650,8 +656,9 @@ const I18N_DICTIONARIES = {
     'nav.docs': 'Mga Gabay',
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
+    'hero.badge': '100% Sa Loob ng Browser · Walang Server Uploads',
     'hero.title': 'Mag-convert<span class="accent-gradient"> nang tama.</span>',
-    'hero.description': 'Nananatili ang aninag. Tinanggal ang metadata. Walang server uploads.',
+    'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Nananatili ang aninag</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Tinanggal ang metadata</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Walang server uploads</span>',
     'dropzone.title': '<span class="highlight-action">I-drop ang mga larawan dito</span> o <span class="browse-link">mag-browse ng file</span>',
     'dropzone.subtitle': 'Pumili ng isang file, maramihan, o buong folder.',
     'dropzone.converting': 'Kasalukuyang kino-convert sa browser...',
@@ -662,6 +669,7 @@ const I18N_DICTIONARIES = {
     'batch.download_all': 'I-download lahat (ZIP)',
     'batch.delete_all': 'Burahin lahat',
     'cockpit.format': 'Format',
+    'cockpit.settings': 'Mga Setting',
     'cockpit.background': 'Background',
     'cockpit.scales': 'Mga Sukat',
     'cockpit.quality': 'Kalidad',
@@ -692,6 +700,7 @@ const I18N_DICTIONARIES = {
     'modal.converted_label': 'Na-convert',
     'modal.alpha_preserved': 'Nananatiling Transparent',
     'modal.opaque': 'Opaque (May Kulay)',
+    'footer.tagline': 'Mabilis at ligtas na conversion ng imahe sa terminal, AI agents, code editors, at browser nang walang server uploads.',
     'footer.col_ecosystem': 'Ekosistema at Mga Kagamitan',
     'footer.col_guides': 'Mga Gabay at Format',
     'footer.col_sdks': 'Mga SDK para sa Developer',
@@ -708,6 +717,7 @@ const I18N_DICTIONARIES = {
     'footer.transparency': 'Mga Patakaran sa Aninag at Alpha',
     'footer.clean_mode': 'Malinis na Mode at Pag-alis ng EXIF',
     'footer.multipliers': 'Multi-Scale Retina (@1x/@2x/@3x)',
+    'footer.faq': 'Mga Karaniwang Tanong (FAQ)',
     'footer.sdk': 'JavaScript/TypeScript SDK',
     'footer.vite': 'Vite Plugin',
     'footer.next': 'Next.js Plugin',
@@ -998,6 +1008,15 @@ syncUiWithSettings();
 // ==========================================================================
 // 3. Reactive Controls: Immediate Re-conversion on Settings Changes
 // ==========================================================================
+if (cockpitToggleBtn && cockpitAdvancedControls) {
+  cockpitToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isExpanded = cockpitAdvancedControls.classList.toggle('is-expanded');
+    cockpitToggleBtn.setAttribute('aria-expanded', String(isExpanded));
+    cockpitToggleBtn.classList.toggle('is-active', isExpanded);
+  });
+}
+
 if (formatPills.length) {
   formatPills.forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -2080,6 +2099,7 @@ function removeItem(id) {
     }
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
     convertedItems.delete(id);
+    dbDeleteFile(id);
     renderResultsView();
   }
 }
@@ -2094,6 +2114,7 @@ function clearAllItems() {
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
   }
   convertedItems.clear();
+  dbClearFiles();
   renderResultsView();
 }
 

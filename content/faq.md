@@ -268,3 +268,4 @@ import { zapwebpLoader } from 'zapwebp-next';
 - [CLI](/cli): Terminal command reference and flags.
 - [MCP Agent](/mcp): Model Context Protocol tools and configuration.
 - [VS Code Extension](/plugins/vscode): In-editor conversion guide.
+

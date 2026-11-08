@@ -50,6 +50,19 @@ This changelog records the changes included in each Zapwebp version.
 - **MCP Package Name & npx Resolution (`@zapwebp/mcp`)**:
   - Fixed documentation, quickstart guides, CLI error outputs, and examples across `content/mcp.md`, `content/index.md`, `content/developers.md`, `scripts/translate-docs.js`, and `zapwebp-docs/` from `npx zapwebp-mcp` (which caused npm registry 404 errors) to `npx -y @zapwebp/mcp`.
   - Explicitly clarified Claude Desktop, Cursor, and Windsurf MCP configuration templates with scoped package name `@zapwebp/mcp`.
+- **Web App Deletion Persistence & IndexedDB Sync (`public/app.js`)**:
+  - Fixed issue where deleting an individual image (`removeItem`) or clearing all converted files (`clearAllItems`) only cleared in-memory state while leaving IndexedDB (`zapwebp-db`) records intact, causing deleted images to reappear upon browser refresh.
+  - Wired `dbDeleteFile(id)` into `removeItem(id)` and `dbClearFiles()` into `clearAllItems()`, guaranteeing permanent deletion across sessions.
+- **Web App Workspace Decluttering (`public/index.html`, `public/styles.css`)**:
+  - Removed visual hero clutter (`100% In-Browser · Zero Server Uploads`, `Convert correctly.`, and `Transparency preserved • Metadata stripped • Zero server uploads`), placing the converter workspace directly in primary focus.
+  - Added semantic, screen-reader accessible `<h1>` (`.sr-only`) preserving WCAG 2.2 AA document hierarchy and search indexing without visual distraction.
+- **Mobile Responsive Controls & Collapsible Settings Toolbar (`public/index.html`, `public/styles.css`, `public/app.js`)**:
+  - Implemented collapsible settings cluster in the cockpit controls bar (`.cockpit-advanced-cluster`) with an interactive toggle button (`#cockpit-toggle-btn`) on screens < 640px.
+  - Keeps primary format pills immediately reachable while hiding advanced controls (Scales, Quality slider, Lossless and Clean Mode switches) behind an on-demand expandable panel, eliminating mobile screen crowding.
+  - Optimized single result card action buttons (`Download`, `Inspect`, `Crop`, `Share`, `Delete`) with responsive touch targets (minimum 44px) and full-width primary download button on mobile devices.
+- **Brand Identity & Footer Design Redesign (`public/zapwebp.svg`, `public/index.html`, `public/styles.css`)**:
+  - Restored authentic brand vector logo across all public and documentation asset directories.
+  - Fixed footer link color overrides in dark mode and corrected `data-i18n` span targeting preventing text destruction.
 
 ## [2.13.1] - 2026-11-08
 
