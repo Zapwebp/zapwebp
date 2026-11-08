@@ -1,6 +1,6 @@
 {
   "name": "@zapwebp/laravel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official Laravel integration for Zapwebp transparency-safe image conversion engine.",
   "license": "MIT",
   "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>",
