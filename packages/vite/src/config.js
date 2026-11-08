@@ -77,8 +77,28 @@ function resolveConfig(rawOptions = {}) {
     onConflict = options.onConflict;
   }
 
-  // 9. Include / Exclude patterns
-  let include = ['**/*.svg'];
+  // 9. Formats
+  let format = 'webp';
+  if (options.format !== undefined) {
+    if (typeof options.format !== 'string' || options.format.trim() === '') {
+      throw new TypeError('Zapwebp option `format` must be a string (e.g. "webp", "avif").');
+    }
+    format = options.format.trim().toLowerCase();
+  }
+
+  let formats = [format];
+  if (options.formats !== undefined) {
+    if (!Array.isArray(options.formats) || options.formats.length === 0) {
+      throw new TypeError('Zapwebp option `formats` must be a non-empty array of format strings (e.g. ["webp", "avif"]).');
+    }
+    formats = Array.from(new Set(options.formats.map((f) => String(f).trim().toLowerCase())));
+  }
+
+  // 10. Background color for non-alpha target conversions (e.g. JPEG)
+  const background = options.background !== undefined ? String(options.background) : undefined;
+
+  // 11. Include / Exclude patterns
+  let include = ['**/*.{svg,png,jpg,jpeg,webp,avif,gif,tiff}'];
   if (options.include !== undefined) {
     if (!Array.isArray(options.include) || !options.include.every((p) => typeof p === 'string' && p.length > 0)) {
       throw new TypeError('Zapwebp option `include` must be an array of non-empty string glob patterns.');
@@ -95,6 +115,9 @@ function resolveConfig(rawOptions = {}) {
   }
 
   return {
+    format,
+    formats,
+    background,
     scale,
     baseWidth,
     quality,

@@ -147,7 +147,9 @@ class Runner
             $args[] = implode(',', $opts['scales']);
         }
 
+        $startTime = microtime(true);
         $result = Process::timeout($this->timeout)->run($args);
+        $durationMs = (microtime(true) - $startTime) * 1000.0;
 
         if (!$result->successful()) {
             throw new RuntimeException(
@@ -157,14 +159,24 @@ class Runner
         }
 
         if (isset($opts['output'])) {
-            return (string) $opts['output'];
+            $outFilePath = (string) $opts['output'];
+        } else {
+            $dir = isset($opts['out_dir']) ? (string) $opts['out_dir'] : dirname($inputPath);
+            $baseName = pathinfo($inputPath, PATHINFO_FILENAME);
+            $outExt = $targetFormat === 'jpeg' ? 'jpg' : $targetFormat;
+            $outFilePath = rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "{$baseName}.{$outExt}";
         }
 
-        // Default path deduction
-        $dir = isset($opts['out_dir']) ? (string) $opts['out_dir'] : dirname($inputPath);
-        $baseName = pathinfo($inputPath, PATHINFO_FILENAME);
-        $outExt = $targetFormat === 'jpeg' ? 'jpg' : $targetFormat;
-        return rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "{$baseName}.{$outExt}";
+        $origSize = file_exists($inputPath) ? (int) filesize($inputPath) : 0;
+        $convSize = file_exists($outFilePath) ? (int) filesize($outFilePath) : 0;
+
+        return new ConversionResult(
+            outputPath: $outFilePath,
+            originalSize: $origSize,
+            convertedSize: $convSize,
+            format: $targetFormat,
+            durationMs: $durationMs
+        );
     }
 
     /**
@@ -222,6 +234,30 @@ class Runner
 
         $data = json_decode($result->output(), true);
         return is_array($data) ? $data : ['raw' => $result->output()];
+    }
+
+    /**
+     * Resolves the web URL for an optimized asset.
+     */
+    public function url(string $path, array $options = []): string
+    {
+        return zap_url($path, $options);
+    }
+
+    /**
+     * Renders modern HTML <picture> markup with AVIF/WebP sources and srcset.
+     */
+    public function picture(string $path, array $attributes = [], array $options = []): string
+    {
+        return zap_picture($path, $attributes, $options);
+    }
+
+    /**
+     * Generates a responsive srcset string with retina multipliers.
+     */
+    public function srcset(string $path, array $scales = [1, 2, 3], ?string $format = null): string
+    {
+        return zap_srcset($path, $scales, $format);
     }
 
     /**

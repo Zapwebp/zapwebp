@@ -13,7 +13,7 @@ Applies to: `@zapwebp/core`, `@zapwebp/cli`, `@zapwebp/mcp`, and `@zapwebp/sdk` 
 npx zapwebp logo.svg --to webp --scale 1,2,3
 
 # Launch Model Context Protocol server for AI coding agents
-npx zapwebp-mcp
+npx -y @zapwebp/mcp
 ```
 
 ## What it does

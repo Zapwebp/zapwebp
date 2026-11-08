@@ -120,3 +120,14 @@ test('svgLoader translates resourcePath into public WebP URL string', () => {
   assert.equal(output, 'export default "/icons/logo.webp";');
 });
 
+test('zapwebpLoader derives optimized WebP URLs with dimensions and quality query', () => {
+  const { zapwebpLoader } = require('../src/index');
+  assert.equal(typeof zapwebpLoader, 'function');
+
+  const url = zapwebpLoader({ src: '/images/hero.png', width: 800, quality: 80 });
+  assert.equal(url, '/images/hero.webp?w=800&q=80');
+
+  const remote = zapwebpLoader({ src: 'https://cdn.example.com/photo.jpg', width: 600 });
+  assert.equal(remote, 'https://cdn.example.com/photo.jpg');
+});
+

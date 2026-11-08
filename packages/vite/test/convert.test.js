@@ -5,8 +5,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { convertSvgAsset } = require('../src/convert');
+const { convertSvgAsset, convertAsset } = require('../src/convert');
 const { resolveConfig } = require('../src/config');
+const { generatePictureHtml } = require('../src/picture');
 
 const VALID_TRANSPARENT_SVG = `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -76,3 +77,54 @@ test('convertSvgAsset fails loudly on unsafe SVG containing active script conten
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
+test('convertAsset converts raster image to WebP and AVIF with multipliers', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zapwebp-vite-test-'));
+  const pngPath = path.join(tmpDir, 'photo.png');
+
+  const { getSharp } = require('@zapwebp/core');
+  const sharp = getSharp();
+  await sharp({
+    create: {
+      width: 100,
+      height: 100,
+      channels: 4,
+      background: { r: 141, g: 198, b: 63, alpha: 0.5 },
+    },
+  }).png().toFile(pngPath);
+
+  const config = resolveConfig({
+    formats: ['webp', 'avif'],
+    scale: [1, 2],
+  });
+
+  const outputs = await convertAsset(pngPath, config);
+  assert.equal(outputs.length, 4); // 2 formats * 2 scales
+
+  const webp1x = outputs.find((o) => o.format === 'webp' && o.scale === 1);
+  const avif2x = outputs.find((o) => o.format === 'avif' && o.scale === 2);
+
+  assert.ok(webp1x);
+  assert.equal(webp1x.name, 'photo.webp');
+  assert.ok(avif2x);
+  assert.equal(avif2x.name, 'photo@2x.avif');
+  assert.equal(avif2x.width, 200);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('generatePictureHtml outputs valid picture markup with sources and img fallback', () => {
+  const html = generatePictureHtml({
+    src: '/icons/logo.png',
+    formats: ['avif', 'webp'],
+    scales: [1, 2, 3],
+    alt: 'Zapwebp Logo',
+    className: 'logo-img',
+  });
+
+  assert.ok(html.startsWith('<picture>'));
+  assert.ok(html.includes('<source type="image/avif" srcset="/icons/logo.avif 1x, /icons/logo@2x.avif 2x, /icons/logo@3x.avif 3x">'));
+  assert.ok(html.includes('<source type="image/webp" srcset="/icons/logo.webp 1x, /icons/logo@2x.webp 2x, /icons/logo@3x.webp 3x">'));
+  assert.ok(html.includes('alt="Zapwebp Logo"'));
+  assert.ok(html.includes('class="logo-img"'));
+  assert.ok(html.endsWith('</picture>'));
+});

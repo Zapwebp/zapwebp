@@ -78,13 +78,13 @@ function applyWebpack(config, context, options, rootDir = process.cwd()) {
   config.plugins = config.plugins || [];
   config.plugins.push(new ZapwebpWebpackPlugin(options, rootDir));
 
-  // 4. Inject .svg loader
+  // 4. Inject image and vector loader
   config.module = config.module || { rules: [] };
   config.module.rules = config.module.rules || [];
 
   const loaderPath = path.join(__dirname, 'loader.js');
   config.module.rules.push({
-    test: /\.svg$/,
+    test: /\.(svg|png|jpe?g|gif|webp|avif|tiff)$/i,
     resourceQuery: { not: [/url/] },
     use: [
       {
@@ -92,6 +92,7 @@ function applyWebpack(config, context, options, rootDir = process.cwd()) {
         options: {
           outDir: options.outDir,
           baseWidth: options.baseWidth,
+          format: options.format,
         },
       },
     ],

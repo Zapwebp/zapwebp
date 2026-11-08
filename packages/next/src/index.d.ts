@@ -3,6 +3,29 @@
  */
 export interface ZapwebpNextOptions {
   /**
+   * Primary target image format (e.g. 'webp', 'avif', 'png', 'jpeg').
+   * @default 'webp'
+   */
+  format?: string;
+
+  /**
+   * Multiple target formats to generate in parallel (e.g. ['webp', 'avif']).
+   * @default ['webp']
+   */
+  formats?: string[];
+
+  /**
+   * Optional background color when flattening transparent images to opaque targets.
+   */
+  background?: string;
+
+  /**
+   * Whether to inject custom next/image loader compatibility.
+   * @default true
+   */
+  customLoader?: boolean;
+
+  /**
    * Scale multipliers to render.
    * @default [1]
    */
@@ -123,6 +146,11 @@ export interface ZapwebpManifest {
  * @returns Function accepting Next.js config and returning augmented Next.js config.
  */
 export function withZapwebp(options?: ZapwebpNextOptions): (nextConfig?: NextConfig) => NextConfig;
+
+/**
+ * Official next/image custom loader function.
+ */
+export function zapwebpLoader(params: { src: string; width: number; quality?: number }): string;
 
 export default withZapwebp;
 

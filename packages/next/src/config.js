@@ -76,7 +76,30 @@ function resolveConfig(rawOptions = {}) {
   const emitManifest = Boolean(options.emitManifest ?? true);
   const respectNextImage = Boolean(options.respectNextImage ?? true);
 
-  // 9. OnConflict
+  // 9. Formats
+  let format = 'webp';
+  if (options.format !== undefined) {
+    if (typeof options.format !== 'string' || options.format.trim() === '') {
+      throw new TypeError('Zapwebp option `format` must be a string (e.g. "webp", "avif").');
+    }
+    format = options.format.trim().toLowerCase();
+  }
+
+  let formats = [format];
+  if (options.formats !== undefined) {
+    if (!Array.isArray(options.formats) || options.formats.length === 0) {
+      throw new TypeError('Zapwebp option `formats` must be a non-empty array of format strings (e.g. ["webp", "avif"]).');
+    }
+    formats = Array.from(new Set(options.formats.map((f) => String(f).trim().toLowerCase())));
+  }
+
+  // 10. Background color for non-alpha targets
+  const background = options.background !== undefined ? String(options.background) : undefined;
+
+  // 11. Custom loader flag
+  const customLoader = Boolean(options.customLoader ?? true);
+
+  // 12. OnConflict
   let onConflict = 'overwrite';
   if (options.onConflict !== undefined) {
     if (!['overwrite', 'skip', 'error'].includes(options.onConflict)) {
@@ -86,6 +109,10 @@ function resolveConfig(rawOptions = {}) {
   }
 
   return {
+    format,
+    formats,
+    background,
+    customLoader,
     scale,
     baseWidth,
     quality,

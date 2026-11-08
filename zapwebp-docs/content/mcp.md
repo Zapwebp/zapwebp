@@ -9,7 +9,7 @@ Applies to: `@zapwebp/mcp` v1.1.0 and later.
 ## Quick start
 
 ```bash
-npx zapwebp-mcp
+npx -y @zapwebp/mcp
 ```
 
 Starts the Zapwebp Model Context Protocol server over stdio for compatible AI clients.
@@ -81,14 +81,14 @@ Exposes structured tools, prompts, and resources to AI assistants (Claude Deskto
 ### Inspect image for AI provenance and alpha
 
 ```bash
-$ echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"inspect_image","arguments":{"inputPath":"photo.png"}}}' | npx zapwebp-mcp
+$ echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"inspect_image","arguments":{"inputPath":"photo.png"}}}' | npx -y @zapwebp/mcp
 {"result":{"content":[{"type":"text","text":"{\n  \"format\": \"png\",\n  \"hasAlpha\": true,\n  \"metadata\": {\n    \"aiProvenanceHints\": [\"CreatorTool contains 'Firefly'\", \"C2PA Content Credentials manifest present\"]\n  }\n}"}]},"jsonrpc":"2.0","id":1}
 ```
 
 ### Convert image with verified alpha safety and Clean Certificate
 
 ```bash
-$ echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"convert_image","arguments":{"inputPath":"logo.svg","to":"webp","clean":true,"verify":true}}}' | npx zapwebp-mcp
+$ echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"convert_image","arguments":{"inputPath":"logo.svg","to":"webp","clean":true,"verify":true}}}' | npx -y @zapwebp/mcp
 {"result":{"content":[{"type":"text","text":"{\n  \"outputPath\": \"logo.webp\",\n  \"format\": \"webp\",\n  \"alphaPreserved\": true,\n  \"clean\": true,\n  \"certificate\": { \"metadataChunks\": 0 }\n}"}]},"jsonrpc":"2.0","id":2}
 ```
 
@@ -107,7 +107,7 @@ $ echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"convert_
 ```json
 {
   "server": "@zapwebp/mcp",
-  "command": "npx zapwebp-mcp",
+  "command": "npx -y @zapwebp/mcp",
   "transports": ["stdio", "streamable-http"],
   "capabilities": ["tools", "prompts", "resources"],
   "tools": [

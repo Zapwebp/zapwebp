@@ -2,6 +2,7 @@
 
 const { resolveConfig } = require('./config');
 const { applyWebpack, ZapwebpWebpackPlugin } = require('./webpack');
+const { zapwebpLoader } = require('./loader');
 
 /**
  * Higher-order Next.js configuration wrapper.
@@ -14,12 +15,15 @@ function withZapwebp(userOptions = {}) {
   return function zapwebpNextWrapper(nextConfig = {}) {
     const config = { ...nextConfig };
 
-    // Register WebP in next/image formats if respectNextImage is enabled
+    // Register WebP / AVIF in next/image formats if respectNextImage is enabled
     if (options.respectNextImage) {
       config.images = config.images || {};
       const formats = config.images.formats ? [...config.images.formats] : [];
       if (!formats.includes('image/webp')) {
         formats.push('image/webp');
+      }
+      if (options.formats && options.formats.includes('avif') && !formats.includes('image/avif')) {
+        formats.push('image/avif');
       }
       config.images.formats = formats;
     }
@@ -44,4 +48,5 @@ module.exports = {
   withZapwebp,
   default: withZapwebp,
   ZapwebpWebpackPlugin,
+  zapwebpLoader,
 };

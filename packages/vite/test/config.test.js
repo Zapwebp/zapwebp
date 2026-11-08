@@ -15,7 +15,9 @@ test('resolveConfig applies standard production defaults', () => {
   assert.equal(config.emitManifest, true);
   assert.equal(config.emitToPublic, true);
   assert.equal(config.onConflict, 'overwrite');
-  assert.deepEqual(config.include, ['**/*.svg']);
+  assert.equal(config.format, 'webp');
+  assert.deepEqual(config.formats, ['webp']);
+  assert.deepEqual(config.include, ['**/*.{svg,png,jpg,jpeg,webp,avif,gif,tiff}']);
 });
 
 test('resolveConfig sorts and deduplicates multipliers', () => {

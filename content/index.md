@@ -53,7 +53,7 @@ Zapwebp converts SVG and common raster images to WebP, PNG, JPEG, and AVIF while
 |---|---|---|---|
 | Web App | Browser | `https://zapwebp.vercel.app/` | Drag-and-drop instant conversion and batch downloads |
 | CLI | Terminal | `npx zapwebp <file>` | Local file, glob, watch, and CI checks |
-| MCP Server | Stdio | `npx zapwebp-mcp` | Image conversion and optimization tools for AI agents |
+| MCP Server | Stdio | `npx -y @zapwebp/mcp` | Image conversion and optimization tools for AI agents |
 | HTTP API | REST | `POST /api/v1/convert` | Stateless image conversion endpoints |
 
 ## Examples
@@ -68,7 +68,7 @@ $ npx zapwebp logo.svg --to webp
 ### Inspect image metadata
 
 ```bash
-$ npx zapwebp-mcp
+$ npx -y @zapwebp/mcp
 {"result":{"serverInfo":{"name":"zapwebp","version":"1.1.0"}},"jsonrpc":"2.0","id":1}
 ```
 

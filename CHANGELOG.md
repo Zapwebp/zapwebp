@@ -2,6 +2,33 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.14.0] - 2026-11-08
+
+### Added
+
+- **Full Multi-Format Laravel Package (`@zapwebp/laravel`, `zapwebp/laravel`)**:
+  - Implemented `ConversionResult` value object holding verified metrics (`outputPath`, `originalSize`, `convertedSize`, `format`, `hasAlpha`, `durationMs`) with `savedBytes()`, `savedPercentage()`, and `Stringable` contract.
+  - Implemented `ZapConvertCommand` (`php artisan zap:convert`) supporting single files, recursive directories, format target locking, quality, clean mode, and dry-run console reporting.
+  - Implemented `ZapCheckCommand` (`php artisan zap:check`) supporting image integrity checks, alpha transparency enforcement (`--assert-alpha`), and metadata auditing.
+  - Implemented native Blade directives (`@zapwebp`, `@picture`, `@srcset`) and global helper functions (`zap_url`, `zap_picture`, `zap_srcset`) for modern `<picture>` markup with AVIF/WebP sources.
+  - Added test suite with PHP syntax verification (`php -l`), helper execution, and `ConversionResult` calculation.
+- **Full Multi-Format Vite Support (`@zapwebp/vite`, `zapwebp-vite`)**:
+  - Expanded asset conversion from SVG-only to all supported image formats: SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF.
+  - Added multi-format generation in parallel (e.g. `formats: ['webp', 'avif']`).
+  - Added query string import transformation: `?picture` (returns sources object for modern picture tags), `?srcset` (returns responsive srcset string), and `?zapwebp` (returns optimized URL).
+  - Added `generatePictureHtml` helper and dev server middleware for on-the-fly converted image delivery.
+- **Full Multi-Format Next.js Support (`@zapwebp/next`, `zapwebp-next`)**:
+  - Expanded image scanning and pre-compilation build hooks from SVG-only to all raster and vector image formats.
+  - Implemented official Next.js image custom loader `zapwebpLoader` for `<Image loader={zapwebpLoader} ... />` and `images.loaderFile`.
+  - Added parallel multi-format asset generation (`formats: ['webp', 'avif']`).
+  - Updated Webpack asset rules for all raster and vector extensions.
+
+### Fixed
+
+- **MCP Package Name & npx Resolution (`@zapwebp/mcp`)**:
+  - Fixed documentation, quickstart guides, CLI error outputs, and examples across `content/mcp.md`, `content/index.md`, `content/developers.md`, `scripts/translate-docs.js`, and `zapwebp-docs/` from `npx zapwebp-mcp` (which caused npm registry 404 errors) to `npx -y @zapwebp/mcp`.
+  - Explicitly clarified Claude Desktop, Cursor, and Windsurf MCP configuration templates with scoped package name `@zapwebp/mcp`.
+
 ## [2.13.1] - 2026-11-08
 
 ### Added

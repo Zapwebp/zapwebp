@@ -40,6 +40,8 @@ return response()->json([
 ## What it does
 
 - **Laravel Facade**: Expressive syntax via `Zap::convert()`, `Zap::batch()`, and `Zap::check()`.
+- **Artisan Commands**: CLI terminal commands `php artisan zap:convert` and `php artisan zap:check` for batch converting assets and auditing transparency.
+- **Blade Directives & Helpers**: Native `@zapwebp`, `@picture`, and `@srcset` directives for generating accessible, responsive `<picture>` markup with AVIF/WebP sources.
 - **Validation Rule**: Built-in `SafeImage` rule verifies that incoming client files are authentic images with uncorrupted alpha channels.
 - **Upload Middleware**: `ConvertUploads` middleware automatically transforms incoming multipart image uploads before reaching controller actions.
 - **Zero Shell Concatenation**: Utilizes Symfony `Process` with strict parameter arrays to prevent command injection risks.

@@ -1,6 +1,6 @@
 # Next.js Plugin
 
-Covers: Zapwebp Next.js plugin (`zapwebp-next`), App Router asset optimization, static export image pipelines, and build-time SVG conversion.
+Covers: Zapwebp Next.js plugin (`zapwebp-next`), App Router asset optimization, custom `next/image` loader, multi-format pipelines (AVIF/WebP), static export image pipelines, and build-time asset conversion.
 
 Does not cover: Vite bundler configuration or Cloudflare Pages functions. See [Vite Plugin](/plugins/vite).
 
@@ -51,15 +51,18 @@ The Zapwebp Next.js plugin seamlessly enhances the Next.js asset pipeline:
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
+| `format` | `string` | `'webp'` | Primary target image format (e.g. `'webp'`, `'avif'`). |
+| `formats` | `string[]` | `['webp']` | Multi-format outputs to generate in parallel (e.g. `['webp', 'avif']`). |
+| `customLoader` | `boolean` | `true` | Enables custom `next/image` loader integration. |
 | `scale` | `number[]` | `[1]` | Scale multipliers to render. Deduplicated and sorted ascending. |
 | `baseWidth` | `number` | `512` | 1x width in pixels (16 to 16,384). Aspect ratio is strictly preserved. |
 | `quality` | `number` | `85` | Compression quality from `1` to `100`. |
 | `lossless` | `boolean` | `false` | Enables lossless WebP compression. |
 | `clean` | `boolean` | `true` | Strips all EXIF, XMP, C2PA provenance, and private metadata chunks. |
-| `sourceDirs` | `string[]` | `['public', 'src/assets', 'app']` | Directories relative to project root scanned for `.svg` assets. |
+| `sourceDirs` | `string[]` | `['public', 'src/assets', 'app']` | Directories relative to project root scanned for image and vector assets. |
 | `outDir` | `string` | `'public/icons'` | Output folder relative to Next.js project root. |
 | `emitManifest` | `boolean` | `true` | Generates a structured `zapwebp.manifest.json` report. |
-| `respectNextImage` | `boolean` | `true` | Ensures `image/webp` is registered in `nextConfig.images.formats`. |
+| `respectNextImage` | `boolean` | `true` | Ensures `image/webp` and `image/avif` are registered in `nextConfig.images.formats`. |
 | `onConflict` | `'overwrite' \| 'skip' \| 'error'` | `'overwrite'` | Action when an output file already exists. |
 
 ## Examples

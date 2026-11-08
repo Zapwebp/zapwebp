@@ -4,9 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const DEFAULT_IGNORES = new Set(['node_modules', '.next', 'dist', '.git', '.turbo', '.vercel']);
+const SUPPORTED_EXTS = new Set(['.svg', '.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.tiff']);
 
 /**
- * Scans configured source directories for SVG files.
+ * Scans configured source directories for image and vector assets.
  * @param {string} rootDir Next.js project root.
  * @param {string[]} sourceDirs Relative directory paths to scan.
  * @returns {Array<{ absolutePath: string, relativePath: string }>}
@@ -32,10 +33,11 @@ function scan(rootDir, sourceDirs = ['public', 'src/assets', 'app']) {
 
         const absPath = path.join(currentDir, entry.name);
         const relPath = currentRel ? `${currentRel}/${entry.name}` : entry.name;
+        const ext = path.extname(entry.name).toLowerCase();
 
         if (entry.isDirectory()) {
           walk(absPath, relPath);
-        } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.svg')) {
+        } else if (entry.isFile() && SUPPORTED_EXTS.has(ext)) {
           if (!visited.has(absPath)) {
             visited.add(absPath);
             results.push({

@@ -1,6 +1,6 @@
 # Vite Plugin
 
-Covers: Zapwebp Vite plugin (`zapwebp-vite`), build-time asset conversion, multiplier scale generation (@1x/@2x/@3x), alpha channel preservation, and transparent asset bundling.
+Covers: Zapwebp Vite plugin (`zapwebp-vite`), build-time raster and vector asset conversion, multi-format pipelines (AVIF/WebP), multiplier scale generation (@1x/@2x/@3x), picture markup generation, alpha channel preservation, and transparent asset bundling.
 
 Does not cover: runtime edge server rendering or dynamic serverless conversion. See [Next Plugin](/plugins/next).
 
@@ -48,6 +48,8 @@ The Zapwebp Vite plugin automates image optimization across your build pipeline:
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
+| `format` | `string` | `'webp'` | Primary target image format (e.g. `'webp'`, `'avif'`, `'png'`). |
+| `formats` | `string[]` | `['webp']` | Multi-format outputs to generate in parallel (e.g. `['webp', 'avif']`). |
 | `scale` | `number[]` | `[1]` | Scale multipliers to render. Deduplicated and sorted ascending. |
 | `baseWidth` | `number` | `512` | 1x width in pixels (16 to 16,384). Aspect ratio is strictly preserved. |
 | `quality` | `number` | `85` | Compression quality from `1` to `100`. |
@@ -57,7 +59,7 @@ The Zapwebp Vite plugin automates image optimization across your build pipeline:
 | `emitManifest` | `boolean` | `true` | Generates a structured `zapwebp.manifest.json` report. |
 | `emitToPublic` | `boolean` | `true` | Emits directly to the public directory for static URL serving. |
 | `onConflict` | `'overwrite' \| 'skip' \| 'error'` | `'overwrite'` | Strategy when target output already exists. |
-| `include` | `string[]` | `['**/*.svg']` | Glob patterns of SVG assets to include. |
+| `include` | `string[]` | `['**/*.{svg,png,jpg,jpeg,webp,avif,gif,tiff}']` | Glob patterns of image and vector assets to include. |
 | `exclude` | `string[]` | `['node_modules/**', 'dist/**', '.git/**']` | Glob patterns to ignore. |
 
 ## Examples

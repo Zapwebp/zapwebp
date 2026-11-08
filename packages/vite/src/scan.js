@@ -14,16 +14,19 @@ function matchesPattern(relPath, patterns) {
   const normalized = relPath.replace(/\\/g, '/');
   for (const pattern of patterns) {
     const pat = pattern.replace(/\\/g, '/');
-    if (pat === '**/*.svg' && normalized.endsWith('.svg')) return true;
+    if (pat === '**/*.svg' && normalized.toLowerCase().endsWith('.svg')) return true;
     if (pat === '*' && !normalized.includes('/')) return true;
     if (pat === '**') return true;
 
-    // Convert glob pattern to regular expression
-    const regexStr = pat
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    // Convert glob braces {png,jpg} to group
+    let withBraces = pat.replace(/\{([^{}]+)\}/g, '§BRACE_$1§');
+    let regexStr = withBraces
+      .replace(/[.+^$|[\]\\]/g, '\\$&')
       .replace(/\*\*/g, '§§')
       .replace(/\*/g, '[^/]*')
-      .replace(/§§/g, '.*');
+      .replace(/§§/g, '.*')
+      .replace(/§BRACE_([^{}]+)§/g, (_, inner) => '(' + inner.split(',').map((s) => s.trim()).join('|') + ')');
+
     const regex = new RegExp(`^${regexStr}$`, 'i');
     if (regex.test(normalized)) return true;
   }

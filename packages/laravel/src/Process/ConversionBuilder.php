@@ -21,6 +21,41 @@ class ConversionBuilder implements Stringable
     }
 
     /**
+     * Set target output format (e.g. webp, avif, png, jpeg).
+     */
+    public function to(string $format): self
+    {
+        $this->options['to'] = strtolower($format);
+        return $this;
+    }
+
+    /**
+     * Alias for to().
+     */
+    public function format(string $format): self
+    {
+        return $this->to($format);
+    }
+
+    /**
+     * Set multiplier scales, e.g. [1, 2, 3].
+     */
+    public function scales(array $scales): self
+    {
+        $this->options['scales'] = $scales;
+        return $this;
+    }
+
+    /**
+     * Enforce alpha channel preservation assertion.
+     */
+    public function assertAlpha(bool $assertAlpha = true): self
+    {
+        $this->options['assert_alpha'] = $assertAlpha;
+        return $this;
+    }
+
+    /**
      * Enforce target locked output format.
      */
     public function lockTarget(string $format): self
@@ -105,7 +140,7 @@ class ConversionBuilder implements Stringable
     /**
      * Execute conversion and save to target local file path.
      */
-    public function save(?string $outPath = null): string
+    public function save(?string $outPath = null): ConversionResult
     {
         if ($outPath !== null) {
             $this->options['output'] = $outPath;
@@ -116,11 +151,11 @@ class ConversionBuilder implements Stringable
     /**
      * Execute conversion and store on a Laravel filesystem disk.
      */
-    public function saveToDisk(string $disk, string $path): string
+    public function saveToDisk(string $disk, string $path): ConversionResult
     {
         $tempOut = tempnam(sys_get_temp_dir(), 'zap_out_');
-        $converted = $this->save($tempOut);
-        $stream = fopen($converted, 'r');
+        $result = $this->save($tempOut);
+        $stream = fopen($result->outputPath, 'r');
         try {
             Storage::disk($disk)->put($path, $stream);
         } finally {
@@ -131,7 +166,8 @@ class ConversionBuilder implements Stringable
                 @unlink($tempOut);
             }
         }
-        return $path;
+        $result->outputPath = $path;
+        return $result;
     }
 
     /**
@@ -139,7 +175,7 @@ class ConversionBuilder implements Stringable
      */
     public function __toString(): string
     {
-        return $this->save();
+        return (string) $this->save();
     }
 }
 

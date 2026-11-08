@@ -1,7 +1,7 @@
 {
   "name": "zapwebp-next",
   "version": "1.0.0",
-  "description": "Official first-party Next.js plugin for Zapwebp â€” SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers, and next/image compatibility.",
+  "description": "Official first-party Next.js plugin for Zapwebp - raster and vector image conversion with alpha transparency preservation, Retina multipliers, custom next/image loader, and build optimization.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "exports": {
