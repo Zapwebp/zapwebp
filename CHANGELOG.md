@@ -6,6 +6,10 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **JSON Schema Specification for Agent Manifests (`schemas/agent-manifest.json`, `zapwebp-docs/public/schemas/agent-manifest.json`, `public/schemas/agent-manifest.json`)**:
+  - Implemented authoritative JSON Schema (Draft 2020-12) validating all 13 package agent manifests (`agent.json`).
+  - Validates package identity, architecture capabilities, formats, commands, flags, MCP tools/resources, and runtime compatibility.
+  - Added workspace-level `.vscode/settings.json` mapping `**/agent.json` to `./schemas/agent-manifest.json` for offline IDE autocomplete, validation, and hover tooltips.
 - **Full Multi-Format Laravel Package (`@zapwebp/laravel`, `zapwebp/laravel`)**:
   - Implemented `ConversionResult` value object holding verified metrics (`outputPath`, `originalSize`, `convertedSize`, `format`, `hasAlpha`, `durationMs`) with `savedBytes()`, `savedPercentage()`, and `Stringable` contract.
   - Implemented `ZapConvertCommand` (`php artisan zap:convert`) supporting single files, recursive directories, format target locking, quality, clean mode, and dry-run console reporting.
@@ -25,6 +29,11 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **Schema Resolution & SPA Rewrite Conflict (`zapwebp-docs/vercel.json`, `vercel.json`)**:
+  - Fixed `Parse error at offset 0` in VS Code and IDE schema validators caused by documentation catch-all rewrite rules serving HTML (`index.html`) on schema requests.
+  - Deployed `agent-manifest.json` and `plugins.schema.json` to static assets directories across `zapwebp-docs` and root web app.
+  - Added strict Vercel rewrite exclusion pattern `((?!schemas/|content/|assets/|locales/|.*\\..*).*$)` preventing static assets with extensions or under `/schemas/` from being rewritten to `index.html`.
+  - Added HTTP headers `Content-Type: application/json; charset=utf-8` and `Access-Control-Allow-Origin: *` for all `/schemas/(.*)` routes.
 - **MCP Package Name & npx Resolution (`@zapwebp/mcp`)**:
   - Fixed documentation, quickstart guides, CLI error outputs, and examples across `content/mcp.md`, `content/index.md`, `content/developers.md`, `scripts/translate-docs.js`, and `zapwebp-docs/` from `npx zapwebp-mcp` (which caused npm registry 404 errors) to `npx -y @zapwebp/mcp`.
   - Explicitly clarified Claude Desktop, Cursor, and Windsurf MCP configuration templates with scoped package name `@zapwebp/mcp`.

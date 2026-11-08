@@ -174,3 +174,4 @@ class ZapCheckCommand extends Command
         return round($bytes / 1048576, 2) . ' MB';
     }
 }
+

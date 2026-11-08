@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "title": "Zapwebp Agent Manifest",
+  "description": "Validation schema for Zapwebp package agent manifests defining surface metadata, architecture capabilities, and tool contracts.",
+  "type": "object",
+  "required": ["$schema", "name", "version", "type", "description"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URI of the JSON Schema specification"
+    },
+    "name": {
+      "type": "string",
+      "description": "Package or module identifier"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Publisher or organization identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+",
+      "description": "Semantic version (SemVer 2.0.0)"
+    },
+    "type": {
+      "type": "string",
+      "description": "Classification of the package surface"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the package capability"
+    },
+    "install": {
+      "type": "string",
+      "description": "Installation or execution command"
+    },
+    "registry": {
+      "type": "string",
+      "description": "Package registry URL or identifier"
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Product homepage URL"
+    },
+    "docs": {
+      "type": "string",
+      "format": "uri",
+      "description": "Web documentation URL"
+    },
+    "docsMarkdown": {
+      "type": "string",
+      "format": "uri",
+      "description": "Raw markdown documentation URL"
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri",
+      "description": "Source code repository URL"
+    },
+    "contact": {
+      "type": "string",
+      "description": "Maintainer contact email or address"
+    },
+    "entrypoint": {
+      "type": "string",
+      "description": "Main entry file path"
+    },
+    "commands": {
+      "type": "object",
+      "description": "CLI command map or definition"
+    },
+    "configuration": {
+      "type": "object",
+      "description": "Configuration options or schemas"
+    },
+    "flags": {
+      "type": "object",
+      "description": "Command-line flags"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Supported architectural capabilities"
+    },
+    "supportedFormats": {
+      "type": "object",
+      "description": "Input and output format matrix"
+    },
+    "exports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exported APIs or functions"
+    },
+    "options": {
+      "type": "object",
+      "description": "Configurable options"
+    },
+    "presets": {
+      "type": "object",
+      "description": "Named presets or templates"
+    },
+    "compatibility": {
+      "type": "object",
+      "description": "Runtime and environment compatibility"
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Input parameters or CI configuration"
+    },
+    "features": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of core features"
+    },
+    "transports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Protocol transports (e.g. stdio, streamable-http)"
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exposed agent tools"
+    },
+    "resources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exposed agent resources"
+    },
+    "prompts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exposed agent prompts"
+    },
+    "hooks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Lifecycle hooks"
+    },
+    "components": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exposed UI components"
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Accessibility compliance metadata"
+    }
+  },
+  "additionalProperties": true
+}

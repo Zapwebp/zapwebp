@@ -138,3 +138,4 @@ test('Laravel: ConversionResult computes saved bytes, percentage, and string cas
   assert.equal(data.hasAlpha, true);
   assert.equal(data.format, 'webp');
 });
+

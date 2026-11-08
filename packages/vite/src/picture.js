@@ -70,3 +70,4 @@ function generatePictureHtml({
 module.exports = {
   generatePictureHtml,
 };
+

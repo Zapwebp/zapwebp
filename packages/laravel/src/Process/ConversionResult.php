@@ -118,3 +118,4 @@ class ConversionResult implements Stringable
         return $this->outputPath;
     }
 }
+

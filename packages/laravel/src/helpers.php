@@ -130,3 +130,4 @@ if (!function_exists('zap_picture')) {
         return $html;
     }
 }
+

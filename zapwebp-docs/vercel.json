@@ -1,10 +1,19 @@
 {
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!schemas/|content/|assets/|locales/|.*\\..*).*$)", "destination": "/index.html" }
   ],
   "headers": [
+    {
+      "source": "/schemas/(.*)",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }
+      ]
+    },
     {
       "source": "/content/(.*).md",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }]
@@ -15,4 +24,5 @@
     }
   ]
 }
+
 
