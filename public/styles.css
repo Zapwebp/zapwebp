@@ -2867,6 +2867,55 @@ body {
   background: var(--bg-dropzone);
 }
 
+.btn-single-crop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.btn-single-crop:hover {
+  border-color: var(--text-primary);
+  background: var(--bg-dropzone);
+}
+
+.single-card-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.btn-single-convert-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  color: var(--gray-600);
+  border: 1px dashed var(--border-mid);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-single-convert-more:hover {
+  border-color: var(--green-primary);
+  color: var(--green-primary);
+  background: var(--green-alpha-13);
+}
+
 .btn-single-download {
   flex: 1;
   display: inline-flex;
@@ -3553,17 +3602,46 @@ body {
   gap: 8px;
 }
 
-.footer-link {
-  font-size: 0.84rem;
+.footer-tagline {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
   color: var(--gray-600);
+  max-width: 440px;
+  line-height: 1.45;
+}
+
+.footer-link {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
   text-decoration: none;
-  transition: color 0.15s ease, transform 0.15s ease;
-  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.footer-link-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.15s ease;
+}
+
+.footer-link-desc {
+  font-size: 0.73rem;
+  color: var(--gray-600);
+  line-height: 1.35;
+  transition: color 0.15s ease;
 }
 
 .footer-link:hover {
-  color: var(--green-primary);
   transform: translateX(2px);
+}
+
+.footer-link:hover .footer-link-title {
+  color: var(--green-primary);
+}
+
+.footer-link:hover .footer-link-desc {
+  color: var(--text-primary);
 }
 
 /* Footer Bottom Bar */
@@ -4148,6 +4226,42 @@ body {
   .btn-single-download {
     width: 100%;
     order: -1;
+  }
+
+  /* Cockpit Mobile Fluid Control Bars */
+  .cockpit-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .bar-control-item {
+    width: 100%;
+  }
+
+  .format-pills,
+  .scale-toggles {
+    display: flex !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .fmt-select-btn {
+    flex: 1;
+    min-width: 0 !important;
+    padding: 8px 4px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .scale-btn {
+    flex: 1;
+    min-width: 0 !important;
+    padding: 8px 4px;
+    font-size: 13px;
+    text-align: center;
   }
 
   /* Settings Slide-Over as Full-Width Bottom Sheet */

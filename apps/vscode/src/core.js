@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const Module = require('node:module');
-const { execFile } = require('node:child_process');
+const { execFile, spawn, execSync } = require('node:child_process');
 
 /**
  * Dynamically hooks Module._resolveFilename so in-process @zapwebp/core can locate
@@ -193,17 +193,27 @@ function sniffInputExtension(bytes) {
  */
 function resolveNodeExecutable() {
   if (process.platform === 'win32') {
+    if (process.env.NODE_PATH && fs.existsSync(process.env.NODE_PATH)) {
+      return process.env.NODE_PATH;
+    }
     const candidates = [
       'C:\\Program Files\\nodejs\\node.exe',
       'C:\\Program Files (x86)\\nodejs\\node.exe',
       path.join(process.env.LOCALAPPDATA || '', 'Programs', 'nodejs', 'node.exe'),
       path.join(process.env.APPDATA || '', 'npm', 'node.exe'),
+      path.join(process.env.ProgramData || '', 'chocolatey', 'bin', 'node.exe'),
+      path.join(process.env.USERPROFILE || '', 'scoop', 'apps', 'nodejs', 'current', 'node.exe'),
     ];
     for (const c of candidates) {
       if (fs.existsSync(c)) {
         return c;
       }
     }
+    try {
+      const out = execSync('where.exe node', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+      const first = out.split(/\r?\n/).find((p) => p.trim() && fs.existsSync(p.trim()));
+      if (first) return first.trim();
+    } catch {}
   }
   return 'node';
 }
@@ -261,12 +271,31 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
 
     const isWin = process.platform === 'win32';
 
-    // Tier 1: Local workspace CLI via direct node execution (bypasses Windows .cmd spawn EINVAL)
+    // Build extra module resolution paths for child Node processes
+    const extraDirs = [];
+    try {
+      const vscode = require('vscode');
+      if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+        for (const folder of vscode.workspace.workspaceFolders) {
+          const root = folder.uri.fsPath;
+          extraDirs.push(path.join(root, 'node_modules'));
+          extraDirs.push(path.join(root, 'packages', 'core', 'node_modules'));
+        }
+      }
+    } catch {}
+    extraDirs.push(path.resolve(__dirname, '../../node_modules'));
+    extraDirs.push(path.resolve(__dirname, '../../../node_modules'));
+    extraDirs.push(path.resolve(__dirname, '../node_modules'));
+
+    const nodePathEnv = [process.env.NODE_PATH, ...extraDirs.filter((d) => fs.existsSync(d))].filter(Boolean).join(path.delimiter);
+    const spawnEnv = { ...process.env, NODE_PATH: nodePathEnv };
+
+    // Tier 1: Local workspace or bundled CLI via direct node execution
     const localCli = findLocalCli();
     if (localCli) {
       const nodeBin = resolveNodeExecutable();
       try {
-        execFile(nodeBin, [localCli, ...args], (err) => {
+        execFile(nodeBin, [localCli, ...args], { env: spawnEnv, windowsHide: true }, (err) => {
           if (!err && fs.existsSync(outputPath)) {
             return resolve(outputPath);
           }
@@ -282,32 +311,66 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
     trySystemCli();
 
     function trySystemCli(priorErr) {
-      // Tier 2: System zap binary (shell: true on Windows prevents spawn EINVAL)
-      const zapBin = isWin ? 'zap.cmd' : 'zap';
-      try {
-        execFile(zapBin, args, { shell: isWin }, (err) => {
-          if (!err && fs.existsSync(outputPath)) {
-            return resolve(outputPath);
-          }
-          tryNpx(err || priorErr);
-        });
-      } catch (zapSyncErr) {
-        tryNpx(zapSyncErr || priorErr);
+      // Tier 2: System zap binary (using cmd.exe on Windows completely eliminates spawn EINVAL)
+      if (isWin) {
+        try {
+          const proc = spawn('cmd.exe', ['/d', '/s', '/c', 'zap', ...args], { env: spawnEnv, windowsHide: true });
+          proc.on('close', (code) => {
+            if (code === 0 && fs.existsSync(outputPath)) {
+              return resolve(outputPath);
+            }
+            tryNpx(priorErr);
+          });
+          proc.on('error', (err) => {
+            tryNpx(err || priorErr);
+          });
+        } catch (zapSyncErr) {
+          tryNpx(zapSyncErr || priorErr);
+        }
+      } else {
+        try {
+          execFile('zap', args, { env: spawnEnv }, (err) => {
+            if (!err && fs.existsSync(outputPath)) {
+              return resolve(outputPath);
+            }
+            tryNpx(err || priorErr);
+          });
+        } catch (zapSyncErr) {
+          tryNpx(zapSyncErr || priorErr);
+        }
       }
     }
 
     function tryNpx(priorErr) {
-      // Tier 3: npx zapwebp runner (shell: true on Windows prevents spawn EINVAL)
-      const npxCmd = isWin ? 'npx.cmd' : 'npx';
-      try {
-        execFile(npxCmd, ['--yes', 'zapwebp', ...args], { shell: isWin }, (npxErr) => {
-          if (!npxErr && fs.existsSync(outputPath)) {
-            return resolve(outputPath);
-          }
-          reject(new ZapError('E_CONVERSION_FAILED', (npxErr || priorErr || new Error('CLI fallback failed')).message));
-        });
-      } catch (npxSyncErr) {
-        reject(new ZapError('E_CONVERSION_FAILED', (npxSyncErr || priorErr || new Error('CLI fallback failed')).message));
+      // Tier 3: npx zapwebp runner (using cmd.exe on Windows completely eliminates spawn EINVAL)
+      if (isWin) {
+        try {
+          const proc = spawn('cmd.exe', ['/d', '/s', '/c', 'npx', '--yes', 'zapwebp', ...args], { env: spawnEnv, windowsHide: true });
+          let stderrOut = '';
+          proc.stderr?.on('data', (d) => { stderrOut += d.toString(); });
+          proc.on('close', (code) => {
+            if (code === 0 && fs.existsSync(outputPath)) {
+              return resolve(outputPath);
+            }
+            reject(new ZapError('E_CONVERSION_FAILED', stderrOut.trim() || priorErr?.message || 'CLI conversion failed.'));
+          });
+          proc.on('error', (err) => {
+            reject(new ZapError('E_CONVERSION_FAILED', err.message || priorErr?.message || 'CLI conversion failed.'));
+          });
+        } catch (npxSyncErr) {
+          reject(new ZapError('E_CONVERSION_FAILED', (npxSyncErr || priorErr || new Error('CLI fallback failed')).message));
+        }
+      } else {
+        try {
+          execFile('npx', ['--yes', 'zapwebp', ...args], { env: spawnEnv }, (npxErr) => {
+            if (!npxErr && fs.existsSync(outputPath)) {
+              return resolve(outputPath);
+            }
+            reject(new ZapError('E_CONVERSION_FAILED', (npxErr || priorErr || new Error('CLI fallback failed')).message));
+          });
+        } catch (npxSyncErr) {
+          reject(new ZapError('E_CONVERSION_FAILED', (npxSyncErr || priorErr || new Error('CLI fallback failed')).message));
+        }
       }
     }
   });

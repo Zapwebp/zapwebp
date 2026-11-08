@@ -1775,6 +1775,10 @@ function renderResultsView() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <span>${t('single.preview', 'Inspect')}</span>
         </button>
+        <button type="button" class="btn-single-crop" data-id="${item.id}" title="${t('card.crop', 'Crop & Rotate')}" aria-label="Crop image">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+          <span>${t('card.crop', 'Crop')}</span>
+        </button>
         ${typeof navigator !== 'undefined' && navigator.share ? `
           <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted image" aria-label="Share">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
@@ -1789,6 +1793,12 @@ function renderResultsView() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </div>
+      <div class="single-card-footer">
+        <button type="button" class="btn-single-convert-more" title="Convert another image" aria-label="Convert another image">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>${t('card.convert_another', 'Convert Another Image')}</span>
+        </button>
+      </div>
     `;
 
     singleCard.querySelector('.single-thumb-wrap')?.addEventListener('click', (e) => {
@@ -1799,6 +1809,16 @@ function renderResultsView() {
     singleCard.querySelector('.btn-single-preview')?.addEventListener('click', (e) => {
       e.stopPropagation();
       openPreviewModal(item);
+    });
+
+    singleCard.querySelector('.btn-single-crop')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCropModal(item);
+    });
+
+    singleCard.querySelector('.btn-single-convert-more')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
     });
 
     singleCard.querySelector('.btn-single-share')?.addEventListener('click', async (e) => {
@@ -1835,7 +1855,7 @@ function renderResultsView() {
 
   // Case 3: More than 1 file (Batch layout)
   resultsContainer.classList.remove('is-single-file');
-  resultsContainer.classList.add(currentViewMode === 'list' ? 'view-list' : 'view-grid');
+  resultsContainer.className = `results-container ${settings.viewMode === 'list' ? 'view-list' : 'view-grid'}`;
   if (batchHeaderBar) {
     batchHeaderBar.hidden = false;
     let totalIn = 0;
@@ -1925,6 +1945,10 @@ function renderResultsView() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <span>${t('card.preview', 'Preview')}</span>
           </button>
+          <button type="button" class="btn-batch-action btn-row-crop" title="${t('card.crop', 'Crop & Rotate')}" aria-label="Crop image">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+            <span>${t('card.crop', 'Crop')}</span>
+          </button>
           <button type="button" class="btn-batch-action btn-batch-download" title="${t('card.download', 'Download converted file')}" aria-label="Download file">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             <span>${t('card.download', 'Download')}</span>
@@ -1941,6 +1965,10 @@ function renderResultsView() {
       row.querySelector('.btn-row-preview')?.addEventListener('click', (e) => {
         e.stopPropagation();
         openPreviewModal(item);
+      });
+      row.querySelector('.btn-row-crop')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openCropModal(item);
       });
       row.querySelector('.btn-batch-download')?.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1977,6 +2005,9 @@ function renderResultsView() {
           <button type="button" class="result-action-btn result-preview-btn" title="${t('card.preview', 'Inspect & Preview')}" aria-label="Preview image">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
+          <button type="button" class="result-action-btn result-crop-btn" title="${t('card.crop', 'Crop & Rotate')}" aria-label="Crop image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+          </button>
           <button type="button" class="result-action-btn result-download-btn" title="${t('card.download', 'Download converted file')}" aria-label="Download file">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
@@ -1992,6 +2023,10 @@ function renderResultsView() {
       card.querySelector('.result-preview-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         openPreviewModal(item);
+      });
+      card.querySelector('.result-crop-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openCropModal(item);
       });
       card.querySelector('.result-download-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();

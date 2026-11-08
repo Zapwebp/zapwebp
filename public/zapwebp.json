@@ -1,0 +1,9 @@
+{
+  "version": "2.13.0",
+  "targetLock": null,
+  "defaultFormat": "webp",
+  "defaultQuality": 85,
+  "cleanMode": true,
+  "scales": [1]
+}
+

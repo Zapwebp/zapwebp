@@ -2,7 +2,45 @@
 
 This changelog records the changes included in each Zapwebp version.
 
-## [2.13.0] - 2026-11-07
+## [2.13.1] - 2026-11-08
+
+### Added
+
+- **Vector SVG Brand Asset Optimization (`public/zapwebp.svg`, `public/assets/zapwebp.svg`, `zapwebp-docs/public/zapwebp.svg`)**:
+  - Replaced 646 KB raster-embedded SVG logos with a precision-crafted, high-fidelity vector SVG (2.06 KB, 99.7% payload reduction).
+  - Dramatically improves Largest Contentful Paint (LCP) and Speed Index metrics on web app and documentation sites.
+- **Enhanced Footer Sitemap & Product Architecture Tagline (`public/index.html`, `public/styles.css`)**:
+  - Added descriptive architecture tagline under the brand link communicating zero-telemetry, memory-only execution.
+  - Added descriptive subtitles and badges across all documentation links in the 4-column sitemap directory.
+  - Added direct extension download links for Open VSX and VS Marketplace.
+- **Static Configuration Manifest (`public/zapwebp.json`)**:
+  - Added clean default static configuration file eliminating console 404 errors during client-side target lock initialization.
+- **Enhanced Single & Multiple Image Results View (`public/app.js`, `public/styles.css`)**:
+  - Added dedicated Crop button and "+ Convert Another Image" trigger to the single image card layout.
+  - Added Crop button alongside preview and download across grid cards and list view rows.
+  - Enhanced elevation, border contrast, and touch targets across single card and batch grid components.
+
+### Fixed
+
+- **Web App Upload Blocker & Dropzone Black Screen (`public/app.js`)**:
+  - Fixed `Uncaught ReferenceError: currentViewMode is not defined` on line 1838 when uploading single or multiple files.
+  - Restored seamless transition between idle dropzone, converting skeleton, single-file card, and batch grid layout.
+- **VS Code Extension Windows `spawn EINVAL` & CLI Discovery (`apps/vscode/src/core.js`)**:
+  - Completely eliminated Windows `spawn EINVAL` errors by switching CLI execution to direct `node.exe` invocation with injected `NODE_PATH` and safe `cmd.exe /d /s /c` fallback patterns.
+  - Updated extension icon to `apps/vscode/zapwebp_logo.png` and synced `apps/vscode/icon.png`.
+  - Removed 8 redundant activation event warnings from `apps/vscode/package.json` for modern VS Code compatibility.
+  - Repackaged `zapwebp-vscode-1.2.0.vsix` with zero warnings and verified multi-format conversion.
+- **Accessibility & Heading Hierarchy (`public/index.html`, `public/tokens.css`)**:
+  - Added `<h2 class="sr-only">Platform Directory &amp; Documentation</h2>` before footer columns and adjusted footer titles from `<h4>` to `<h3>` to ensure strictly descending heading levels.
+  - Changed `<aside class="settings-slideover-panel" role="dialog">` to `<div class="settings-slideover-panel" role="dialog">` to comply with W3C HTML-ARIA rules.
+  - Updated `--gray-600` text color in `public/tokens.css` from `#73776b` to `#575c50` (light mode) and `#9ca296` (dark mode), lifting contrast ratio from 4.3:1 to > 6.5:1 to exceed WCAG 2.1 AA requirements.
+- **Mobile Cockpit Bar Responsiveness (`public/styles.css`)**:
+  - Fixed flex-wrap layout glitch on mobile devices (320px–393px viewports) where the `3x` scale button awkwardly wrapped to a second line.
+  - Added fluid equal-width distribution for `.format-pills` and `.scale-toggles` with `flex-wrap: nowrap !important;`.
+- **Render-Blocking Resources & Security Headers (`public/index.html`, `public/vercel.json`)**:
+  - Added `defer` attribute to `<script src="/vendor/fflate.min.js">` in `public/index.html`.
+  - Removed stray `<br />` preceding `<h1>` to eliminate layout shift (CLS).
+  - Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` security header in `public/vercel.json`.
 
 ### Added
 

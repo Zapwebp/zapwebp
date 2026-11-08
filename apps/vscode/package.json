@@ -20,9 +20,6 @@
     "png",
     "avif"
   ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
   "main": "./dist/extension.js",
   "icon": "zapwebp_logo.png",
   "scripts": {
