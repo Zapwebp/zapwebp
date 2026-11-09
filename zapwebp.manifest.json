@@ -1,0 +1,42 @@
+{
+  "generatedBy": "zapwebp-github-action@1.0.0",
+  "generatedAt": "2026-11-09T14:18:24.374Z",
+  "totals": {
+    "inputFiles": 1,
+    "outputFiles": 2,
+    "inputBytes": 3214
+  },
+  "options": {
+    "format": "webp",
+    "scale": [
+      1,
+      2
+    ],
+    "baseWidth": 256,
+    "quality": 85,
+    "lossless": false,
+    "clean": true
+  },
+  "files": [
+    {
+      "source": "packages/github-action/test/fixtures/logo.svg",
+      "target": "packages/github-action/test/fixtures/logo.webp",
+      "scale": 1,
+      "width": 256,
+      "height": 256,
+      "bytes": 1024,
+      "alphaPreserved": true,
+      "sha256": "08608616035017600e07aedef0a3a8cc9bbfa7da2a863bb93f19df32c58c68d9"
+    },
+    {
+      "source": "packages/github-action/test/fixtures/logo.svg",
+      "target": "packages/github-action/test/fixtures/logo@2x.webp",
+      "scale": 2,
+      "width": 512,
+      "height": 512,
+      "bytes": 2190,
+      "alphaPreserved": true,
+      "sha256": "6692ce8a63e7440c9440690a78dff0f7c6977f60a68ee5bacc5d414b1476f217"
+    }
+  ]
+}
