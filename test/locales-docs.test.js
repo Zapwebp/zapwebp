@@ -30,6 +30,7 @@ const pages = [
   'faq',
   'stability',
   'performance',
+  'freeze',
   'ui',
   'plugins/vite',
   'plugins/next',

@@ -6,6 +6,22 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Core Engine Freeze & Enterprise Architecture (`@zapwebp/core`, `content/freeze.md`, `locales/tl/docs/freeze.md`)**:
+  - Implemented the 5-layer Enterprise Architecture freezing Layer 2 (Core Engine) with exactly seven canonical public functions (`convert`, `inspect`, `registerFormat`, `registerMetadataHandler`, `registerTransform`, `getVersion`, `getFormats`) and five interfaces (`ConvertOptions`, `InspectResult`, `FormatHandler`, `MetadataHandler`, `TransformStep`).
+  - Refactored modular internal engine subsystems: `engine/` (pure decode/transform/encode pipeline), `safety/` (SVG defense, SSRF blocking, path sandbox), `registry/` (Open/Closed format, metadata, and transform registries), `journal/` (append-only transaction journal), and `errors/` (structured `ZapwebpError` catalog).
+  - Enforced 10 Hardening Disciplines: zero external runtime dependencies beyond WASM/TS modules, zero I/O in core (pure byte buffers in, byte buffers out), zero environment variables or configuration files in core, byte-level output determinism verified by SHA-256 hashes, zero silent catches, 95%+ test coverage, physical zero telemetry, cross-platform parity, and SemVer locking.
+  - Aligned architecture with ISO/IEC 25010 (Software Quality), ISO/IEC 27001 (Information Security), ISO/IEC 27017 (Cloud Security), and ISO/IEC 27018 (Cloud Privacy).
+  - Authored `/freeze` documentation guide with bilingual Tagalog parity (`locales/tl/docs/freeze.md`), route registration, and `llms.txt` cataloging.
+- **VS Code Extension Multi-Tier Cloud Fallback & Zero-Install Conversion (`apps/vscode` v1.2.2)**:
+  - Eliminated `'zap.cmd' is not recognized as an internal or external command` failures by implementing 4-tier conversion execution: Tier 1 (In-process native bindings), Tier 2 (Bundled Node CLI runner), Tier 3 (Seamless cloud conversion fallback via `https://zapwebp.vercel.app/api/convert`), and Tier 4 (Actionable error dialog with "Open Docs" and "Copy Install Command" buttons).
+  - Packaged `apps/vscode/zapwebp-vscode-1.2.2.vsix`.
+- **Docs Vercel SPA Routing & In-App Custom 404 (`zapwebp-docs`, `zapwebp-docs/vercel.json`, `zapwebp-docs/src/router.ts`)**:
+  - Replaced problematic rewrites in `vercel.json` with Vercel's canonical SPA configuration using `{ "handle": "filesystem" }` followed by `{ "src": "/(.*)", "dest": "/index.html" }`, eliminating platform 404s on direct navigation or refresh across `/cli`, `/mcp`, `/about`, `/faq`, and all documentation subpaths.
+  - Implemented an elegant in-app custom 404 view in `zapwebp-docs/src/router.ts` for unrecognized URLs with quick links back to Overview and FAQs.
+- **Web App Spacing, Responsiveness & Deletion Persistence (`public/`)**:
+  - Removed visual clutter hero text (`hero.badge`, `hero.title`, `hero.description`) from the top of the converter workspace in `public/index.html` and `public/app.js`, placing focus immediately on the dropzone.
+  - Balanced desktop and mobile spacing: tuned `.dropzone-area` padding and height to eliminate awkward vertical voids, capped desktop workspace width at 820px, and resized touch targets for mobile viewports.
+  - Hardened IndexedDB deletion: updated `dbDeleteFile` and `dbClearFiles` to await transaction completion (`tx.oncomplete`) and `req.onsuccess`, preventing deleted images from reappearing on page refresh.
 - **Storage Hardening, Privacy & ISO Standards Compliance (`@zapwebp/storage`, `content/plugins/storage.md`, `content/security.md`, `content/privacy.md`)**:
   - Implemented Storage Security Baseline in `packages/storage/src/sanitize.js`: path sandboxing enforcing 1024-byte path bounds, null-byte rejection, `..` directory traversal elimination (`E_PATH_TRAVERSAL`), absolute filesystem path blocking, and `file://` scheme rejection.
   - Implemented zero-credential leakage guarantee (`stripCredentials`) redacting Bearer tokens, Basic authorization headers, and API keys from error outputs and logs.

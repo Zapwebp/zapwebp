@@ -153,8 +153,13 @@ async function dbDeleteFile(id) {
   try {
     const db = await getDb();
     if (!db) return;
-    const tx = db.transaction('files', 'readwrite');
-    tx.objectStore('files').delete(id);
+    return new Promise((resolve) => {
+      const tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
   } catch {}
 }
 
@@ -162,8 +167,13 @@ async function dbClearFiles() {
   try {
     const db = await getDb();
     if (!db) return;
-    const tx = db.transaction('files', 'readwrite');
-    tx.objectStore('files').clear();
+    return new Promise((resolve) => {
+      const tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
   } catch {}
 }
 
@@ -559,10 +569,10 @@ if (confirmDeleteConfirm) {
 // Reset workspace on brand logo click
 const brandResetBtn = document.querySelector('#brand-reset-btn');
 if (brandResetBtn) {
-  brandResetBtn.addEventListener('click', (e) => {
+  brandResetBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     convertedItems.clear();
-    dbClearFiles();
+    await dbClearFiles();
     renderResultsView();
     if (losslessConflictBanner) losslessConflictBanner.hidden = true;
     closeSettingsSlideover();
@@ -2089,7 +2099,7 @@ function renderResultsView() {
   resultsContainer.appendChild(addCard);
 }
 
-function removeItem(id) {
+async function removeItem(id) {
   if (convertedItems.has(id)) {
     const it = convertedItems.get(id);
     if (it.outputs) {
@@ -2099,12 +2109,12 @@ function removeItem(id) {
     }
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
     convertedItems.delete(id);
-    dbDeleteFile(id);
+    await dbDeleteFile(id);
     renderResultsView();
   }
 }
 
-function clearAllItems() {
+async function clearAllItems() {
   for (const it of convertedItems.values()) {
     if (it.outputs) {
       for (const out of it.outputs) {
@@ -2114,7 +2124,7 @@ function clearAllItems() {
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
   }
   convertedItems.clear();
-  dbClearFiles();
+  await dbClearFiles();
   renderResultsView();
 }
 

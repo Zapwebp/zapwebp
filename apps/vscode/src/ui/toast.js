@@ -45,7 +45,27 @@ function showError(uri, err) {
   const filename = uri && uri.path ? uri.path.split('/').pop() : 'file';
   const code = (err && err.code) || 'E_CONVERSION_FAILED';
   const message = (err && err.message) || String(err);
-  vscode.window.showErrorMessage(`Zapwebp [${code}]: Failed to convert ${filename} — ${message}`);
+  
+  const buttons = ['Open Docs'];
+  if (code === 'E_ENGINE_UNAVAILABLE') {
+    buttons.push('Copy Install Command');
+  }
+
+  const promise = vscode.window.showErrorMessage(
+    `Zapwebp [${code}]: Failed to convert ${filename} — ${message}`,
+    ...buttons
+  );
+
+  if (promise && typeof promise.then === 'function') {
+    promise.then((selection) => {
+      if (selection === 'Open Docs') {
+        vscode.env.openExternal(vscode.Uri.parse(`https://zapwebp-docs.vercel.app/errors#${code.toLowerCase()}`));
+      } else if (selection === 'Copy Install Command') {
+        vscode.env.clipboard.writeText('npm install -g @zapwebp/cli');
+        vscode.window.showInformationMessage('Copied to clipboard: npm install -g @zapwebp/cli');
+      }
+    });
+  }
 }
 
 module.exports = {

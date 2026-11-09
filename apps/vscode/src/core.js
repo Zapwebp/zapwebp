@@ -377,6 +377,58 @@ async function convertViaCli(inputPath, outputPath, options = {}) {
 }
 
 /**
+ * Remote API conversion fallback for environments lacking local native dependencies.
+ * @param {Buffer|Uint8Array} bytes
+ * @param {string} format
+ * @param {number} [width]
+ * @param {number} [quality=85]
+ * @param {boolean} [clean=true]
+ * @param {string} [background]
+ * @returns {Promise<Buffer>}
+ */
+async function convertViaApi(bytes, format = 'webp', width = 512, quality = 85, clean = true, background = undefined) {
+  if (typeof globalThis.fetch !== 'function') {
+    throw new ZapError('E_ENGINE_UNAVAILABLE', 'Fetch API unavailable in runtime environment.');
+  }
+
+  const formData = new FormData();
+  const inExt = sniffInputExtension(bytes);
+  const mimeMap = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    avif: 'image/avif',
+    gif: 'image/gif',
+    tiff: 'image/tiff',
+    svg: 'image/svg+xml',
+  };
+  const mime = mimeMap[inExt] || 'application/octet-stream';
+  const blob = new Blob([bytes], { type: mime });
+
+  formData.append('file', blob, `input.${inExt}`);
+  formData.append('to', format === 'jpeg' ? 'jpeg' : format);
+  formData.append('quality', String(quality));
+  formData.append('clean', String(clean));
+  if (width) formData.append('width', String(width));
+  if (background) formData.append('background', background);
+
+  const endpoint = 'https://zapwebp.vercel.app/api/convert';
+  const res = await globalThis.fetch(endpoint, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new ZapError('E_CONVERSION_FAILED', `Remote conversion failed (${res.status}): ${errText}`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+/**
  * Converts an image buffer with transparency preservation and metadata stripping.
  * @param {Uint8Array|Buffer} bytes - Input image bytes or SVG string buffer.
  * @param {'webp'|'png'|'avif'|'jpeg'} [format='webp'] - Target format.
@@ -393,6 +445,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
 
   const bg = format === 'jpeg' ? (background || '#ffffff') : background;
 
+  // Tier 1: In-process @zapwebp/core if sharp and resvg bindings are accessible
   const core = getCore();
   if (core && typeof core.convertImage === 'function') {
     try {
@@ -419,7 +472,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
     }
   }
 
-  // CLI fallback via temporary file pair
+  // Tier 2: Local or self-bundled CLI execution via Node runner
   const tmpDir = os.tmpdir();
   const id = `zap_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const inExt = sniffInputExtension(bytes);
@@ -427,15 +480,34 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
   const inPath = path.join(tmpDir, `${id}.${inExt}`);
   const outPath = path.join(tmpDir, `${id}.${outExt}`);
 
+  let cliSuccess = false;
   try {
     await fs.promises.writeFile(inPath, bytes);
     await convertViaCli(inPath, outPath, { to: format, width, quality, clean, background: bg });
-    return await fs.promises.readFile(outPath);
-  } catch (err) {
-    throw new ZapError('E_CONVERSION_FAILED', err.message || 'CLI conversion failed.');
+    if (fs.existsSync(outPath)) {
+      const outBytes = await fs.promises.readFile(outPath);
+      cliSuccess = true;
+      return outBytes;
+    }
+  } catch {
+    cliSuccess = false;
   } finally {
     try { await fs.promises.unlink(inPath); } catch {}
     try { await fs.promises.unlink(outPath); } catch {}
+  }
+
+  // Tier 3: Seamless cloud API conversion fallback via official Zapwebp endpoint
+  try {
+    return await convertViaApi(bytes, format, width, quality, clean, bg);
+  } catch (apiErr) {
+    if (apiErr.code === 'E_CONVERSION_FAILED' && apiErr.message.includes('400')) {
+      throw apiErr;
+    }
+    // Tier 4: Friendly, actionable error if offline and no local engine is available
+    throw new ZapError(
+      'E_ENGINE_UNAVAILABLE',
+      'Local conversion engine unavailable offline. Run "npm install -g @zapwebp/cli" for offline conversion, or connect to the internet.'
+    );
   }
 }
 

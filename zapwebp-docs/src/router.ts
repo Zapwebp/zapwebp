@@ -19,7 +19,29 @@ export function navigate(urlStr: string): void {
 function runRender(rawPath: string, hash?: string): void {
   if (!currentMount) return;
 
-  const route = ROUTE_MAP[rawPath] || ROUTE_MAP['/docs'] || DOC_ROUTES[0];
+  const route = ROUTE_MAP[rawPath];
+  if (!route) {
+    currentMount.innerHTML = `
+      <div class="docs-not-found-card" style="max-width: 680px; margin: 48px auto; text-align: center; padding: 48px 24px; background: var(--bg-card); border: 1px solid var(--border-mid); border-radius: 16px;">
+        <div style="font-size: 72px; font-weight: 800; color: var(--green-primary); line-height: 1; margin-bottom: 16px; font-family: var(--font-mono);">404</div>
+        <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Documentation Page Not Found</h1>
+        <p style="font-size: 15px; color: var(--gray-600); margin-bottom: 28px; line-height: 1.6;">
+          The route <code style="padding: 2px 6px; background: rgba(141, 198, 63, 0.1); border-radius: 4px; color: var(--green-primary); font-family: var(--font-mono);">${rawPath}</code> could not be found. It may have been moved, renamed, or does not exist.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <a href="/docs" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--green-primary); color: #000; font-weight: 600; border-radius: 8px; text-decoration: none;">
+            ← Return to Overview
+          </a>
+          <a href="/faq" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg); border: 1px solid var(--border-mid); color: var(--text-primary); font-weight: 500; border-radius: 8px; text-decoration: none;">
+            Common FAQs
+          </a>
+        </div>
+      </div>
+    `;
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    return;
+  }
+
   const file = route.file;
 
   renderDoc(file, currentMount)

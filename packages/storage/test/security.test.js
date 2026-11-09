@@ -193,3 +193,4 @@ test('Wrapper Performance: uploadMany executes with bounded concurrency', async 
   assert.equal(report.summary.files, 6);
   assert.ok(maxConcurrentObserved <= 2, `Observed ${maxConcurrentObserved} concurrent workers, expected <= 2`);
 });
+

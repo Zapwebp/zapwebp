@@ -333,6 +333,15 @@ export const DOC_ROUTES: DocRoute[] = [
     badge: 'Budgets',
     description: 'Performance budgets, Web Worker concurrency pool contracts, zero-copy buffers, and benchmarks.',
     keywords: ['performance', 'budgets', 'lcp', 'workers', 'transferable', 'memory', 'throughput']
+  },
+  {
+    path: '/freeze',
+    file: 'freeze',
+    title: 'Core Freeze',
+    category: 'Core',
+    badge: 'Frozen',
+    description: 'Enterprise architecture freeze-and-extend doctrine, 7 canonical functions, 5 interfaces, and ISO standards alignment.',
+    keywords: ['freeze', 'architecture', 'enterprise', 'iso 25010', 'iso 27001', 'iso 27017', 'iso 27018', 'disciplines', 'core']
   }
 ];
 
@@ -355,4 +364,5 @@ if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
 if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];
 if (ROUTE_MAP['/plugins/github-action']) ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
 if (ROUTE_MAP['/faq']) ROUTE_MAP['/faqs'] = ROUTE_MAP['/faq'];
+if (ROUTE_MAP['/freeze']) ROUTE_MAP['/core/freeze'] = ROUTE_MAP['/freeze'];
 

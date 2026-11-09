@@ -2,30 +2,39 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/schemas/(.*)", "destination": "/schemas/$1" },
-    { "source": "/content/(.*)", "destination": "/content/$1" },
-    { "source": "/locales/(.*)", "destination": "/locales/$1" },
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "headers": [
+  "routes": [
     {
-      "source": "/schemas/(.*)",
-      "headers": [
-        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }
-      ]
+      "src": "/schemas/(.*)",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=3600, s-maxage=86400"
+      },
+      "continue": true
     },
     {
-      "source": "/content/(.*).md",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }]
+      "src": "/content/(.*).md",
+      "headers": {
+        "Cache-Control": "public, max-age=3600, s-maxage=86400"
+      },
+      "continue": true
     },
     {
-      "source": "/(.*).js",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    }
+      "src": "/locales/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=3600, s-maxage=86400"
+      },
+      "continue": true
+    },
+    {
+      "src": "/assets/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
+    },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
 

@@ -523,7 +523,7 @@ body {
 
 /* Dropzone Area */
 .dropzone-area {
-  padding: 56px 24px;
+  padding: 36px 24px 30px;
   border-bottom: 1px solid var(--border-mid);
   background: radial-gradient(ellipse 75% 65% at 50% 0%, var(--bg-dropzone) 0%, var(--bg) 100%);
   display: flex;
@@ -533,7 +533,7 @@ body {
   position: relative;
   cursor: pointer;
   transition: background 160ms var(--ease-snap), border-color 160ms var(--ease-snap), transform 160ms var(--ease-snap), box-shadow 160ms var(--ease-snap);
-  min-height: 290px;
+  min-height: 220px;
   outline: none;
 }
 
@@ -4427,13 +4427,34 @@ body {
 
   /* Natural Dropzone Height on Mobile */
   .dropzone-area {
-    min-height: 230px;
+    min-height: 165px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 24px 14px;
-    gap: 10px;
+    padding: 20px 14px 18px;
+    gap: 8px;
+  }
+
+  .drop-circle-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 8px;
+  }
+
+  .drop-circle-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .drop-title {
+    font-size: 15.5px;
+    margin-bottom: 3px;
+  }
+
+  .drop-subtitle {
+    font-size: 12px;
+    margin-bottom: 6px;
   }
 
   /* Collapsed dropzone state when results are loaded */
@@ -4726,8 +4747,9 @@ body {
   }
 
   .hero-section.tool-workspace {
-    max-width: 960px;
-    padding: 40px 24px;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 24px;
   }
 
   .adaptive-nav {
@@ -4766,8 +4788,9 @@ body {
   }
 
   .hero-section.tool-workspace {
-    max-width: 1400px;
-    padding: 56px 32px;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 36px 32px;
   }
 
   .adaptive-nav {

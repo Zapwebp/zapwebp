@@ -116,10 +116,34 @@ function validateSvg(input) {
   const svg = Buffer.isBuffer(input) ? input.toString('utf8') : String(input);
   if (Buffer.byteLength(svg) === 0 || !/<svg(?:\s|\/?>)/i.test(svg)) throw new Error('This file does not contain a valid SVG document.');
   if (SVG_DANGER_RE.test(svg)) {
-    if (/<(?:script|foreignObject)\b/i.test(svg) || /\bon\w+\s*=/i.test(svg)) throw new Error('This SVG contains active content and cannot be converted.');
-    if (/<!ENTITY\b/i.test(svg)) throw new Error('Custom XML entities are not supported.');
-    if (/<!DOCTYPE\b/i.test(svg)) throw new Error('DOCTYPE declarations are not supported.');
-    if (/@import\b/i.test(svg)) throw new Error('External stylesheet imports are not supported.');
+    if (/<(?:script|foreignObject)\b/i.test(svg) || /\bon\w+\s*=/i.test(svg)) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'This SVG contains active content and cannot be converted.',
+        fix: 'Remove <script>, inline on* handlers, or foreignObject tags before converting.',
+      });
+    }
+    if (/<!ENTITY\b/i.test(svg)) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'Custom XML entities are not supported.',
+        fix: 'Remove <!ENTITY> declarations from the SVG markup.',
+      });
+    }
+    if (/<!DOCTYPE\b/i.test(svg)) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'DOCTYPE declarations are not supported.',
+        fix: 'Remove <!DOCTYPE> declarations from the SVG markup.',
+      });
+    }
+    if (/@import\b/i.test(svg)) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'External stylesheet imports are not supported.',
+        fix: 'Embed all styles inline within <style> elements without @import.',
+      });
+    }
   }
   let decoded;
   try {
@@ -953,8 +977,36 @@ function generateSrcset(baseFile, scales = [1], format = 'webp', alt = '') {
   return `<img src="${primaryFile}" srcset="${srcsetString}" alt="${alt}">`;
 }
 
+const pkg = require('../package.json');
+const { registerTransform, getTransforms } = require('./registry/transforms');
+
+/**
+ * Returns the frozen engine version.
+ * @returns {string}
+ */
+function getVersion() {
+  return pkg.version;
+}
+
+/**
+ * Returns all registered format names in the core registry.
+ * @returns {string[]}
+ */
+function getFormats() {
+  return formats.getAllHandlers().map((h) => h.name);
+}
+
 module.exports = {
+  // Frozen Seven Public Functions (Enterprise Architecture Core API Surface)
   convert,
+  inspect: inspectImage,
+  registerFormat: formats.registerFormat,
+  registerMetadataHandler: metadata.registerMetadataHandler,
+  registerTransform,
+  getVersion,
+  getFormats,
+
+  // Backwards-Compatible Surfaces
   convertImage,
   convertSvgToWebp,
   decodeToRgba,
@@ -979,7 +1031,6 @@ module.exports = {
   evaluateQuality,
   formats,
   registry: formats.registry,
-  registerFormat: formats.registerFormat,
   getHandlerByName: formats.getHandlerByName,
   getHandlerByMime: formats.getHandlerByMime,
   detectFormatHandler: formats.detectFormatHandler,
@@ -987,9 +1038,9 @@ module.exports = {
   metadata,
   MetadataRegistry: metadata.MetadataRegistry,
   metadataRegistry: metadata.metadataRegistry,
-  registerMetadataHandler: metadata.registerMetadataHandler,
   getMetadataHandlers: metadata.getMetadataHandlers,
   cleanBytes: metadata.cleanBytes,
+  getTransforms,
   getSharp,
   getResvg,
   MAX_WIDTH,
