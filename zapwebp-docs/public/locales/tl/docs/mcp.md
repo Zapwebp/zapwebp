@@ -9,7 +9,7 @@ Applies to: `@zapwebp/mcp` v1.1.0 at mas bago.
 ## Quick start
 
 ```bash
-npx zapwebp-mcp
+npx -y @zapwebp/mcp
 ```
 
 Sinisimulan ang MCP server sa stdio mode para magamit ng Cursor, Claude Desktop, o Antigravity.

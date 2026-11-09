@@ -45,3 +45,4 @@ To be recognized in this directory:
 2. Ensure all workspace checks pass (`pnpm test` and `node scripts/validate-locales.js`).
 3. Add your name and contribution focus area to this file in your PR.
 4. Once merged, you are permanently credited here and in [CHANGELOG.md](CHANGELOG.md).
+

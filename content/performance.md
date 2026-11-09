@@ -80,3 +80,4 @@ Client-side image processing offloads all rasterization, metadata stripping, and
   }
 }
 ```
+

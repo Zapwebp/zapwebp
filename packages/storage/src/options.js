@@ -2,6 +2,7 @@
 
 const { parseScales } = require('@zapwebp/core');
 const { OUTPUT_FORMATS } = require('@zapwebp/shared');
+const { validateAdapterContract } = require('./sanitize');
 
 const DEFAULT_OPTIONS = Object.freeze({
   scale: Object.freeze([1]),
@@ -18,9 +19,11 @@ const DEFAULT_OPTIONS = Object.freeze({
   defaultBackground: undefined,
   targetFormat: 'webp',
   strict: true,
+  concurrency: 4,
 });
 
 const VALID_CONFLICT_STRATEGIES = new Set(['overwrite', 'skip', 'error']);
+const VALID_PROVIDERS = new Set(['supabase', 'firebase', 'neocities', 'custom']);
 
 /**
  * Validates and normalizes storage options against production constraints.
@@ -99,6 +102,16 @@ function resolveOptions(userOptions = {}) {
   }
   const strict = raw.strict !== undefined ? Boolean(raw.strict) : DEFAULT_OPTIONS.strict;
 
+  // 8. Concurrency
+  let concurrency = DEFAULT_OPTIONS.concurrency;
+  if (raw.concurrency !== undefined) {
+    const parsed = Number(raw.concurrency);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 16) {
+      throw new RangeError(`concurrency must be an integer between 1 and 16, received: ${raw.concurrency}`);
+    }
+    concurrency = parsed;
+  }
+
   let transforms = Array.isArray(raw.transforms) ? [...raw.transforms] : [];
   if (raw.crop) {
     let cropTransformFn;
@@ -128,13 +141,56 @@ function resolveOptions(userOptions = {}) {
     defaultBackground: typeof (raw.defaultBackground || raw.background) === 'string' ? (raw.defaultBackground || raw.background).trim() : undefined,
     targetFormat,
     strict,
+    concurrency,
     transforms: transforms.length > 0 ? transforms : undefined,
     policy: raw.policy || undefined,
+  };
+}
+
+/**
+ * Validates a unified StorageConfig object against the specification schema.
+ * @param {import('./types').StorageConfig} config
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateStorageConfig(config) {
+  const errors = [];
+  if (!config || typeof config !== 'object') {
+    return { valid: false, errors: ['StorageConfig must be an object.'] };
+  }
+
+  if (!config.provider || !VALID_PROVIDERS.has(config.provider)) {
+    errors.push(`Invalid provider "${config.provider}". Must be one of: ${[...VALID_PROVIDERS].join(', ')}`);
+  }
+
+  if (typeof config.bucket !== 'string' || !config.bucket.trim()) {
+    errors.push('StorageConfig requires a non-empty string "bucket" identifier.');
+  }
+
+  if (config.provider === 'neocities') {
+    if (!config.credentials || !config.credentials.user || !config.credentials.password) {
+      errors.push('Neocities provider requires "credentials.user" and "credentials.password".');
+    }
+  }
+
+  if (config.provider === 'supabase' && !config.client) {
+    errors.push('Supabase provider requires an initialized "client" instance.');
+  }
+
+  if (config.provider === 'firebase' && !config.client) {
+    errors.push('Firebase provider requires an initialized FirebaseStorage "client" instance.');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
 }
 
 module.exports = {
   DEFAULT_OPTIONS,
   VALID_CONFLICT_STRATEGIES,
+  VALID_PROVIDERS,
   resolveOptions,
+  validateStorageConfig,
+  validateAdapterContract,
 };

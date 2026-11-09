@@ -78,3 +78,4 @@ When environment constraints or runtime dependencies encounter limitations, Zapw
   "surfaces": ["cli", "web", "mcp", "vscode", "vite", "next", "github-action", "storage", "laravel"]
 }
 ```
+

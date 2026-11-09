@@ -58,3 +58,4 @@ Ipinapatupad ng Zapwebp ang mahigpit na "Never Breaks" stability guarantee sa la
   }
 }
 ```
+

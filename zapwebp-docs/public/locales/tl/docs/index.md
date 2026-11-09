@@ -24,7 +24,7 @@ Kino-convert ng Zapwebp ang SVG at mga karaniwang raster na imahe patungong WebP
 |---|---|---|---|
 | Web App | Browser | `https://zapwebp.vercel.app/` | Drag-and-drop na agarang conversion at maramihang pag-download gamit ang ZIP |
 | CLI | Terminal | `npx zapwebp <file>` | Lokal na file, glob, watch daemon, at mga CI check |
-| MCP Server | Stdio | `npx zapwebp-mcp` | Mga tool sa pag-convert at pag-optimize ng imahe para sa mga AI coding agent |
+| MCP Server | Stdio | `npx -y @zapwebp/mcp` | Mga tool sa pag-convert at pag-optimize ng imahe para sa mga AI coding agent |
 | HTTP API | REST | `POST /api/v1/convert` | Stateless na mga endpoint para sa pag-convert ng imahe |
 
 ## Examples
@@ -39,7 +39,7 @@ $ npx zapwebp logo.svg --to webp
 ### Inspect image metadata
 
 ```bash
-$ npx zapwebp-mcp
+$ npx -y @zapwebp/mcp
 {"result":{"serverInfo":{"name":"zapwebp","version":"1.1.0"}},"jsonrpc":"2.0","id":1}
 ```
 

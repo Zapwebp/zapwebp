@@ -52,6 +52,34 @@ export interface ZapwebpStorageOptions {
   emitManifest?: boolean;
   /** Background hex color (required when converting transparent source to JPEG). */
   background?: string;
+  /** Concurrency level for batch uploads (1-16). Default: 4 */
+  concurrency?: number;
+  /** Target format for locked outputs. Default: 'webp' */
+  targetFormat?: string;
+  /** Strict conversion enforcement. Default: true */
+  strict?: boolean;
+  /** Custom transforms pipeline */
+  transforms?: any[];
+  /** Unified conversion policy */
+  policy?: any;
+}
+
+export interface StorageConfig {
+  provider: 'supabase' | 'firebase' | 'neocities' | 'custom';
+  bucket: string;
+  credentials?: {
+    user?: string;
+    password?: string;
+    site?: string;
+  };
+  client?: any;
+  options?: ZapwebpStorageOptions;
+  concurrency?: number;
+  retry?: {
+    maxRetries?: number;
+    initialDelayMs?: number;
+    maxDelayMs?: number;
+  };
 }
 
 export interface UploadSourceInfo {
@@ -71,6 +99,9 @@ export interface UploadReport {
   outputs: UploadOutputInfo[];
   manifest?: any;
   skipped?: boolean;
+  targetFormat?: string;
+  targetLockEnforced?: boolean;
+  targetLockBypassed?: boolean;
 }
 
 export interface BatchSummary {
@@ -89,13 +120,13 @@ export interface BatchUploadReport {
 
 export interface BatchUploadFile {
   path: string;
-  bytes: Uint8Array | Buffer;
+  bytes: Uint8Array | Buffer | string;
 }
 
 export interface ZapwebpStorageInstance {
   readonly adapter: StorageAdapter;
   readonly options: Required<ZapwebpStorageOptions>;
-  upload(bucket: string, path: string, bytes: Uint8Array | Buffer): Promise<UploadReport>;
-  uploadMany(bucket: string, files: BatchUploadFile[], options?: { format?: string }): Promise<BatchUploadReport>;
+  upload(bucket: string, path: string, bytes: Uint8Array | Buffer | string): Promise<UploadReport>;
+  uploadMany(bucket: string, files: BatchUploadFile[], options?: { concurrency?: number }): Promise<BatchUploadReport>;
   remove(bucket: string, path: string): Promise<void>;
 }

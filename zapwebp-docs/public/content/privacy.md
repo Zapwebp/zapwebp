@@ -1,158 +1,81 @@
 # Privacy Policy
 
-**Effective Date:** November 4, 2026  
-**Last Updated:** November 4, 2026
+Covers: Data collection practices, telemetry policy, memory handling, statutory compliance under Philippine Republic Act No. 10173, and cloud storage adapter privacy boundaries for Zapwebp.
 
-Zapwebp ("we", "us", or "our"), maintained by **Eldrex Delos Reyes Bula**, provides an open-source, transparency-safe image conversion engine, web application, developer CLI, Model Context Protocol (MCP) server, and cloud storage adapters.
+Does not cover: External hosting provider network infrastructure policies (e.g. Vercel edge network).
 
-We believe privacy is an architectural property, not a policy disclaimer. Zapwebp is engineered from the ground up on a **Zero-Telemetry, Local-First Architecture**. This Privacy Policy explains our practices regarding user data, local processing, and third-party integrations.
+Applies to: `zapwebp.vercel.app`, CLI, MCP server, cloud storage adapters, and editor extensions.
 
----
+## Quick start
 
-## 1. Core Privacy Promise: Zero Server Uploads
+```bash
+# Verify offline mode in CLI
+npx zapwebp check logo.svg
+```
 
-**Your files are your own. Zapwebp never uploads your images, vectors, or graphics to our servers.**
+Maintainer contact: [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com) · Republic of the Philippines.
 
-- When you use the Web Application ([https://zapwebp.vercel.app](https://zapwebp.vercel.app)), all rasterization, compression, format transformation, and multiplier generation occur **100% locally inside your browser** using client-side WebAssembly (WASM) and HTML5 Canvas.
-- When you execute the Command Line Interface (`zap`, `zapwebp`), VS Code extension, or Model Context Protocol (`@zapwebp/mcp`) server, image processing occurs **100% locally in-memory** on your host computer.
-- We do not operate an asset-retaining cloud conversion farm, image caching database, or remote inspection pipeline.
+## What it does
 
----
+Zapwebp is engineered with a strict **Zero-Tracking, Memory-Only** privacy posture:
 
-## 2. What We Do NOT Collect
+- **100% Client-Side In-Browser Conversion**: Image processing in the web application executes inside your browser tab's local memory using HTML5 Canvas and WASM. Your images are never sent over the Internet to any Zapwebp server.
+- **Zero Telemetry**: No Google Analytics, no Meta Pixel, no Mixpanel, no error beacons (Sentry/LogRocket), no cookies, and no browser fingerprinting scripts.
+- **Zero Cloud Storage of User Assets**: Zapwebp operates no central cloud databases or asset archives. When you close the browser tab, in-memory image buffers are immediately reclaimed by garbage collection.
+- **Local-Only CLI & MCP**: The CLI tool (`zapwebp`) and Model Context Protocol server (`@zapwebp/mcp`) operate entirely on your local workstation's filesystem with zero outgoing network telemetry.
 
-We do not collect, monetize, log, or sell your personal information or media assets. Specifically, we do **not**:
+## Statutory Jurisdiction & Philippine R.A. 10173 (DPA of 2012)
 
-- Collect, intercept, or inspect the images you process;
-- Collect facial, biometric, or personal identity data (our auto-crop heuristics evaluate local pixel clustering in ephemeral memory only and discard it immediately);
-- Collect personal names, physical addresses, or phone numbers;
-- Require user account creation, registration, passwords, or authentication to use the web app or open-source tools;
-- Deploy tracking pixels, fingerprinting scripts, or third-party advertising SDKs (such as Google AdSense, Meta Pixel, or marketing beacons);
-- Track cross-site browsing behavior across sessions.
+Zapwebp is developed and maintained by Eldrex Delos Reyes Bula under the jurisdiction of the **Republic of the Philippines**. The project strictly adheres to the provisions of **Republic Act No. 10173**, known as the **Data Privacy Act of 2012 (DPA)**, administered by the National Privacy Commission (NPC):
 
----
+1. **Principle of Transparency**: Users are explicitly informed that image conversion occurs 100% in local memory. No personal data, image metadata, or telemetry is secretly extracted or harvested.
+2. **Principle of Legitimate Purpose**: When using `@zapwebp/storage`, data transfer occurs solely to the storage provider explicitly configured and authorized by the developer (e.g., developer's own Supabase bucket).
+3. **Principle of Proportionality (Data Minimization)**: Clean Mode strips EXIF, GPS location coordinates, camera serial numbers, and creator identifiers from image headers before conversion, guaranteeing that unnecessary sensitive personal information is purged prior to cloud storage writes.
 
-## 3. What We Collect (And Why)
+## Cloud Storage Adapters & Third-Party Privacy
 
-Because Zapwebp does not maintain user accounts or remote processing infrastructure, data collection is strictly minimal:
+When using `@zapwebp/storage` to upload assets, developers interact with third-party cloud infrastructure under a **Shared Responsibility Model**:
 
-### 3.1 Direct Correspondence
+| Provider | Data Boundary | Privacy & Retention Profile |
+|---|---|---|
+| **Supabase Storage** | Private or Public Bucket | Managed under developer's Supabase account. Access governed by Row Level Security (RLS) policies. |
+| **Firebase Storage** | Google Cloud Storage Bucket | Managed under developer's Google Cloud project. Access governed by Firebase Storage Security Rules. |
+| **Neocities** | **Public Static Web Host** | **Public by Default**: All files uploaded to Neocities are publicly discoverable and indexed. Neocities retains server access logs for up to 24 months. Never store private or regulated personal data on Neocities. |
 
-If you voluntarily contact us via email ([eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com)) or submit a public pull request or issue on GitHub ([https://github.com/Zapwebp](https://github.com/Zapwebp)), we collect the information you choose to provide (such as your email address, GitHub username, bug reports, or feature discussions) strictly to respond to your inquiry, support technical troubleshooting, or collaborate on open-source code.
+## Privacy Commitments
 
-### 3.2 Web Hosting Infrastructure Logs
+| Item | Status | Guarantee |
+|---|---|---|
+| Image Uploads to Zapwebp | None | In-browser conversion runs completely in local memory |
+| Telemetry / Analytics | None | Zero tracking scripts, beacons, or third-party pixels |
+| User Accounts | None | No passwords, logins, or tracking cookies required |
+| File Retention | 0 Seconds | Unsaved blobs are revoked immediately upon tab closure |
 
-The public web application ([https://zapwebp.vercel.app](https://zapwebp.vercel.app)) and documentation portal ([https://zapwebp-docs.vercel.app](https://zapwebp-docs.vercel.app)) are deployed on [Vercel](https://vercel.com). Like virtually all web hosts, Vercel may automatically collect standard HTTP access logs (such as requesting IP address, browser user-agent, referer, and timestamp) solely for network security, DDoS mitigation, and edge routing. These logs are governed by [Vercel's Privacy Policy](https://vercel.com/legal/privacy-policy) and are never cross-referenced with your image conversions.
+## Errors
 
----
+| Code | Cause | Fix |
+|---|---|---|
+| `privacy_telemetry_detected` | Third-party script injected by browser extension | Review active browser extensions |
+| `E_RATE_LIMIT` | Neocities upload rate limit reached | Back off upload frequency to adhere to host policy |
 
-## 4. Local Processing & Ephemeral Memory
+## For agents
 
-### 4.1 In-Browser Processing
+```json
+{
+  "policy": "zero-telemetry",
+  "clientSideExecution": true,
+  "remoteUploads": false,
+  "analytics": false,
+  "cookies": false,
+  "jurisdiction": "Republic of the Philippines",
+  "statute": "Republic Act No. 10173 (Data Privacy Act of 2012)",
+  "contact": "eldrexdelosreyesbula@gmail.com"
+}
+```
 
-When you drag and drop images onto [zapwebp.vercel.app](https://zapwebp.vercel.app):
+## Related
 
-- Files are parsed directly from your file system into your browser's private memory heap (`ArrayBuffer`).
-- Image processing (SVG rasterization via Rust-compiled WASM, pixel transformations, WebP/AVIF encoding) is executed within your browser's isolated JavaScript sandbox.
-- When you click "Download" or export a batch ZIP, the archive is created entirely client-side using `fflate` in browser RAM.
-- Closing the browser tab or reloading the page immediately frees the memory. No persistent copy remains.
-
-### 4.2 Terminal CLI & Local Storage
-
-- Conversions performed via `zap` or `zapwebp` operate directly on files on your local disk.
-- Transaction histories generated for atomic undo/redo operations are stored strictly in a local directory (`.zapwebp/journal/`) inside your project directory.
-- This directory is automatically appended to your project's `.gitignore` to prevent accidental commit of conversion journals to remote git hosts.
-
----
-
-## 5. Cookies & Browser Local Storage
-
-We do **not** use tracking cookies, marketing cookies, or third-party analytic identifiers.
-
-The web application ([https://zapwebp.vercel.app](https://zapwebp.vercel.app)) uses standard browser `localStorage` solely to persist your local user interface preferences:
-
-- **`zap_theme`**: Stores your chosen color palette (e.g., `dark`, `minimal`, `glass`, `default`).
-- **`zap_quality`**: Stores your last-selected quality slider setting (e.g., `85`).
-- **`zap_locale`**: Stores your preferred user interface language (e.g., `en`, `tl`).
-
-These settings never leave your browser and are not transmitted to any server. You can clear this data at any time via your browser's "Clear Site Data" or "Clear Cookies and Local Storage" settings.
-
----
-
-## 6. Third-Party Integrations & Storage Adapters
-
-Zapwebp offers modular cloud storage adapters (`@zapwebp/storage`) for services including:
-
-- **Supabase Storage**
-- **Firebase Storage**
-- **Neocities**
-- **Amazon S3 / S3-compatible endpoints**
-
-When you configure and invoke these adapters:
-
-1. File transfers occur directly between your application runtime and the cloud provider's API endpoint.
-2. Your authentication credentials (e.g., API keys, service role tokens, bucket names) remain on your server or build environment. Zapwebp never routes credentials or media assets through any intermediate proxy.
-3. Your use of these third-party platforms is subject to their respective terms of service and privacy policies.
-
----
-
-## 7. Metadata Sanitization (Clean Mode)
-
-Digital images often contain embedded metadata that may reveal sensitive information, including:
-
-- GPS coordinates (exact latitude, longitude, and elevation of where a photo was taken);
-- Camera and phone serial numbers;
-- Author names, copyright details, and software history;
-- Generative AI provenance tags and C2PA Content Credentials.
-
-Zapwebp's **Clean Mode** (`--clean` or web app toggle) actively strips EXIF, XMP, IPTC, and C2PA metadata chunks from converted output files by default, protecting you and your users from unintended metadata leakage.
-
----
-
-## 8. Analytics & Telemetry
-
-Zapwebp maintains a strict **Zero-Telemetry Invariant**:
-
-- The core conversion engine (`@zapwebp/core`) contains zero telemetry calls.
-- The CLI (`packages/cli`) contains zero telemetry calls.
-- The web app (`public/`) contains zero telemetry calls.
-- We do not use Sentry, Google Analytics, Mixpanel, LogRocket, or any equivalent remote monitoring beacons.
-
-You can verify this at any time by inspecting the source code on GitHub ([https://github.com/Zapwebp](https://github.com/Zapwebp)) or monitoring outbound network activity in your browser's Developer Tools (`Network` tab) during conversions.
-
----
-
-## 9. User Rights & Data Deletion
-
-Because Zapwebp does not store, retain, or process your personal data or image files on remote servers, there is no remote personal data to delete, rectify, or export.
-
-- You retain complete ownership and control of all local files on your machine.
-- You may purge local browser preferences at any time by clearing your browser's `localStorage`.
-- You may purge local CLI undo history by deleting the `.zapwebp/` directory from your workspace or running `zap gc`.
-
-If you have submitted an inquiry or communication to us via email and wish to request deletion of your correspondence, you may contact us directly at [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com), and we will fulfill your request promptly in accordance with applicable data privacy regulations.
-
----
-
-## 10. Jurisdiction & Governing Law
-
-Zapwebp is maintained in and operated under the jurisdiction of the **Republic of the Philippines**. Any questions, disputes, or regulatory considerations arising under this Privacy Policy shall be governed by and construed in accordance with the laws of the Republic of the Philippines, including Republic Act No. 10173, otherwise known as the **Data Privacy Act of 2012** (DPA).
-
----
-
-## 11. Changes to This Privacy Policy
-
-We may update this Privacy Policy from time to time to reflect modifications in our software, legal requirements, or architectural enhancements. When changes are made, the "Last Updated" date at the top of this document will be revised. Significant changes will be announced in [CHANGELOG.md](CHANGELOG.md).
-
----
-
-## 12. Contact Information
-
-For any questions, concerns, or requests regarding this Privacy Policy or our privacy architecture, please contact:
-
-- **Maintainer:** Eldrex Delos Reyes Bula
-- **Email:** [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com)
-- **Organization:** Zapwebp
-- **Repository:** [https://github.com/Zapwebp](https://github.com/Zapwebp)
-- **Web App:** [https://zapwebp.vercel.app](https://zapwebp.vercel.app)
-- **Documentation:** [https://zapwebp-docs.vercel.app/privacy](https://zapwebp-docs.vercel.app/privacy)
+- [Safety](/safety): Security rules and sandbox boundaries.
+- [Security](/security): ISO/IEC 27001 & 27017 standards compliance and vulnerability disclosure.
+- [Storage Adapters](/plugins/storage): Pre-upload conversion and cloud adapter security.
+- [About](/about): Project background and architecture doctrine.

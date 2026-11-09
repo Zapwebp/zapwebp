@@ -1,5 +1,27 @@
 'use strict';
 
+const { validateStoragePath, stripCredentials } = require('../sanitize');
+
+/**
+ * Standard Firebase Storage Security Rules Templates.
+ * Enforces least privilege per ISO 27001 Access Control (A.9).
+ */
+const FIREBASE_RULES_TEMPLATES = Object.freeze({
+  AUTHENTICATED_ONLY: `
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+`.trim(),
+});
+
 /**
  * Creates a StorageAdapter backed by Firebase Client or Admin Storage.
  * Supports modular Firebase v9+ client SDK functions and firebase-admin/storage instances.
@@ -30,16 +52,22 @@ function firebaseAdapter(storage, sdk) {
   return {
     name: 'firebase',
 
-    async write(bucket, path, bytes, opts = {}) {
+    async write(bucket, rawPath, bytes, opts = {}) {
       if (!modularSdk || typeof modularSdk.ref !== 'function' || typeof modularSdk.uploadBytes !== 'function') {
         throw new Error('E_STORAGE: firebase/storage modular SDK functions are required for client storage writes.');
       }
 
+      const path = validateStoragePath(rawPath);
       const fileRef = modularSdk.ref(storage, `${bucket}/${path}`);
-      const snapshot = await modularSdk.uploadBytes(fileRef, bytes, {
-        contentType: opts.contentType,
-        cacheControl: opts.cacheControl,
-      });
+      let snapshot;
+      try {
+        snapshot = await modularSdk.uploadBytes(fileRef, bytes, {
+          contentType: opts.contentType,
+          cacheControl: opts.cacheControl,
+        });
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase upload failed for "${path}": ${stripCredentials(err.message || err)}`);
+      }
 
       let publicUrl;
       if (typeof modularSdk.getDownloadURL === 'function') {
@@ -57,26 +85,37 @@ function firebaseAdapter(storage, sdk) {
       };
     },
 
-    async read(bucket, path) {
+    async read(bucket, rawPath) {
       if (!modularSdk || typeof modularSdk.ref !== 'function' || typeof modularSdk.getBytes !== 'function') {
         throw new Error('E_STORAGE: firebase/storage modular SDK functions are required for client storage reads.');
       }
+      const path = validateStoragePath(rawPath);
       const fileRef = modularSdk.ref(storage, `${bucket}/${path}`);
-      const ab = await modularSdk.getBytes(fileRef);
-      return new Uint8Array(ab);
+      try {
+        const ab = await modularSdk.getBytes(fileRef);
+        return new Uint8Array(ab);
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase download failed for "${path}": ${stripCredentials(err.message || err)}`);
+      }
     },
 
-    async delete(bucket, path) {
+    async delete(bucket, rawPath) {
       if (!modularSdk || typeof modularSdk.ref !== 'function' || typeof modularSdk.deleteObject !== 'function') {
         throw new Error('E_STORAGE: firebase/storage modular SDK functions are required for client storage deletes.');
       }
+      const path = validateStoragePath(rawPath);
       const fileRef = modularSdk.ref(storage, `${bucket}/${path}`);
-      await modularSdk.deleteObject(fileRef);
+      try {
+        await modularSdk.deleteObject(fileRef);
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase delete failed for "${path}": ${stripCredentials(err.message || err)}`);
+      }
     },
 
-    async exists(bucket, path) {
+    async exists(bucket, rawPath) {
       if (!modularSdk || typeof modularSdk.ref !== 'function') return false;
       try {
+        const path = validateStoragePath(rawPath);
         const fileRef = modularSdk.ref(storage, `${bucket}/${path}`);
         if (typeof modularSdk.getBytes === 'function') {
           await modularSdk.getBytes(fileRef, 1);
@@ -96,9 +135,14 @@ function firebaseAdapter(storage, sdk) {
       if (!modularSdk || typeof modularSdk.ref !== 'function' || typeof modularSdk.listAll !== 'function') {
         return [];
       }
-      const folderRef = modularSdk.ref(storage, `${bucket}/${prefix}`);
-      const res = await modularSdk.listAll(folderRef);
-      return (res.items || []).map((i) => i.fullPath || i.name);
+      const cleanPrefix = prefix ? validateStoragePath(prefix) : '';
+      const folderRef = modularSdk.ref(storage, `${bucket}/${cleanPrefix}`);
+      try {
+        const res = await modularSdk.listAll(folderRef);
+        return (res.items || []).map((i) => i.fullPath || i.name);
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase list failed for "${cleanPrefix}": ${stripCredentials(err.message || err)}`);
+      }
     },
   };
 }
@@ -116,18 +160,23 @@ function firebaseAdminAdapter(storage) {
   return {
     name: 'firebase',
 
-    async write(bucketName, path, bytes, opts = {}) {
+    async write(bucketName, rawPath, bytes, opts = {}) {
+      const path = validateStoragePath(rawPath);
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(path);
       const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
 
-      await file.save(buffer, {
-        contentType: opts.contentType,
-        metadata: {
-          cacheControl: opts.cacheControl,
-        },
-        resumable: false,
-      });
+      try {
+        await file.save(buffer, {
+          contentType: opts.contentType,
+          metadata: {
+            cacheControl: opts.cacheControl,
+          },
+          resumable: false,
+        });
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase Admin upload failed for "${path}": ${stripCredentials(err.message || err)}`);
+      }
 
       let publicUrl;
       try {
@@ -143,34 +192,52 @@ function firebaseAdminAdapter(storage) {
       };
     },
 
-    async read(bucketName, path) {
+    async read(bucketName, rawPath) {
+      const path = validateStoragePath(rawPath);
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(path);
-      const [buffer] = await file.download();
-      return new Uint8Array(buffer);
+      try {
+        const [buffer] = await file.download();
+        return new Uint8Array(buffer);
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase Admin download failed for "${path}": ${stripCredentials(err.message || err)}`);
+      }
     },
 
-    async delete(bucketName, path) {
+    async delete(bucketName, rawPath) {
+      const path = validateStoragePath(rawPath);
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(path);
       try {
         await file.delete({ ignoreNotFound: true });
       } catch (err) {
-        if (err.code !== 404) throw err;
+        if (err.code !== 404) {
+          throw new Error(`E_STORAGE: Firebase Admin delete failed for "${path}": ${stripCredentials(err.message || err)}`);
+        }
       }
     },
 
-    async exists(bucketName, path) {
+    async exists(bucketName, rawPath) {
+      const path = validateStoragePath(rawPath);
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(path);
-      const [exists] = await file.exists();
-      return Boolean(exists);
+      try {
+        const [exists] = await file.exists();
+        return Boolean(exists);
+      } catch {
+        return false;
+      }
     },
 
     async list(bucketName, prefix = '') {
+      const cleanPrefix = prefix ? validateStoragePath(prefix) : '';
       const bucket = storage.bucket(bucketName);
-      const [files] = await bucket.getFiles({ prefix });
-      return (files || []).map((f) => f.name);
+      try {
+        const [files] = await bucket.getFiles({ prefix: cleanPrefix });
+        return (files || []).map((f) => f.name);
+      } catch (err) {
+        throw new Error(`E_STORAGE: Firebase Admin list failed for "${cleanPrefix}": ${stripCredentials(err.message || err)}`);
+      }
     },
   };
 }
@@ -178,4 +245,5 @@ function firebaseAdminAdapter(storage) {
 module.exports = {
   firebaseAdapter,
   firebaseAdminAdapter,
+  FIREBASE_RULES_TEMPLATES,
 };

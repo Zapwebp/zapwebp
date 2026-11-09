@@ -1,120 +1,87 @@
-# Security Policy
+# Security
 
-**Effective Date:** November 4, 2026  
-**Last Updated:** November 4, 2026
+Covers: Security architecture, vulnerability reporting procedures, ISO/IEC 27001 and ISO/IEC 27017 standards alignment, storage adapter boundaries, and zero-telemetry boundary guarantees.
 
-Zapwebp takes software security and data integrity seriously. As an image processing engine deployed across developer terminals, AI agents, cloud storage adapters, and client browsers, maintaining defensive boundaries against malicious image payloads and untrusted inputs is fundamental to our architecture.
+Does not cover: Standard user conversion errors or malformed assets. See [Errors](/errors) and [Safety](/safety).
 
----
+Applies to: All Zapwebp packages, CLI, web application, MCP server, and cloud storage adapters.
 
-## 1. Supported Versions
+## Quick start
 
-We actively provide security patches and dependency updates for the following versions:
+```bash
+# Verify zero network calls during local image conversion
+npx zapwebp icon.svg --dry-run
+```
 
-| Version Line |             Status             | Security Support Level                                            |
-| :----------- | :----------------------------: | :---------------------------------------------------------------- |
-| **2.x**      |   :white_check_mark: Active    | Full security patches, dependency updates, and feature backports. |
-| **1.x**      | :white_check_mark: Maintenance | Critical security fixes and vulnerability patches only.           |
-| **< 1.0**    |        :x: End of Life         | Unsupported. Users must upgrade to the latest stable release.     |
+To report a vulnerability privately, email [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com) with `[SECURITY VULNERABILITY]` in the subject line.
 
-We recommend all production deployments, CI workflows, and AI agent installations pin to the latest `2.x` release (`^2.0.0`).
+## What it does
 
----
+Zapwebp enforces defensive boundaries against malicious image payloads, untrusted cloud storage paths, and network probing attacks:
 
-## 2. Reporting a Vulnerability
+- **SVG Sanitization**: Strips executable JavaScript, event handlers, `<foreignObject>`, and custom XML external entities (XXE).
+- **SSRF Prevention**: Blocks internal network endpoints, private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.1`), link-local metadata endpoints (`169.254.169.254`), and IPv6 equivalents.
+- **Filesystem & Storage Sandboxing**: Enforces 1024-byte path bounds, strictly rejects directory traversal (`..`), absolute filesystem paths, and `file://` schemes.
+- **Zero-Credential Leakage**: All authentication tokens, basic auth credentials, and service keys are redacted from logs and error messages before propagation.
+- **Zero Remote Retention**: Conversions in the browser execute in isolated memory; CLI conversions operate on local disk with zero telemetry.
 
-**Please do NOT disclose security vulnerabilities through public GitHub issues, discussions, or social media channels.**
+## ISO/IEC 27001 & ISO/IEC 27017 Alignment
 
-To report a vulnerability or potential exploit, send an encrypted or private email directly to the maintainer:
+Zapwebp aligns its engineering practices and storage adapter boundaries with international cybersecurity and cloud security standards:
 
-- **Security Contact:** Eldrex Delos Reyes Bula
-- **Email:** [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com)
-- **Subject Line:** `[SECURITY VULNERABILITY] Zapwebp: <Brief Description>`
+| Control Domain | Standard | Implementation in Zapwebp |
+|:---|:---:|:---|
+| **A.8.1 Asset Management** | ISO 27001 | SHA-256 cryptographic digests generated for every scaled output; deterministic multi-scale naming. |
+| **A.9 Access Control** | ISO 27001 | Strict path sandboxing (`validateStoragePath`), 1024-byte path ceiling, and official Row Level Security (RLS) templates. |
+| **A.10 Cryptography** | ISO 27001 | TLS 1.3 enforced for cloud adapters; zero plaintext credential persistence in code, configs, or error outputs. |
+| **A.12 Operations Security** | ISO 27001 | Memory-only execution; 16 Megapixel (4096×4096) and 256MB WASM bounds; input sanitization prior to libvips rasterization. |
+| **A.13 Communications Security** | ISO 27001 | Autonomous SSRF defense (`validateSafeUrl`); rejection of cloud metadata endpoints (`169.254.169.254`). |
+| **A.18 Compliance** | ISO 27001 | Full alignment with Philippine Republic Act No. 10173 (Data Privacy Act of 2012) and zero unauthorized telemetry. |
+| **CLD.8.1.5 Cascading Deletion** | ISO 27017 | Deterministic removal of all derived scales (@1x/@2x/@3x), manifests, and originals during asset deletion. |
+| **CLD.6.3.1 Shared Responsibility** | ISO 27017 | Clear delineation between adapter client responsibilities and cloud provider infrastructure. |
 
-### What to Include in Your Report
+## Supported Versions
 
-To accelerate validation and patching, please include:
+| Version Line | Status | Security Support Level |
+|:---|:---:|:---|
+| **2.x** | Active | Full security patches, dependency updates, and feature backports |
+| **1.x** | Maintenance | Critical security fixes and vulnerability patches only |
+| **< 1.0** | End of Life | Unsupported; upgrade to the latest stable release |
 
-1. **Description & Impact:** A clear description of the vulnerability, the attack scenario, and potential real-world impact (e.g., arbitrary code execution, XML external entity leakage, SSRF, memory exhaustion DoS).
-2. **Affected Components:** The package(s) or surface(s) affected (e.g., `@zapwebp/core`, `@zapwebp/mcp`, `packages/cli`, web app, or `@zapwebp/edge`).
-3. **Proof of Concept (PoC):** A minimal reproducible test case, script, or sample malicious image file (e.g., crafted SVG or corrupt header payload).
-4. **Environment Details:** Node.js version, operating system, and package manager version used during reproduction.
-5. **Mitigation Ideas:** Any proposed fixes or workaround suggestions (optional).
+## Response Timeline
 
----
+| Milestone | Target Timeline | Action |
+|---|---|---|
+| **Initial Acknowledgment** | **Within 48 hours** | Acknowledge receipt and assign tracking identifier |
+| **Triage & Severity Assessment** | **Within 72 hours** | Reproduce issue and determine CVSS severity |
+| **Patch & Verification** | **Within 5–7 days** | Engineer fix, run regression tests, and prepare release |
+| **Coordinated Disclosure** | **Coordinated** | Publish patched npm release and GitHub Security Advisory |
 
-## 3. Vulnerability Response Timeline
+## Errors
 
-We commit to the following response and remediation schedule:
+| Code | Cause | Fix |
+|---|---|---|
+| `E_UNSAFE_SVG` | SVG contains scripts, foreignObjects, or event handlers | Sanitize the SVG markup or use `--allow-unsafe` if trusted |
+| `E_UNSAFE_URL` | Attempted fetch of private subnet, loopback, or cloud metadata endpoint | Provide a public HTTPS image URL |
+| `E_PATH_TRAVERSAL` | Path exceeds 1024 bytes, contains `..`, or specifies absolute filesystem root | Specify a relative path within the authorized bucket root |
+| `E_AUTH` | Missing or invalid cloud storage credentials | Provide valid environment variables or function arguments |
 
-| Milestone                        | Target Timeline     | Action                                                                                                                             |
-| -------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Initial Acknowledgment**       | **Within 48 hours** | We acknowledge receipt of your report and assign a tracking identifier.                                                            |
-| **Triage & Severity Assessment** | **Within 72 hours** | We reproduce the issue, assess CVSS severity, and determine root cause.                                                            |
-| **Patch Development & Testing**  | **Within 5–7 days** | We engineer a fix, run complete regression suites, and draft a security advisory.                                                  |
-| **Release & Disclosure**         | **Coordinated**     | We publish the patched release on npm and GitHub, followed by a public GitHub Security Advisory crediting the finder (if desired). |
+## For agents
 
----
+```json
+{
+  "policy": "security",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "disclosure": "coordinated",
+  "supportedVersions": ["2.x", "1.x"],
+  "standards": ["ISO/IEC 27001:2022", "ISO/IEC 27017:2015"],
+  "protections": ["xxeDefense", "scriptSanitization", "ssrfBlocker", "pathTraversalGuard", "credentialRedaction"]
+}
+```
 
-## 4. Security Scope & Architecture Boundaries
+## Related
 
-### 4.1 In-Scope Components
-
-The following core security domains are strictly in scope for security vulnerability reports:
-
-1. **SVG Sanitization & Vector Disinfection:**
-   - Active script execution (e.g., `<script>`, `onload`, `javascript:` URI handlers in SVG).
-   - XML External Entity (XXE) injection and recursive entity expansion (Billion Laughs attack).
-   - Unsanitized remote resource fetches (`<image href="http://...">`, `<use xlink:href="...">`).
-   - SVG parsing buffer overflows or bypasses in `@resvg/resvg-js`.
-2. **Server-Side Request Forgery (SSRF) Defense:**
-   - Validation and rejection of private, loopback, link-local, and intranet IP addresses (`127.0.0.1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.169.254`, IPv6 equivalents) in remote URL ingest pipelines.
-3. **WASM & Memory Exhaustion Controls:**
-   - Memory limits and bounds checks preventing pixel flood attacks (decompression bombs / zip bombs) from exceeding maximum resolution gates (4096 × 4096 max dimension by default).
-   - In-browser WebAssembly heap bounds enforcement preventing tab crashes.
-4. **Path Traversal & Sandboxing:**
-   - File read/write bounds ensuring CLI operations do not write outside the intended project boundary or overwrite critical host system files unless `--allow-outside` is explicitly supplied.
-5. **Alpha Channel & Loss Prevention:**
-   - Unexpected dropping of alpha channels or silent data corruption resulting in corrupted output files.
-
-### 4.2 Out-of-Scope Scenarios
-
-The following scenarios are considered out of scope:
-
-1. **Compromised User Environments:** Attacks requiring pre-existing root, administrative, or physical access to the target host machine.
-2. **User-Configured Cloud Credentials:** Leaks of Supabase, Firebase, or AWS access keys caused by user repository misconfigurations or insecure environment files.
-3. **Intentional Overrides:** Expected behavior when a user explicitly supplies bypass flags (e.g., `--allow-unsafe` or `--allow-outside`).
-4. **Third-Party Upstream Binaries:** Unpatched zero-day vulnerabilities in upstream Linux distributions or OS-level `libvips` packages that have not yet been addressed upstream.
-5. **Self-Inflicted Local Resource Exhaustion:** Running batch conversions on multi-gigabyte folders on low-memory machines without setting appropriate `--concurrency` limits.
-
----
-
-## 5. Security Best Practices for Deployers
-
-If you embed Zapwebp in server environments, CI/CD pipelines, or agentic frameworks:
-
-- **Always Keep Dependencies Current:** Use `pnpm update` or `npm update` to ensure you are running the latest `@zapwebp/core` and `@zapwebp/shared` releases.
-- **Enforce Conversion Policies:** Use `conversionPolicy` to define maximum byte sizes (`maxInputBytes`, `maxOutputBytes`) and format allowlists on untrusted uploads.
-- **Never Pass Untrusted Input to Shells:** Invoke Zapwebp via the official SDK (`@zapwebp/sdk`) or MCP server rather than concatenating user input strings into raw terminal commands.
-- **Run with Least Privilege:** In Docker or containerized environments, execute Zapwebp processes as a non-root user (`USER node`).
-
----
-
-## 6. Coordinated Vulnerability Disclosure & Attribution
-
-We believe in responsible, coordinated disclosure. If you discover and report a confirmed security vulnerability:
-
-- We will work collaboratively with you throughout the remediation process.
-- We will coordinate public disclosure dates to ensure users have sufficient time to update.
-- We will publicly credit your contribution in the published GitHub Security Advisory and release notes, unless you request to remain anonymous.
-
----
-
-## 7. Security Contact & Documentation
-
-- **Security Lead:** Eldrex Delos Reyes Bula
-- **Email:** [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com)
-- **Documentation Portal:** [https://zapwebp-docs.vercel.app/security](https://zapwebp-docs.vercel.app/security)
-- **Safety Documentation:** [https://zapwebp-docs.vercel.app/safety](https://zapwebp-docs.vercel.app/safety)
-
-Thank you for helping keep Zapwebp and the open-source community safe and reliable.
+- [Safety](/safety): Strict asset verification guarantees.
+- [Privacy Policy](/privacy): Zero-telemetry, statutory compliance, and data minimization.
+- [Storage Adapters](/plugins/storage): Secure pre-upload conversion for Supabase, Firebase, and Neocities.
+- [Errors](/errors): Complete machine-readable error catalog.

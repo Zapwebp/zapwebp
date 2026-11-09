@@ -6,6 +6,16 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Storage Hardening, Privacy & ISO Standards Compliance (`@zapwebp/storage`, `content/plugins/storage.md`, `content/security.md`, `content/privacy.md`)**:
+  - Implemented Storage Security Baseline in `packages/storage/src/sanitize.js`: path sandboxing enforcing 1024-byte path bounds, null-byte rejection, `..` directory traversal elimination (`E_PATH_TRAVERSAL`), absolute filesystem path blocking, and `file://` scheme rejection.
+  - Implemented zero-credential leakage guarantee (`stripCredentials`) redacting Bearer tokens, Basic authorization headers, and API keys from error outputs and logs.
+  - Autonomous SSRF prevention via `validateSafeUrl` and `isPrivateIp` blocking internal subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.1`), link-local metadata endpoints (`169.254.169.254`), and IPv6 loopbacks.
+  - Hardened Neocities adapter with automated rate-limit pacing and public web host privacy disclosure warnings (noting 24-month server access log retention).
+  - Exported official Supabase Row Level Security (RLS) and Firebase Storage Security Rules templates enforcing least privilege.
+  - Implemented bounded worker concurrency pool for batch uploads (`uploadMany`, default: 4 concurrent workers).
+  - Implemented and exported universal `validateAdapterContract` and `validateStorageConfig` validators.
+  - Documented statutory jurisdiction under the **Republic of the Philippines** and full compliance with **Republic Act No. 10173** (Data Privacy Act of 2012 / DPA) with Transparency, Legitimate Purpose, and Proportionality principles.
+  - Formally documented alignment with **ISO/IEC 27001:2022** (A.8.1, A.9, A.10, A.12, A.13, A.18) and **ISO/IEC 27017:2015** cloud security controls with full Tagalog bilingual parity.
 - **Final Hardening, Stability & Performance Governance (`content/stability.md`, `content/performance.md`, `CONTRIBUTORS.md`)**:
   - Implemented the complete 22-code canonical error taxonomy across `@zapwebp/shared` and `@zapwebp/ui` with actionable `fix` suggestions and agent specifications.
   - Hardened `@zapwebp/storage` with automated 3-attempt exponential backoff retry (`writeWithRetry`) on transient network and rate-limit failures, failing fast on permanent auth exceptions.
