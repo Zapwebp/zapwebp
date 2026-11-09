@@ -144,8 +144,13 @@ async function dbSaveFile(record) {
   try {
     const db = await getDb();
     if (!db) return;
-    const tx = db.transaction('files', 'readwrite');
-    tx.objectStore('files').put(record);
+    return new Promise((resolve) => {
+      const tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').put(record);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
   } catch {}
 }
 
@@ -560,9 +565,9 @@ if (confirmDeleteModal) {
   });
 }
 if (confirmDeleteConfirm) {
-  confirmDeleteConfirm.addEventListener('click', () => {
+  confirmDeleteConfirm.addEventListener('click', async () => {
     closeConfirmDeleteModal();
-    clearAllItems();
+    await clearAllItems();
   });
 }
 
@@ -1873,9 +1878,9 @@ function renderResultsView() {
       downloadSingleOutput(out);
     });
 
-    singleCard.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+    singleCard.querySelector('.btn-single-delete')?.addEventListener('click', async (e) => {
       e.stopPropagation();
-      removeItem(item.id);
+      await removeItem(item.id);
     });
 
     resultsContainer.appendChild(singleCard);
@@ -1936,9 +1941,9 @@ function renderResultsView() {
         <span class="result-name" title="${item.name}">${item.name}</span>
         <span class="result-meta" style="color:var(--error);">${item.error || 'Failed'}</span>
       `;
-      errCard.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+      errCard.querySelector('.btn-single-delete')?.addEventListener('click', async (e) => {
         e.stopPropagation();
-        removeItem(item.id);
+        await removeItem(item.id);
       });
       resultsContainer.appendChild(errCard);
       continue;
@@ -2003,9 +2008,9 @@ function renderResultsView() {
         e.stopPropagation();
         downloadSingleOutput(out);
       });
-      row.querySelector('.btn-single-delete')?.addEventListener('click', (e) => {
+      row.querySelector('.btn-single-delete')?.addEventListener('click', async (e) => {
         e.stopPropagation();
-        removeItem(item.id);
+        await removeItem(item.id);
       });
       resultsContainer.appendChild(row);
     } else {
@@ -2061,9 +2066,9 @@ function renderResultsView() {
         e.stopPropagation();
         downloadSingleOutput(out);
       });
-      card.querySelector('.result-delete-btn')?.addEventListener('click', (e) => {
+      card.querySelector('.result-delete-btn')?.addEventListener('click', async (e) => {
         e.stopPropagation();
-        removeItem(item.id);
+        await removeItem(item.id);
       });
       resultsContainer.appendChild(card);
     }
@@ -2110,6 +2115,9 @@ async function removeItem(id) {
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
     convertedItems.delete(id);
     await dbDeleteFile(id);
+    if (convertedItems.size === 0) {
+      await dbClearFiles();
+    }
     renderResultsView();
   }
 }

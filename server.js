@@ -316,6 +316,14 @@ app.post('/api/convert', upload.array('files', 20), async (req, res) => {
   res.json({ results });
 });
 
+app.use((req, res, next) => {
+  const html404 = path.join(__dirname, 'public', '404.html');
+  if (fs.existsSync(html404)) {
+    return res.status(404).sendFile(html404);
+  }
+  next();
+});
+
 app.use((error, _req, res, _next) => {
   const status = error instanceof multer.MulterError
     ? error.code === 'LIMIT_FILE_SIZE' ? 413 : 400
