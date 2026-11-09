@@ -1,7 +1,7 @@
 {
   "name": "zapwebp-github-action",
-  "version": "1.0.1",
-  "description": "Official first-party GitHub Action for Zapwebp â€” automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core.",
+  "version": "1.2.0",
+  "description": "Official first-party GitHub Action for Zapwebp — automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core.",
   "main": "src/index.js",
   "bin": {
     "zapwebp-action": "src/index.js"

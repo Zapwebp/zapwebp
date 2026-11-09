@@ -1,5 +1,5 @@
 name: "Zapwebp"
-description: "Official first-party GitHub Action for Zapwebp — automated image conversion, transparency verification, and PR commenting in CI. Powered by @zapwebp/core."
+description: "Official first-party GitHub Action for Zapwebp — transparency-safe image conversion, alpha verification, and PR commenting in CI. Powered by @zapwebp/core."
 author: "Zapwebp"
 branding:
   icon: "zap"
@@ -7,7 +7,7 @@ branding:
 
 inputs:
   input-glob:
-    description: "Files to convert (glob pattern)."
+    description: "Files to convert (relative glob pattern, e.g. 'src/**/*.{svg,png}')."
     required: false
     default: "**/*.{svg,png,jpg,jpeg,webp,avif}"
   glob:
@@ -19,45 +19,45 @@ inputs:
     required: false
     default: "webp"
   scale:
-    description: "Output widths as multipliers (e.g. 1,2,3)."
+    description: "Output widths as comma-separated multipliers (e.g. '1,2,3')."
     required: false
     default: "1"
   base-width:
-    description: "1x width in pixels."
+    description: "1x width in pixels (16 to 16,384)."
     required: false
     default: "512"
   quality:
-    description: "Lossy quality (0-100)."
+    description: "Lossy quality (1-100)."
     required: false
     default: "85"
   lossless:
-    description: "Pixel-perfect encoding."
+    description: "Pixel-perfect lossless encoding where supported."
     required: false
     default: "false"
   clean:
-    description: "Strip EXIF, XMP, and C2PA from output."
+    description: "Strip EXIF, XMP, GPS, and C2PA provenance metadata."
     required: false
     default: "true"
   out-dir:
-    description: "Where converted images land. Empty = alongside sources."
+    description: "Relative target folder. Empty string writes alongside source images."
     required: false
     default: ""
   mode:
-    description: "commit | check | comment."
+    description: "Action execution mode: 'commit' (commits to branch), 'check' (fails on missing outputs), or 'comment' (posts summary to PR)."
     required: false
     default: "commit"
   commit-message:
-    description: "Commit message for mode=commit."
+    description: "Commit message used when mode=commit."
     required: false
     default: "chore: optimize images [zapwebp]"
   token:
-    description: "GitHub token for commit/comment."
+    description: "GitHub token for git push or PR commenting."
     required: false
     default: ${{ github.token }}
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/zapwebp/zapwebp-github-action:v1.2.0"
   args:
     - ${{ inputs.input-glob }}
     - ${{ inputs.format }}

@@ -1,0 +1,29 @@
+name: Action Lint
+
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'packages/github-action/action.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'packages/github-action/action.yml'
+
+concurrency:
+  group: actionlint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: Lint Action & Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+

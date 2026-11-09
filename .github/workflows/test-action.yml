@@ -1,0 +1,67 @@
+name: Test Action
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/github-action/**'
+      - '.github/workflows/test-action.yml'
+  pull_request:
+    paths:
+      - 'packages/github-action/**'
+      - '.github/workflows/test-action.yml'
+
+concurrency:
+  group: zapwebp-action-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-matrix:
+    name: Test (${{ matrix.os }}, mode=${{ matrix.mode }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        mode: [check, comment, commit]
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('packages/github-action/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Action Integration Test (${{ matrix.mode }})
+        shell: bash
+        env:
+          INPUT_GLOB: 'packages/github-action/test/fixtures/**/*.svg'
+          INPUT_MODE: ${{ matrix.mode }}
+          INPUT_SCALE: '1,2'
+          INPUT_BASE_WIDTH: '256'
+          INPUT_QUALITY: '85'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node packages/github-action/src/index.js
+

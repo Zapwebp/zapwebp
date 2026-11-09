@@ -6,6 +6,17 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **GitHub Actions Hardening & Ecosystem Readiness (`packages/github-action` v1.2.0, `content/plugins/github-action.md`)**:
+  - Implemented immutable SHA-pinned release recommendations and pre-built GitHub Container Registry (GHCR) image configuration (`ghcr.io/zapwebp/zapwebp-github-action:v1.2.0`).
+  - Added strict Least-Privilege permission matrix documentation (`check`: `contents: read`, `comment`: `pull-requests: write`, `commit`: `contents: write`).
+  - Implemented Fork Safety Gate (`assertForkSafety`, `isForkPullRequest`) automatically blocking `commit` mode on fork pull requests with structured error `E_FORK_COMMIT_FORBIDDEN`.
+  - Added strict input validation in `inputs.js` preventing path traversal (`..`), leading slashes, newlines, and malicious injection across all parameters.
+  - Implemented structured GitHub Actions workflow annotations (`core.error`, `core.notice`, `core.warning`, `core.setFailed`) with structured error codes, file paths, and remediation commands.
+  - Implemented automated PR failure comments in `check` mode posting formatted Markdown tables of out-of-date assets with runnable local fix commands (`npx zapwebp <files>`).
+  - Implemented hash-based idempotency caching (`.zapwebp/hashes.json`) skipping re-conversion of identical assets to conserve CI runner minutes.
+  - Implemented 3-attempt exponential backoff retry (`retry`) on transient network errors (`ETIMEDOUT`, `ECONNRESET`, 429, 502, 503, 504) for GitHub REST API calls.
+  - Implemented log sanitization (`sanitizeLog`) redacting runner workspace paths and masking authorization tokens.
+  - Added GHCR publishing workflow (`.github/workflows/publish-action-image.yml`), action linting workflow (`.github/workflows/action-lint.yml`), and multi-OS test matrix workflow (`.github/workflows/test-action.yml`) verifying Ubuntu, macOS, and Windows runners across all three modes.
 - **Core Engine Freeze & Enterprise Architecture (`@zapwebp/core`, `content/freeze.md`, `locales/tl/docs/freeze.md`)**:
   - Implemented the 5-layer Enterprise Architecture freezing Layer 2 (Core Engine) with exactly seven canonical public functions (`convert`, `inspect`, `registerFormat`, `registerMetadataHandler`, `registerTransform`, `getVersion`, `getFormats`) and five interfaces (`ConvertOptions`, `InspectResult`, `FormatHandler`, `MetadataHandler`, `TransformStep`).
   - Refactored modular internal engine subsystems: `engine/` (pure decode/transform/encode pipeline), `safety/` (SVG defense, SSRF blocking, path sandbox), `registry/` (Open/Closed format, metadata, and transform registries), `journal/` (append-only transaction journal), and `errors/` (structured `ZapwebpError` catalog).
