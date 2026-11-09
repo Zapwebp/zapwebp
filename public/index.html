@@ -1306,28 +1306,83 @@
         </div>
 
         <div
-          class="crop-aspect-bar"
+          class="crop-mode-bar"
           role="group"
-          aria-label="Aspect Ratio Presets"
+          aria-label="Crop Mode"
         >
-          <button type="button" class="aspect-btn is-active" data-aspect="free">
-            Free
+          <button type="button" class="crop-mode-btn is-active" data-mode="auto">
+            Auto / Ratio
           </button>
-          <button type="button" class="aspect-btn" data-aspect="1:1">
-            1:1 Square
+          <button type="button" class="crop-mode-btn" data-mode="body">
+            Body-Posture
           </button>
-          <button type="button" class="aspect-btn" data-aspect="16:9">
-            16:9 Banner
+          <button type="button" class="crop-mode-btn" data-mode="object">
+            Object-Aware
           </button>
-          <button type="button" class="aspect-btn" data-aspect="4:5">
-            4:5 Product
+          <button type="button" class="crop-mode-btn" data-mode="smart">
+            Smart-Subject
           </button>
-          <button type="button" class="aspect-btn" data-aspect="3:2">
-            3:2 Photo
+          <button type="button" class="crop-mode-btn" data-mode="manual">
+            Manual
           </button>
-          <button type="button" class="aspect-btn" data-aspect="9:16">
-            9:16 Story
-          </button>
+        </div>
+
+        <div
+          class="crop-aspect-bar"
+          id="crop-sub-bar"
+          role="group"
+          aria-label="Crop Presets"
+        >
+          <div class="crop-pill-group" id="group-aspect-btns">
+            <button type="button" class="aspect-btn is-active" data-aspect="free">
+              Free
+            </button>
+            <button type="button" class="aspect-btn" data-aspect="1:1">
+              1:1 Square
+            </button>
+            <button type="button" class="aspect-btn" data-aspect="16:9">
+              16:9 Banner
+            </button>
+            <button type="button" class="aspect-btn" data-aspect="4:5">
+              4:5 Product
+            </button>
+            <button type="button" class="aspect-btn" data-aspect="3:2">
+              3:2 Photo
+            </button>
+            <button type="button" class="aspect-btn" data-aspect="9:16">
+              9:16 Story
+            </button>
+          </div>
+          <div class="crop-pill-group" id="group-body-btns" style="display: none;">
+            <button type="button" class="aspect-btn" data-body="head">
+              Head (Avatar)
+            </button>
+            <button type="button" class="aspect-btn" data-body="head-shoulders">
+              Head & Shoulders
+            </button>
+            <button type="button" class="aspect-btn is-active" data-body="upper-body">
+              Upper Body
+            </button>
+            <button type="button" class="aspect-btn" data-body="full-body">
+              Full Body
+            </button>
+          </div>
+          <div class="crop-pill-group" id="group-object-btns" style="display: none;">
+            <button type="button" class="aspect-btn is-active" data-obj="largest">
+              Dominant Subject
+            </button>
+            <button type="button" class="aspect-btn" data-obj="all">
+              All Objects
+            </button>
+          </div>
+          <div class="crop-pill-group" id="group-smart-btns" style="display: none;">
+            <button type="button" class="aspect-btn is-active" data-smart="attention">
+              Attention (Contrast)
+            </button>
+            <button type="button" class="aspect-btn" data-smart="entropy">
+              Entropy (Details)
+            </button>
+          </div>
         </div>
 
         <div class="crop-stage-wrapper" id="crop-stage-wrapper">

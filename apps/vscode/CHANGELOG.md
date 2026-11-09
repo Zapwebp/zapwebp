@@ -5,6 +5,12 @@ All notable changes to `zapwebp-vscode` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-11-09
+
+### Fixed
+- Fixed Windows execution failure where `zap.cmd` was not recognized in PATH by replacing shell `.cmd` invocation with bundled self-contained CLI runner (`dist/zap.js`).
+- Implemented robust multi-tier fallback: direct in-process core conversion &rarr; bundled CLI via system Node &rarr; `cmd.exe /c zap` &rarr; `cmd.exe /c npx --yes zapwebp`.
+
 ## [1.2.0] - 2026-11-07
 
 ### Added

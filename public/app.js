@@ -2565,15 +2565,145 @@ const cropCoordsText = document.querySelector('#crop-coords-text');
 const cropResetBtn = document.querySelector('#crop-reset-btn');
 const cropApplyBtn = document.querySelector('#crop-apply-btn');
 const previewCropBtn = document.querySelector('#preview-crop-btn');
-const aspectBtns = Array.from(document.querySelectorAll('.aspect-btn'));
+const aspectBtns = Array.from(document.querySelectorAll('#group-aspect-btns .aspect-btn'));
+const cropModeBtns = Array.from(document.querySelectorAll('.crop-mode-btn'));
+const groupAspectBtns = document.querySelector('#group-aspect-btns');
+const groupBodyBtns = document.querySelector('#group-body-btns');
+const groupObjectBtns = document.querySelector('#group-object-btns');
+const groupSmartBtns = document.querySelector('#group-smart-btns');
 
 let activeCropItem = null;
+let activeCropMode = 'auto'; // 'auto' | 'body' | 'object' | 'smart' | 'manual'
 let activeAspect = 'free'; // 'free' | '1:1' | '16:9' | '4:5' | '3:2' | '9:16'
+let activeBodyPreset = 'upper-body';
+let activeObjectSelection = 'largest';
+let activeSmartStrategy = 'attention';
 let cropBox = { x: 0, y: 0, width: 100, height: 100 };
 let imgNaturalW = 100;
 let imgNaturalH = 100;
 let imgDispW = 100;
 let imgDispH = 100;
+
+function switchCropMode(mode) {
+  activeCropMode = mode;
+  cropModeBtns.forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.mode === mode);
+  });
+
+  if (groupAspectBtns) groupAspectBtns.style.display = (mode === 'auto' || mode === 'manual') ? 'flex' : 'none';
+  if (groupBodyBtns) groupBodyBtns.style.display = (mode === 'body') ? 'flex' : 'none';
+  if (groupObjectBtns) groupObjectBtns.style.display = (mode === 'object') ? 'flex' : 'none';
+  if (groupSmartBtns) groupSmartBtns.style.display = (mode === 'smart') ? 'flex' : 'none';
+
+  if (mode === 'body') {
+    detectSubjectOnCanvas(cropSourceImg, 'body', activeBodyPreset);
+  } else if (mode === 'object') {
+    detectSubjectOnCanvas(cropSourceImg, 'object', activeObjectSelection);
+  } else if (mode === 'smart') {
+    detectSubjectOnCanvas(cropSourceImg, 'smart', activeSmartStrategy);
+  }
+}
+
+function detectSubjectOnCanvas(imgEl, mode, option) {
+  try {
+    if (!imgEl || !imgEl.complete || !imgDispW || !imgDispH) return false;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const sampleW = 80;
+    const sampleH = 80;
+    canvas.width = sampleW;
+    canvas.height = sampleH;
+    ctx.drawImage(imgEl, 0, 0, sampleW, sampleH);
+    const imgData = ctx.getImageData(0, 0, sampleW, sampleH).data;
+
+    let targetBox = null;
+
+    if (mode === 'body') {
+      let minX = sampleW, maxX = 0, minY = sampleH, maxY = 0, count = 0;
+      for (let y = 0; y < sampleH; y++) {
+        for (let x = 0; x < sampleW; x++) {
+          const idx = (y * sampleW + x) * 4;
+          const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
+          if (a > 128 && r > 60 && g > 40 && b > 20 && r > g && r > b && (r - g) >= 15) {
+            count++;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (count >= 8 && maxX > minX && maxY > minY) {
+        let topY = minY;
+        let botY = maxY;
+        if (option === 'head') {
+          botY = minY + (maxY - minY) * 0.45;
+        } else if (option === 'head-shoulders') {
+          botY = minY + (maxY - minY) * 0.65;
+        } else if (option === 'upper-body') {
+          botY = Math.min(sampleH, minY + (maxY - minY) * 0.9);
+        }
+        targetBox = { x: minX / sampleW, y: Math.max(0, topY * 0.85) / sampleH, w: (maxX - minX) / sampleW, h: (botY - topY) / sampleH };
+      }
+    } else if (mode === 'smart') {
+      let bestX = 0, bestY = 0, maxScore = -1;
+      const winW = 32, winH = 32;
+      for (let y = 0; y <= sampleH - winH; y += 8) {
+        for (let x = 0; x <= sampleW - winW; x += 8) {
+          let score = 0;
+          for (let wy = 0; wy < winH; wy += 4) {
+            for (let wx = 0; wx < winW; wx += 4) {
+              const idx = ((y + wy) * sampleW + (x + wx)) * 4;
+              const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2];
+              score += Math.abs(r - 128) + Math.abs(g - 128) + Math.abs(b - 128);
+            }
+          }
+          if (score > maxScore) {
+            maxScore = score;
+            bestX = x;
+            bestY = y;
+          }
+        }
+      }
+      targetBox = { x: bestX / sampleW, y: bestY / sampleH, w: winW / sampleW, h: winH / sampleH };
+    } else if (mode === 'object') {
+      const bgR = imgData[0], bgG = imgData[1], bgB = imgData[2];
+      let minX = sampleW, maxX = 0, minY = sampleH, maxY = 0, count = 0;
+      for (let y = 0; y < sampleH; y++) {
+        for (let x = 0; x < sampleW; x++) {
+          const idx = (y * sampleW + x) * 4;
+          const diff = Math.abs(imgData[idx] - bgR) + Math.abs(imgData[idx + 1] - bgG) + Math.abs(imgData[idx + 2] - bgB);
+          if (diff > 45) {
+            count++;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (count > 12 && maxX > minX && maxY > minY) {
+        targetBox = { x: minX / sampleW, y: minY / sampleH, w: (maxX - minX) / sampleW, h: (maxY - minY) / sampleH };
+      }
+    }
+
+    if (targetBox) {
+      const pad = 0.15;
+      const cx = (targetBox.x + targetBox.w / 2) * imgDispW;
+      const cy = (targetBox.y + targetBox.h / 2) * imgDispH;
+      let targetW = Math.max(imgDispW * 0.4, (targetBox.w * (1 + pad * 2)) * imgDispW);
+      let targetH = Math.max(imgDispH * 0.4, (targetBox.h * (1 + pad * 2)) * imgDispH);
+      targetW = Math.min(imgDispW, targetW);
+      targetH = Math.min(imgDispH, targetH);
+      let cropX = Math.max(0, Math.min(imgDispW - targetW, Math.round(cx - targetW / 2)));
+      let cropY = Math.max(0, Math.min(imgDispH - targetH, Math.round(cy - targetH / 2)));
+      cropBox = { x: cropX, y: cropY, width: Math.round(targetW), height: Math.round(targetH) };
+      updateCropBoxDOM();
+      return true;
+    }
+  } catch {}
+  return false;
+}
 
 function getNumericAspect(aspect) {
   if (aspect === '1:1') return 1;
@@ -2794,9 +2924,42 @@ if (cropSelectionBox) {
   });
 }
 
+cropModeBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    switchCropMode(btn.dataset.mode);
+  });
+});
+
 aspectBtns.forEach((btn) => {
   btn.addEventListener('click', () => {
     applyAspectToBox(btn.dataset.aspect);
+  });
+});
+
+document.querySelectorAll('#group-body-btns .aspect-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#group-body-btns .aspect-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeBodyPreset = btn.dataset.body;
+    detectSubjectOnCanvas(cropSourceImg, 'body', activeBodyPreset);
+  });
+});
+
+document.querySelectorAll('#group-object-btns .aspect-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#group-object-btns .aspect-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeObjectSelection = btn.dataset.obj;
+    detectSubjectOnCanvas(cropSourceImg, 'object', activeObjectSelection);
+  });
+});
+
+document.querySelectorAll('#group-smart-btns .aspect-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#group-smart-btns .aspect-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeSmartStrategy = btn.dataset.smart;
+    detectSubjectOnCanvas(cropSourceImg, 'smart', activeSmartStrategy);
   });
 });
 
@@ -2823,6 +2986,10 @@ if (cropApplyBtn) {
       width: Math.round(cropBox.width * scaleX),
       height: Math.round(cropBox.height * scaleY),
       aspect: activeAspect,
+      mode: activeCropMode,
+      bodyPreset: activeBodyPreset,
+      strategy: activeSmartStrategy,
+      objectSelection: activeObjectSelection,
     };
 
     activeCropItem.cropOptions = naturalCrop;

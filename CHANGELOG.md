@@ -6,6 +6,16 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **AI-Aware Subject Detection & Crop Plugin Expansion (`@zapwebp/crop`)**:
+  - Implemented Mode 1 — Body-Posture (`mode: 'body'`) with `BODY_PRESETS` (`head`, `head-shoulders`, `upper-body`, `full-body`) detecting keypoints via MoveNet SinglePose and anatomic heuristics.
+  - Implemented Mode 2 — Object-Aware (`mode: 'object'`) detecting dominant foreground subjects via COCO-SSD and contour segmentation.
+  - Implemented Mode 3 — Smart-Subject (`mode: 'subject'`) offering model-free 0 KB algorithmic saliency using edge/color contrast (`attention`) and 16-bin local Shannon information density (`entropy`) via 2D Summed-Area Table integral image querying ($O(1)$ multi-scale window evaluations).
+  - Added universal percentage padding expansion (`padding: 0-0.5`) and target aspect ratio box anchoring (`computeCropRect`).
+  - Added fail-safe fallback chain degrading gracefully to Smart-Subject attention analysis without throwing errors.
+  - Interactive Cropper Modal UI updated with mode selector chips (`Auto`, `Body-Posture`, `Object-Aware`, `Smart-Subject`, `Manual`), body presets, and live offscreen canvas detection.
+- **VS Code Extension Multi-Tier Execution & VSIX Packaging (`apps/vscode` v1.2.1)**:
+  - Eliminated `zap.cmd` missing command errors on Windows by bundling self-contained CLI runner in `dist/zap.js` for zero-install offline fallback.
+  - Packaged `apps/vscode/zapwebp-vscode-1.2.1.vsix` with hardened multi-tier fallbacks.
 - **JSON Schema Specification for Agent Manifests (`schemas/agent-manifest.json`, `zapwebp-docs/public/schemas/agent-manifest.json`, `public/schemas/agent-manifest.json`)**:
   - Implemented authoritative JSON Schema (Draft 2020-12) validating all 13 package agent manifests (`agent.json`).
   - Validates package identity, architecture capabilities, formats, commands, flags, MCP tools/resources, and runtime compatibility.

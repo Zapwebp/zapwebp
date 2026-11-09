@@ -8,7 +8,13 @@ const {
   cropImage,
   cropTransform,
   detectFaceBounds,
+  detectSubject,
+  detectBody,
+  detectObject,
+  padBounds,
+  computeCropRect,
   CROP_PRESETS,
+  BODY_PRESETS,
 } = require('../src/index');
 const { convertImage } = require('@zapwebp/core');
 
@@ -152,6 +158,131 @@ test('detectFaceBounds: detects face cluster and falls back to null gracefully',
   assert.ok(faceDetected);
   assert.ok(faceDetected.width > 0);
   assert.ok(faceDetected.height > 0);
+});
+
+test('padBounds: percentage expansion respects boundaries', () => {
+  const bounds = { x: 20, y: 20, width: 40, height: 40 };
+  const padded10 = padBounds(bounds, 0.1, 100, 100);
+  assert.equal(padded10.x, 16);
+  assert.equal(padded10.y, 16);
+  assert.equal(padded10.width, 48);
+  assert.equal(padded10.height, 48);
+
+  // Boundary clamp
+  const cornerBounds = { x: 2, y: 2, width: 96, height: 96 };
+  const paddedClamp = padBounds(cornerBounds, 0.2, 100, 100);
+  assert.equal(paddedClamp.x, 0);
+  assert.equal(paddedClamp.y, 0);
+  assert.equal(paddedClamp.width, 100);
+  assert.equal(paddedClamp.height, 100);
+});
+
+test('computeCropRect: anchors crop box on subject center and clamps', () => {
+  const bounds = { x: 70, y: 70, width: 20, height: 20 };
+  const rect = computeCropRect(bounds, 1, 100, 100);
+  assert.ok(rect.width > 0);
+  assert.ok(rect.height > 0);
+  assert.ok(rect.x >= 0 && rect.x + rect.width <= 100);
+  assert.ok(rect.y >= 0 && rect.y + rect.height <= 100);
+  // Center should be near (80, 80)
+  assert.ok(rect.x + rect.width / 2 >= 60);
+});
+
+test('detectSubject & mode: subject: performs algorithmic attention and entropy saliency analysis', async () => {
+  // Create an image with high-contrast focal region in bottom-right
+  const img = createSolidRawImage(120, 120, 30, 30, 30, 255);
+  for (let y = 70; y < 110; y++) {
+    for (let x = 70; x < 110; x++) {
+      const idx = (y * 120 + x) * 4;
+      img.data[idx] = 255;
+      img.data[idx + 1] = 220;
+      img.data[idx + 2] = 0;
+      img.data[idx + 3] = 255;
+    }
+  }
+
+  const attentionRes = await detectSubject(img, 'attention', 1);
+  assert.ok(attentionRes.bounds);
+  assert.equal(attentionRes.strategy, 'attention');
+  assert.ok(attentionRes.confidence > 0);
+
+  const entropyRes = await detectSubject(img, 'entropy', 1);
+  assert.ok(entropyRes.bounds);
+  assert.equal(entropyRes.strategy, 'entropy');
+
+  // Crop via mode: 'subject'
+  const cropped = await cropImage(img, {
+    mode: 'subject',
+    strategy: 'attention',
+    aspectRatio: '1:1',
+    padding: 0.1,
+  });
+
+  assert.ok(cropped.width > 0);
+  assert.ok(cropped.height > 0);
+  assert.equal(cropped.metadata.mode, 'subject');
+  assert.equal(cropped.metadata.detection.strategy, 'attention');
+});
+
+test('detectBody & mode: body: handles presets and falls back gracefully to subject', async () => {
+  assert.ok(BODY_PRESETS.head);
+  assert.ok(BODY_PRESETS['head-shoulders']);
+  assert.ok(BODY_PRESETS['upper-body']);
+  assert.ok(BODY_PRESETS['full-body']);
+
+  // Solid dark image has no human person -> should cleanly fall back to subject
+  const plain = createSolidRawImage(100, 100, 10, 10, 10, 255);
+  const cropped = await cropImage(plain, {
+    mode: 'body',
+    bodyPreset: 'upper-body',
+    aspectRatio: '1:1',
+  });
+
+  assert.equal(cropped.metadata.mode, 'body');
+  assert.ok(cropped.metadata.fallback);
+  assert.equal(cropped.metadata.fallback.fallback, 'subject');
+  assert.match(cropped.metadata.fallback.reason, /No person detected/);
+  assert.ok(cropped.width > 0);
+  assert.ok(cropped.height > 0);
+});
+
+test('detectObject & mode: object: handles object detection and fallback', async () => {
+  // Plain image with no object contrast -> falls back to subject
+  const plain = createSolidRawImage(100, 100, 50, 50, 50, 255);
+  const cropped = await cropImage(plain, {
+    mode: 'object',
+    aspectRatio: '1:1',
+    selectLargest: true,
+  });
+
+  assert.equal(cropped.metadata.mode, 'object');
+  assert.ok(cropped.metadata.fallback);
+  assert.equal(cropped.metadata.fallback.fallback, 'subject');
+  assert.match(cropped.metadata.fallback.reason, /No matching objects/);
+
+  // Image with distinct object block
+  const objImg = createSolidRawImage(120, 120, 255, 255, 255, 255);
+  for (let y = 40; y < 80; y++) {
+    for (let x = 40; x < 80; x++) {
+      const idx = (y * 120 + x) * 4;
+      objImg.data[idx] = 10;
+      objImg.data[idx + 1] = 10;
+      objImg.data[idx + 2] = 200;
+      objImg.data[idx + 3] = 255;
+    }
+  }
+
+  const objRes = await detectObject(objImg, { minConfidence: 0.3 });
+  assert.ok(objRes);
+  assert.ok(objRes.bounds);
+  assert.ok(objRes.detection.confidence > 0);
+
+  const croppedObj = await cropImage(objImg, {
+    mode: 'object',
+    aspectRatio: '1:1',
+  });
+  assert.equal(croppedObj.metadata.mode, 'object');
+  assert.ok(croppedObj.metadata.detection);
 });
 
 test('cropTransform: integrates with convertImage pipeline and attaches report metadata', async () => {

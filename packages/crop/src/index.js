@@ -1,6 +1,9 @@
 'use strict';
 
 const { ZapwebpError } = require('@zapwebp/shared');
+const { detectSubject } = require('./saliency');
+const { detectBody, BODY_PRESETS } = require('./body');
+const { detectObject } = require('./object');
 
 /**
  * Standard predefined crop presets for common platforms.
@@ -96,6 +99,97 @@ function parseColor(color) {
     }
   }
   return [0, 0, 0, 0];
+}
+
+/**
+ * Expands bounding box by padding percentage (clamped to 0 - 50% and bounded by image dimensions).
+ * @param {{ x: number, y: number, width: number, height: number }} bounds
+ * @param {number} [padding=0] - Padding fraction (0 to 0.5) or percentage (0 to 50)
+ * @param {number} imgW
+ * @param {number} imgH
+ * @returns {{ x: number, y: number, width: number, height: number }}
+ */
+function padBounds(bounds, padding = 0, imgW, imgH) {
+  if (!padding || padding <= 0) return { ...bounds };
+  const padRatio = padding > 1 ? padding / 100 : padding;
+  const clampedPad = Math.max(0, Math.min(0.5, padRatio));
+
+  const padX = bounds.width * clampedPad;
+  const padY = bounds.height * clampedPad;
+
+  const rawX = bounds.x - padX;
+  const rawY = bounds.y - padY;
+  const rawW = bounds.width + padX * 2;
+  const rawH = bounds.height + padY * 2;
+
+  const x = Math.max(0, Math.min(imgW - 1, Math.round(rawX)));
+  const y = Math.max(0, Math.min(imgH - 1, Math.round(rawY)));
+  const width = Math.max(1, Math.min(imgW - x, Math.round(rawW)));
+  const height = Math.max(1, Math.min(imgH - y, Math.round(rawH)));
+
+  return { x, y, width, height };
+}
+
+/**
+ * Computes a target aspect ratio crop box anchored on the center of detected bounds.
+ * @param {{ x: number, y: number, width: number, height: number }} bounds
+ * @param {number} targetRatio - width / height
+ * @param {number} imgW
+ * @param {number} imgH
+ * @returns {{ x: number, y: number, width: number, height: number }}
+ */
+function computeCropRect(bounds, targetRatio, imgW, imgH) {
+  const cx = bounds.x + bounds.width / 2;
+  const cy = bounds.y + bounds.height / 2;
+
+  // Smallest box with targetRatio that fully encloses bounds (up to image limits)
+  let desiredW = Math.max(bounds.width, bounds.height * targetRatio);
+  let desiredH = desiredW / targetRatio;
+
+  // If desired exceeds image bounds, scale down to fit image bounds
+  if (desiredW > imgW) {
+    desiredW = imgW;
+    desiredH = desiredW / targetRatio;
+  }
+  if (desiredH > imgH) {
+    desiredH = imgH;
+    desiredW = desiredH * targetRatio;
+  }
+
+  // If desired is smaller than 70% of image, expand to capture context while keeping subject centered
+  const imgRatio = imgW / imgH;
+  let cropW = Math.round(desiredW);
+  let cropH = Math.round(desiredH);
+
+  // If subject is small, expand crop window to frame subject naturally
+  if (cropW < imgW * 0.5 && cropH < imgH * 0.5) {
+    if (imgRatio > targetRatio) {
+      cropH = Math.min(imgH, Math.max(cropH, Math.round(bounds.height * 1.8)));
+      cropW = Math.round(cropH * targetRatio);
+      if (cropW > imgW) {
+        cropW = imgW;
+        cropH = Math.round(cropW / targetRatio);
+      }
+    } else {
+      cropW = Math.min(imgW, Math.max(cropW, Math.round(bounds.width * 1.8)));
+      cropH = Math.round(cropW / targetRatio);
+      if (cropH > imgH) {
+        cropH = imgH;
+        cropW = Math.round(cropH * targetRatio);
+      }
+    }
+  }
+
+  cropW = Math.max(1, Math.min(imgW, cropW));
+  cropH = Math.max(1, Math.min(imgH, cropH));
+
+  let cropX = Math.round(cx - cropW / 2);
+  let cropY = Math.round(cy - cropH / 2);
+
+  cropX = Math.max(0, Math.min(cropX, imgW - cropW));
+  cropY = Math.max(0, Math.min(cropY, imgH - cropH));
+
+  return { x: cropX, y: cropY, width: cropW, height: cropH };
 }
 
 /**
@@ -223,8 +317,23 @@ async function calculateCropBox(inputWidth, inputHeight, options = {}) {
     };
   }
 
+  // Pre-calculated target bounds passed from AI detection modes (body, object, subject)
+  if (opts.calculatedBox) {
+    return {
+      mode,
+      fit: opts.fit || 'cover',
+      x: opts.calculatedBox.x,
+      y: opts.calculatedBox.y,
+      width: opts.calculatedBox.width,
+      height: opts.calculatedBox.height,
+      aspectRatio: opts.aspectRatio ? parseAspectRatio(opts.aspectRatio) : (opts.calculatedBox.width / opts.calculatedBox.height),
+      detection: opts.detection,
+      fallback: opts.fallback,
+    };
+  }
+
   // Auto-Crop Mode
-  const targetRatio = parseAspectRatio(opts.aspectRatio || '1:1');
+  const targetRatio = parseAspectRatio(opts.aspectRatio || opts.targetAspectRatio || '1:1');
   const imgRatio = inputWidth / inputHeight;
   const fit = opts.fit === 'contain' ? 'contain' : 'cover';
 
@@ -313,10 +422,10 @@ async function calculateCropBox(inputWidth, inputHeight, options = {}) {
 }
 
 /**
- * Pure function: crops a RawImage and returns a new RawImage.
+ * Pure function: crops a RawImage and returns a new RawImage with attached detection metadata.
  * @param {import('@zapwebp/plugin-sdk').RawImage} image
  * @param {object} [options]
- * @returns {Promise<import('@zapwebp/plugin-sdk').RawImage>}
+ * @returns {Promise<import('@zapwebp/plugin-sdk').RawImage & { metadata?: object }>}
  */
 async function cropImage(image, options = {}) {
   if (!image || !image.data || !Number.isInteger(image.width) || !Number.isInteger(image.height)) {
@@ -332,8 +441,109 @@ async function cropImage(image, options = {}) {
     ? (CROP_PRESETS[options] || { mode: 'auto', aspectRatio: options })
     : { ...options };
 
-  // Face detection pass if gravity: 'face'
-  if (effectiveOptions.gravity === 'face' && !effectiveOptions.faceBounds) {
+  const mode = effectiveOptions.mode || (effectiveOptions.aspectRatio ? 'auto' : 'manual');
+  const targetRatio = effectiveOptions.aspectRatio || effectiveOptions.targetAspectRatio
+    ? parseAspectRatio(effectiveOptions.aspectRatio || effectiveOptions.targetAspectRatio)
+    : (inputWidth / inputHeight);
+
+  let detectionMeta = null;
+  let fallbackMeta = null;
+
+  // Mode 1: Body-Posture
+  if (mode === 'body') {
+    const preset = effectiveOptions.bodyPreset || 'upper-body';
+    let bodyRes = null;
+    try {
+      bodyRes = await detectBody(image, preset);
+    } catch {
+      bodyRes = null;
+    }
+
+    if (bodyRes && bodyRes.bounds) {
+      const padded = padBounds(bodyRes.bounds, effectiveOptions.padding || 0, inputWidth, inputHeight);
+      const cropRect = computeCropRect(padded, targetRatio, inputWidth, inputHeight);
+      effectiveOptions = {
+        ...effectiveOptions,
+        calculatedBox: cropRect,
+        detection: bodyRes.detection,
+      };
+      detectionMeta = bodyRes.detection;
+    } else {
+      // Fallback chain: body -> subject (attention)
+      fallbackMeta = {
+        fallback: 'subject',
+        reason: 'No person detected within confidence threshold',
+      };
+      const subRes = await detectSubject(image, 'attention', targetRatio);
+      const padded = padBounds(subRes.bounds, effectiveOptions.padding || 0, inputWidth, inputHeight);
+      const cropRect = computeCropRect(padded, targetRatio, inputWidth, inputHeight);
+      effectiveOptions = {
+        ...effectiveOptions,
+        calculatedBox: cropRect,
+        detection: { strategy: 'attention', confidence: subRes.confidence },
+        fallback: fallbackMeta,
+      };
+      detectionMeta = { strategy: 'attention', confidence: subRes.confidence };
+    }
+  }
+
+  // Mode 2: Object-Aware
+  else if (mode === 'object') {
+    let objRes = null;
+    try {
+      objRes = await detectObject(image, {
+        objectClasses: effectiveOptions.objectClasses,
+        minConfidence: effectiveOptions.minConfidence,
+        selectLargest: effectiveOptions.selectLargest !== false,
+      });
+    } catch {
+      objRes = null;
+    }
+
+    if (objRes && objRes.bounds) {
+      const padded = padBounds(objRes.bounds, effectiveOptions.padding || 0, inputWidth, inputHeight);
+      const cropRect = computeCropRect(padded, targetRatio, inputWidth, inputHeight);
+      effectiveOptions = {
+        ...effectiveOptions,
+        calculatedBox: cropRect,
+        detection: objRes.detection,
+      };
+      detectionMeta = objRes.detection;
+    } else {
+      // Fallback chain: object -> subject (attention)
+      fallbackMeta = {
+        fallback: 'subject',
+        reason: 'No matching objects detected within confidence threshold',
+      };
+      const subRes = await detectSubject(image, 'attention', targetRatio);
+      const padded = padBounds(subRes.bounds, effectiveOptions.padding || 0, inputWidth, inputHeight);
+      const cropRect = computeCropRect(padded, targetRatio, inputWidth, inputHeight);
+      effectiveOptions = {
+        ...effectiveOptions,
+        calculatedBox: cropRect,
+        detection: { strategy: 'attention', confidence: subRes.confidence },
+        fallback: fallbackMeta,
+      };
+      detectionMeta = { strategy: 'attention', confidence: subRes.confidence };
+    }
+  }
+
+  // Mode 3: Smart-Subject
+  else if (mode === 'subject') {
+    const strat = effectiveOptions.strategy === 'entropy' ? 'entropy' : 'attention';
+    const subRes = await detectSubject(image, strat, targetRatio);
+    const padded = padBounds(subRes.bounds, effectiveOptions.padding || 0, inputWidth, inputHeight);
+    const cropRect = computeCropRect(padded, targetRatio, inputWidth, inputHeight);
+    effectiveOptions = {
+      ...effectiveOptions,
+      calculatedBox: cropRect,
+      detection: { strategy: strat, confidence: subRes.confidence },
+    };
+    detectionMeta = { strategy: strat, confidence: subRes.confidence };
+  }
+
+  // Legacy auto mode with face gravity
+  else if (effectiveOptions.gravity === 'face' && !effectiveOptions.faceBounds) {
     const face = await detectFaceBounds(image);
     effectiveOptions = { ...effectiveOptions, faceBounds: face };
   }
@@ -370,6 +580,12 @@ async function cropImage(image, options = {}) {
       data: dstBytes,
       width: outWidth,
       height: outHeight,
+      metadata: {
+        mode,
+        bounds: box,
+        detection: detectionMeta,
+        fallback: fallbackMeta,
+      },
     };
   }
 
@@ -391,6 +607,12 @@ async function cropImage(image, options = {}) {
     data: dstBytes,
     width: cropW,
     height: cropH,
+    metadata: {
+      mode,
+      bounds: { x: cropX, y: cropY, width: cropW, height: cropH },
+      detection: detectionMeta,
+      fallback: fallbackMeta,
+    },
   };
 }
 
@@ -420,9 +642,11 @@ function cropTransform(options = {}) {
         mode: resolvedOpts.mode || (resolvedOpts.aspectRatio ? 'auto' : 'manual'),
         input: inputDims,
         output: { width: cropped.width, height: cropped.height },
-        aspectRatio: resolvedOpts.aspectRatio,
+        aspectRatio: resolvedOpts.aspectRatio || resolvedOpts.targetAspectRatio,
         gravity: resolvedOpts.gravity || 'center',
         fit: resolvedOpts.fit || 'cover',
+        detection: cropped.metadata?.detection || null,
+        fallback: cropped.metadata?.fallback || null,
       };
       return cropped;
     },
@@ -435,5 +659,11 @@ module.exports = {
   calculateCropBox,
   parseAspectRatio,
   detectFaceBounds,
+  detectSubject,
+  detectBody,
+  detectObject,
+  padBounds,
+  computeCropRect,
   CROP_PRESETS,
+  BODY_PRESETS,
 };

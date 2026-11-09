@@ -2437,11 +2437,51 @@ body {
   color: var(--gray-600);
 }
 
+.crop-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  overflow-x: auto;
+}
+
+.crop-mode-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 120ms var(--ease-snap);
+}
+
+.crop-mode-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.crop-mode-btn.is-active {
+  background: var(--green-subtle);
+  color: var(--green-primary);
+  border-color: var(--green-primary);
+}
+
+.crop-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .crop-aspect-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 8px 20px;
   background: var(--bg-dropzone);
   border-bottom: 1px solid var(--border-mid);
   overflow-x: auto;
