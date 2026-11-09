@@ -27,3 +27,4 @@ module.exports = {
   detectFormatHandler: formats.detectFormatHandler,
   getAllHandlers: formats.getAllHandlers,
 };
+

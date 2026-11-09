@@ -471,30 +471,114 @@ function appendPagination(mount: HTMLElement, currentRoute: DocRoute) {
 }
 
 /**
- * Appends clean open-source article footer (no cloud survey widgets)
+ * Appends comprehensive documentation sitemap and open-source governance footer
  */
 function appendArticleFooter(mount: HTMLElement, fileKey: string) {
+  const categories: Array<'Core' | 'Plugins' | 'Developers' | 'Platform'> = ['Core', 'Plugins', 'Developers', 'Platform'];
+
+  const categoryHeaders: Record<string, string> = {
+    Core: t('cat.Core') || 'Core Engine',
+    Plugins: t('cat.Plugins') || 'Plugins & Frameworks',
+    Developers: t('cat.Developers') || 'Developer SDKs & API',
+    Platform: t('cat.Platform') || 'Platform & Legal',
+  };
+
+  const columnsHtml = categories
+    .map((cat) => {
+      const routesInCat = DOC_ROUTES.filter((r) => r.category === cat);
+      const linksHtml = routesInCat
+        .map(
+          (r) => `
+        <li>
+          <a href="${r.path}" class="docs-footer-sitemap-link">
+            <span>${t(`title.${r.title}`) || r.title}</span>
+            ${r.badge ? `<span class="docs-footer-badge">${escapeHtml(r.badge)}</span>` : ''}
+          </a>
+        </li>
+      `
+        )
+        .join('');
+
+      return `
+        <div class="docs-footer-col">
+          <h4 class="docs-footer-col-title">${escapeHtml(categoryHeaders[cat])}</h4>
+          <ul class="docs-footer-links-list">
+            ${linksHtml}
+          </ul>
+        </div>
+      `;
+    })
+    .join('');
+
   const footer = document.createElement('footer');
-  footer.className = 'docs-article-footer';
+  footer.className = 'docs-comprehensive-footer';
   footer.innerHTML = `
-    <div class="article-meta-links">
-      <a href="/content/${fileKey}.md" target="_blank" rel="noopener noreferrer" class="meta-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        <span>${t('footer.view_markdown')}</span>
-      </a>
-      <a href="https://github.com/Zapwebp/zapwebp/issues/new" target="_blank" rel="noopener noreferrer" class="meta-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <span>${t('footer.github_issues')}</span>
-      </a>
-      <a href="https://github.com/Zapwebp/zapwebp/tree/main/locales" target="_blank" rel="noopener noreferrer" class="meta-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-        <span>${t('footer.contribute_trans')}</span>
-      </a>
+    <!-- Helpful Article Meta Bar -->
+    <div class="docs-article-meta-row">
+      <div class="meta-left">
+        <a href="/content/${fileKey}.md" target="_blank" rel="noopener noreferrer" class="meta-link" title="Inspect raw markdown source">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <span>${t('footer.view_markdown')}</span>
+        </a>
+        <a href="https://github.com/Zapwebp/zapwebp/issues/new" target="_blank" rel="noopener noreferrer" class="meta-link" title="Open an issue on GitHub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span>${t('footer.github_issues')}</span>
+        </a>
+        <a href="https://github.com/Zapwebp/zapwebp/tree/main/locales" target="_blank" rel="noopener noreferrer" class="meta-link" title="Help translate Zapwebp docs">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <span>${t('footer.contribute_trans')}</span>
+        </a>
+      </div>
+      <div class="meta-right">
+        <a href="#main" class="meta-link back-to-top-btn" title="Back to top of article">
+          <span>Back to Top</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </a>
+      </div>
     </div>
-    <div class="article-copyright">
-      <span>${t('footer.copyright')}</span>
+
+    <!-- Full 4-Column Documentation Sitemap Grid -->
+    <div class="docs-footer-sitemap-section">
+      <div class="docs-footer-sitemap-header">
+        <span class="sitemap-tag">Documentation Directory</span>
+        <h3 class="sitemap-heading">Explore Zapwebp Architecture & Ecosystem</h3>
+      </div>
+      <div class="docs-footer-sitemap-grid">
+        ${columnsHtml}
+      </div>
+    </div>
+
+    <!-- Brand & Governance Trust Bar -->
+    <div class="docs-footer-brand-bar">
+      <div class="brand-bar-left">
+        <a href="/docs" class="footer-brand-lockup">
+          <img src="/zapwebp.svg" alt="Zapwebp" width="28" height="28" class="footer-logo" />
+          <span class="footer-brand-text">Zapwebp Documentation</span>
+        </a>
+        <p class="footer-mission-text">
+          Transparency-safe image conversion across developer terminals, AI agents, code editors, and browsers with zero server uploads.
+        </p>
+        <p class="footer-legal-text">
+          Maintained by <strong>Eldrex Delos Reyes Bula</strong> · Republic of the Philippines · Licensed under <strong>MIT</strong>.
+        </p>
+      </div>
+      <div class="brand-bar-right">
+        <div class="footer-trust-chips">
+          <span class="trust-chip">Zero Telemetry</span>
+          <span class="trust-chip">100% In-Memory</span>
+          <span class="trust-chip">Deterministic Alpha</span>
+        </div>
+        <div class="footer-outbound-links">
+          <a href="https://zapwebp.vercel.app" class="outbound-link" target="_blank" rel="noopener noreferrer">Web Converter ↗</a>
+          <a href="https://github.com/Zapwebp" class="outbound-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+          <a href="https://www.npmjs.com/org/zapwebp" class="outbound-link" target="_blank" rel="noopener noreferrer">npm Registry ↗</a>
+          <a href="https://open-vsx.org/extension/ebula/zapwebp-vscode" class="outbound-link" target="_blank" rel="noopener noreferrer">Open VSX ↗</a>
+          <a href="/llms.txt" class="outbound-link" target="_blank" rel="noopener noreferrer">llms.txt ↗</a>
+        </div>
+      </div>
     </div>
   `;
+
   mount.appendChild(footer);
 }
 

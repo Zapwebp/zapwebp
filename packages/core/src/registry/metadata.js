@@ -25,3 +25,4 @@ module.exports = {
   cleanBytes: metadata.cleanBytes,
   detectMetadata: metadata.detectMetadata,
 };
+

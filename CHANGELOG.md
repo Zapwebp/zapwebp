@@ -15,8 +15,10 @@ This changelog records the changes included in each Zapwebp version.
 - **VS Code Extension Multi-Tier Cloud Fallback & Zero-Install Conversion (`apps/vscode` v1.2.2)**:
   - Eliminated `'zap.cmd' is not recognized as an internal or external command` failures by implementing 4-tier conversion execution: Tier 1 (In-process native bindings), Tier 2 (Bundled Node CLI runner), Tier 3 (Seamless cloud conversion fallback via `https://zapwebp.vercel.app/api/convert`), and Tier 4 (Actionable error dialog with "Open Docs" and "Copy Install Command" buttons).
   - Packaged `apps/vscode/zapwebp-vscode-1.2.2.vsix`.
-- **Docs Vercel SPA Routing & In-App Custom 404 (`zapwebp-docs`, `zapwebp-docs/vercel.json`, `zapwebp-docs/src/router.ts`)**:
-  - Replaced problematic rewrites in `vercel.json` with Vercel's canonical SPA configuration using `{ "handle": "filesystem" }` followed by `{ "src": "/(.*)", "dest": "/index.html" }`, eliminating platform 404s on direct navigation or refresh across `/cli`, `/mcp`, `/about`, `/faq`, and all documentation subpaths.
+- **Docs Vercel SPA Routing, Comprehensive Footer Sitemap & In-App Custom 404 (`zapwebp-docs`, `zapwebp-docs/vercel.json`, `zapwebp-docs/src/render.ts`, `zapwebp-docs/src/router.ts`)**:
+  - Permanently resolved edge 404 overrides on subpaths (`/mcp`, `/cli`, `/about`, `/faq`, etc.) by removing the static `404.html` from `public/` and configuring standard SPA rewrites (`/(.*)` -> `/index.html`) in `vercel.json`.
+  - Implemented a comprehensive, responsive 4-column Documentation Footer Sitemap rendered on all 33 documentation pages with direct links categorized across Core Engine, Plugins & Frameworks, Developer SDKs & APIs, and Platform & Governance.
+  - Added article metadata action bar (view raw markdown, open GitHub issue, contribute translation, back to top) and bottom governance trust bar with license and ecosystem links.
   - Implemented an elegant in-app custom 404 view in `zapwebp-docs/src/router.ts` for unrecognized URLs with quick links back to Overview and FAQs.
 - **Web App Spacing, Responsiveness & Deletion Persistence (`public/`)**:
   - Removed visual clutter hero text (`hero.badge`, `hero.title`, `hero.description`) from the top of the converter workspace in `public/index.html` and `public/app.js`, placing focus immediately on the dropzone.

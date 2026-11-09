@@ -49,3 +49,4 @@ test('Core Discipline 5: No silent failures — throws structured ZapwebpError w
     }
   );
 });
+

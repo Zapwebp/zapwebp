@@ -34,3 +34,4 @@ async function applyTransforms(image, transforms = [], options = {}) {
 module.exports = {
   applyTransforms,
 };
+

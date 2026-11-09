@@ -65,3 +65,4 @@ export interface TransformStep {
   apply(image: RawImage, options?: any): Promise<RawImage>;
   getMetadata?(): any;
 }
+

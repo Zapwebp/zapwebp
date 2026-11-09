@@ -57,3 +57,4 @@ async function decode(input, format, options = {}) {
 module.exports = {
   decode,
 };
+

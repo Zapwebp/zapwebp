@@ -103,3 +103,4 @@ async function encode(image, toFormat, options = {}) {
 module.exports = {
   encode,
 };
+

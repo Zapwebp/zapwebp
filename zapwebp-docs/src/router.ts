@@ -19,7 +19,9 @@ export function navigate(urlStr: string): void {
 function runRender(rawPath: string, hash?: string): void {
   if (!currentMount) return;
 
-  const route = ROUTE_MAP[rawPath];
+  const cleanPath = rawPath.replace(/\/$/, '') || '/';
+  const normalizedPath = cleanPath.toLowerCase();
+  const route = ROUTE_MAP[cleanPath] || ROUTE_MAP[normalizedPath];
   if (!route) {
     currentMount.innerHTML = `
       <div class="docs-not-found-card" style="max-width: 680px; margin: 48px auto; text-align: center; padding: 48px 24px; background: var(--bg-card); border: 1px solid var(--border-mid); border-radius: 16px;">

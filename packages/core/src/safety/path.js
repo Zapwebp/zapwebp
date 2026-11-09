@@ -49,3 +49,4 @@ function validatePath(filePath) {
 module.exports = {
   validatePath,
 };
+
