@@ -1,0 +1,68 @@
+{
+  "name": "@zapwebp/storage",
+  "version": "1.1.1",
+  "description": "Storage adapters for Supabase, Firebase, and Neocities â€” pre-upload image conversion, alpha safety, and multi-scale generation.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./supabase": {
+      "types": "./src/adapters/supabase.d.ts",
+      "default": "./src/adapters/supabase.js"
+    },
+    "./firebase": {
+      "types": "./src/adapters/firebase.d.ts",
+      "default": "./src/adapters/firebase.js"
+    },
+    "./neocities": {
+      "types": "./src/adapters/neocities.d.ts",
+      "default": "./src/adapters/neocities.js"
+    },
+    "./types": {
+      "types": "./src/types.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "zapwebp",
+    "storage",
+    "supabase",
+    "firebase",
+    "neocities",
+    "image-optimization",
+    "webp",
+    "transparency",
+    "multipliers"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@zapwebp/core": "workspace:*",
+    "@zapwebp/shared": "workspace:*",
+    "@zapwebp/crop": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/storage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/storage/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

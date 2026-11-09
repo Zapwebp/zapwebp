@@ -155,6 +155,11 @@ const ERROR_CATALOG = Object.freeze({
     message: 'No space left on device.',
     fix: 'Free disk space and re-run conversion.',
   },
+  E_TOO_LARGE: {
+    code: 'E_TOO_LARGE',
+    message: 'Input file exceeds maximum allowed bytes limit.',
+    fix: 'Compress the input file or increase maxInputBytes in conversion policy.',
+  },
   E_INPUT_TOO_LARGE: {
     code: 'E_INPUT_TOO_LARGE',
     message: 'Input file exceeds maximum allowed bytes limit.',
@@ -163,7 +168,64 @@ const ERROR_CATALOG = Object.freeze({
   E_OUTPUT_TOO_LARGE: {
     code: 'E_OUTPUT_TOO_LARGE',
     message: 'Could not compress image below target output bytes limit.',
-    fix: 'Increase maxOutputBytes or downscale image dimensions.',
+    fix: 'Increase maxOutputBytes, adjust quality, or downscale image dimensions.',
+    suggestedFix: { quality: 70 },
+  },
+  E_SYMLINK_LOOP: {
+    code: 'E_SYMLINK_LOOP',
+    message: 'Symlink cycle detected during path traversal.',
+    fix: 'Remove recursive symlinks or exclude the folder using ignore patterns.',
+  },
+  E_TIMEOUT: {
+    code: 'E_TIMEOUT',
+    message: 'Image conversion exceeded the maximum timeout threshold.',
+    fix: 'Downscale the asset or increase conversion timeout configuration.',
+  },
+  E_WASM_FAILED: {
+    code: 'E_WASM_FAILED',
+    message: 'WASM conversion engine failed to initialize.',
+    fix: 'Ensure WebAssembly is supported in your environment or use the native CLI.',
+  },
+  E_NODE_VERSION: {
+    code: 'E_NODE_VERSION',
+    message: 'Current Node.js version is too old. Node.js >= 22.0.0 is required.',
+    fix: 'Upgrade your Node.js runtime to version 22 or later.',
+  },
+  E_INVALID_CONFIG: {
+    code: 'E_INVALID_CONFIG',
+    message: 'Zapwebp configuration file is malformed or invalid.',
+    fix: 'Check the syntax and option keys in zapwebp.config.js or package.json.',
+  },
+  E_UPLOADER_REQUIRED: {
+    code: 'E_UPLOADER_REQUIRED',
+    message: 'createZapStore requires an active conversion handler to convert images.',
+    fix: 'Provide an uploader callback function in initialConfig or upload options.',
+  },
+  E_CROP_EMPTY: {
+    code: 'E_CROP_EMPTY',
+    message: 'The requested crop region has zero or negative dimensions.',
+    fix: 'Specify valid non-zero crop coordinates within image bounds.',
+  },
+  E_MODEL_FAILED: {
+    code: 'E_MODEL_FAILED',
+    message: 'AI detection model failed to load or initialize.',
+    fix: 'Verify WASM runtime access or fall back to Smart-Subject mode.',
+    suggestedFix: { mode: 'subject', strategy: 'attention' },
+  },
+  E_RATE_LIMIT: {
+    code: 'E_RATE_LIMIT',
+    message: 'Too many requests. Rate limit threshold exceeded.',
+    fix: 'Wait a few moments before submitting additional requests.',
+  },
+  E_AUTH: {
+    code: 'E_AUTH',
+    message: 'Authentication credentials for storage provider are invalid or expired.',
+    fix: 'Verify API keys, service tokens, or environment credentials.',
+  },
+  E_STORAGE: {
+    code: 'E_STORAGE',
+    message: 'Storage provider returned an unhandled error during write or read.',
+    fix: 'Check remote storage bucket permissions and connection status.',
   },
   E_FORMAT_REJECTED: {
     code: 'E_FORMAT_REJECTED',

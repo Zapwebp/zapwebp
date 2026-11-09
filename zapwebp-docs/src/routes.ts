@@ -315,6 +315,24 @@ export const DOC_ROUTES: DocRoute[] = [
     badge: 'Help',
     description: 'Frequently asked questions regarding package scopes, npm 404s, security alerts, VS Code execution, and alpha safety.',
     keywords: ['faq', 'faqs', 'troubleshooting', 'socket.dev', 'cve', 'zap.cmd', 'mcp', 'alpha', 'transparency', 'sharp']
+  },
+  {
+    path: '/stability',
+    file: 'stability',
+    title: 'Stability',
+    category: 'Platform',
+    badge: 'Hardened',
+    description: 'Error boundaries across all runtime surfaces, zero stack trace exposure, and graceful degradation.',
+    keywords: ['stability', 'error boundary', 'never breaks', 'graceful degradation', 'stack trace']
+  },
+  {
+    path: '/performance',
+    file: 'performance',
+    title: 'Performance',
+    category: 'Platform',
+    badge: 'Budgets',
+    description: 'Performance budgets, Web Worker concurrency pool contracts, zero-copy buffers, and benchmarks.',
+    keywords: ['performance', 'budgets', 'lcp', 'workers', 'transferable', 'memory', 'throughput']
   }
 ];
 

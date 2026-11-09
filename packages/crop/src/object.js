@@ -226,3 +226,4 @@ async function detectObject(image, options = {}) {
 module.exports = {
   detectObject,
 };
+

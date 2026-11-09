@@ -6,6 +6,11 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Final Hardening, Stability & Performance Governance (`content/stability.md`, `content/performance.md`, `CONTRIBUTORS.md`)**:
+  - Implemented the complete 22-code canonical error taxonomy across `@zapwebp/shared` and `@zapwebp/ui` with actionable `fix` suggestions and agent specifications.
+  - Hardened `@zapwebp/storage` with automated 3-attempt exponential backoff retry (`writeWithRetry`) on transient network and rate-limit failures, failing fast on permanent auth exceptions.
+  - Authored authoritative guides for Stability & Error Boundaries (`/stability`) and Performance & Resource Budgets (`/performance`) with bilingual Tagalog localization (`locales/tl/docs/`).
+  - Published root contributor recognition directory (`CONTRIBUTORS.md`) acknowledging maintainers, ecosystem contributors, and translators.
 - **AI-Aware Subject Detection & Crop Plugin Expansion (`@zapwebp/crop`)**:
   - Implemented Mode 1 — Body-Posture (`mode: 'body'`) with `BODY_PRESETS` (`head`, `head-shoulders`, `upper-body`, `full-body`) detecting keypoints via MoveNet SinglePose and anatomic heuristics.
   - Implemented Mode 2 — Object-Aware (`mode: 'object'`) detecting dominant foreground subjects via COCO-SSD and contour segmentation.

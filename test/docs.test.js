@@ -28,6 +28,8 @@ const pages = [
   'contributing',
   'translators',
   'faq',
+  'stability',
+  'performance',
   'plugins/vite',
   'plugins/next',
   'plugins/github-action',
