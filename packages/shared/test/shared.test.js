@@ -50,6 +50,9 @@ test('Shared: defaults and constants match expected boundaries', () => {
   assert.equal(DEFAULT_OPTIONS.quality, 85);
   assert.equal(DEFAULT_OPTIONS.baseWidth, 512);
   assert.equal(DEFAULT_OPTIONS.clean, true);
+  assert.equal(DEFAULT_OPTIONS.keepOriginal, true);
+  assert.equal(DEFAULT_OPTIONS.deleteOnDownload, false);
+  assert.equal(DEFAULT_OPTIONS.cleanupDelay, 'immediate');
   assert.equal(DEFAULT_PORT, 3000);
   assert.equal(MAX_DIMENSION, 4096);
   assert.ok(ERROR_CATALOG.alpha_loss_forbidden);

@@ -484,6 +484,10 @@ function normalizeOptions(options = {}) {
     targetOutputBytes: options.targetOutputBytes,
     accept: options.accept,
     reject: options.reject,
+    keepOriginal: options.keepOriginal !== undefined ? Boolean(options.keepOriginal) : (DEFAULT_OPTIONS.keepOriginal ?? true),
+    cleanupDelay: ['immediate', 'session', 'manual'].includes(String(options.cleanupDelay).toLowerCase())
+      ? String(options.cleanupDelay).toLowerCase()
+      : (DEFAULT_OPTIONS.cleanupDelay || 'immediate'),
   };
 }
 
@@ -760,6 +764,13 @@ async function convertImage(input, options = {}) {
     transforms: transformReports.length > 0 ? transformReports : undefined,
     targetLockEnforced: Boolean(opts.lockTarget && !opts.overrideLock),
     targetLockBypassed: Boolean(opts.lockTarget && opts.overrideLock),
+    lifecycle: {
+      keepOriginal: opts.keepOriginal,
+      originalPath: options.inputPath || options.filePath || options.originalPath || undefined,
+      originalDeleted: options.originalDeleted !== undefined ? Boolean(options.originalDeleted) : !opts.keepOriginal,
+      backupPath: options.backupPath || undefined,
+      cleanupDelay: opts.cleanupDelay,
+    },
     policy: {
       quality: {
         mode: evalQ.mode,
@@ -802,6 +813,7 @@ async function convert(input, options = {}) {
   out.passedThrough = Boolean(result.passedThrough);
   out.data = result.data;
   out.policy = result.policy;
+  out.lifecycle = result.lifecycle;
   return out;
 }
 

@@ -61,6 +61,19 @@ export interface ConvertOptions {
   maxOutputBytes?: number;
   transforms?: TransformStep[];
   policy?: Partial<ConversionPolicy>;
+  keepOriginal?: boolean;
+  cleanupDelay?: 'immediate' | 'session' | 'manual';
+  inputPath?: string;
+  backupPath?: string;
+  originalDeleted?: boolean;
+}
+
+export interface LifecycleMetadata {
+  keepOriginal: boolean;
+  originalPath?: string;
+  originalDeleted: boolean;
+  backupPath?: string;
+  cleanupDelay: 'immediate' | 'session' | 'manual';
 }
 
 export interface CleanCertificate {
@@ -85,6 +98,7 @@ export interface ConvertResult {
   certificate?: CleanCertificate;
   transforms?: Array<Record<string, any>>;
   policy?: Record<string, any>;
+  lifecycle?: LifecycleMetadata;
   targetLockEnforced?: boolean;
   targetLockBypassed?: boolean;
 }

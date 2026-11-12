@@ -2,6 +2,28 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.15.0] - 2026-11-12
+
+### Added
+
+- **Original Asset & Cleanup Lifecycle Management (`@zapwebp/shared`, `@zapwebp/core`, `@zapwebp/cli`, `public/`)**:
+  - Implemented 3-dimension lifecycle policy: `keepOriginal` (default: `true`), `deleteOnDownload` (default: `false`), and `cleanupDelay` (`immediate` | `session` | `manual`).
+  - Core engine attaches structured `lifecycle` metadata to all conversion results detailing source status, backup locations, and undo eligibility.
+  - CLI journal supports pre-deletion file backups (`.zapwebp/backups/<txId>/`), journaled operations, and atomic undo with `zap undo`.
+  - Non-interactive CLI deletion protection: `--delete-original` strictly requires explicit `--yes` confirmation flag or exits with `E_CONFIRMATION_REQUIRED`.
+  - Added garbage collection pruning command: `zap gc [--all] [--dry-run]` to safely purge backup caches.
+  - Web UI Settings slideover integrates dedicated "Original Files" and "After download" lifecycle controls cards with live confirmation dialog for files > 1 MB.
+  - Added non-intrusive interactive toast notifications with instant 1-click "Restore" action for auto-cleared downloads.
+
+### Changed
+
+- **Web App Spacing, Responsiveness & Deletion Persistence (`public/`)**:
+  - Decluttered hero section by removing redundant badge banners, tightening vertical padding across desktop (820px max-width) and mobile devices.
+  - Implemented collapsible cockpit settings toolbar on smaller screen viewports: format selector remains immediately accessible while advanced controls (Scales, Quality, Modes, Background) collapse behind a responsive "Settings" toggle button.
+  - Single-file converted layout optimizes action buttons on mobile: prominent primary "Download" button paired with balanced secondary action buttons (Inspect, Crop, Share, Delete).
+  - Hardened IndexedDB transaction lifecycle: awaited database write passes on conversion and reactive re-conversion, eliminated race conditions, and ensured `dbClearFiles` and `dbDeleteFile` reliably purge local browser storage so deleted files never reappear upon page refresh.
+  - Updated web application script caching token to `v=2.15.0`.
+
 ## [2.14.0] - 2026-11-08
 
 ### Added

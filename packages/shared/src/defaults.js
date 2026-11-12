@@ -20,6 +20,9 @@ const DEFAULT_OPTIONS = Object.freeze({
   to: 'webp',
   lockTarget: undefined,
   strict: true,
+  keepOriginal: true,
+  deleteOnDownload: false,
+  cleanupDelay: 'immediate',
 });
 
 /**

@@ -80,6 +80,8 @@ const settings = {
   outputSizeLimitKb: 500,
   compressionTarget: 'limit', // 'limit' | 'target'
   inputSizeLimitMb: 50,
+  keepOriginal: true, // Keep source file in browser IndexedDB
+  deleteOnDownload: false, // Auto-remove from browser storage upon download
 };
 
 function loadStoredSettings() {
@@ -109,6 +111,8 @@ function persistSettings() {
       outputSizeLimitKb: settings.outputSizeLimitKb,
       compressionTarget: settings.compressionTarget,
       inputSizeLimitMb: settings.inputSizeLimitMb,
+      keepOriginal: settings.keepOriginal,
+      deleteOnDownload: settings.deleteOnDownload,
     }));
   } catch {}
 }
@@ -157,10 +161,12 @@ async function dbSaveFile(record) {
 async function dbDeleteFile(id) {
   try {
     const db = await getDb();
-    if (!db) return;
+    if (!db || !db.objectStoreNames.contains('files')) return;
     return new Promise((resolve) => {
       const tx = db.transaction('files', 'readwrite');
-      tx.objectStore('files').delete(id);
+      const req = tx.objectStore('files').delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
       tx.onabort = () => resolve();
@@ -171,14 +177,27 @@ async function dbDeleteFile(id) {
 async function dbClearFiles() {
   try {
     const db = await getDb();
-    if (!db) return;
-    return new Promise((resolve) => {
-      const tx = db.transaction('files', 'readwrite');
-      tx.objectStore('files').clear();
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
-      tx.onabort = () => resolve();
-    });
+    if (db && db.objectStoreNames.contains('files')) {
+      await new Promise((resolve) => {
+        const tx = db.transaction('files', 'readwrite');
+        const req = tx.objectStore('files').clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+        tx.onabort = () => resolve();
+      });
+    }
+    if (typeof indexedDB !== 'undefined' && indexedDB.databases) {
+      try {
+        const dbs = await indexedDB.databases();
+        for (const d of dbs) {
+          if (d.name && d.name.includes('zapwebp') && d.name !== DB_NAME) {
+            indexedDB.deleteDatabase(d.name);
+          }
+        }
+      } catch {}
+    }
   } catch {}
 }
 
@@ -433,6 +452,14 @@ function syncSettingsSlideoverUI() {
 
   // Lossless toggle
   if (settingLosslessToggle) settingLosslessToggle.checked = settings.lossless;
+
+  // Original files lifecycle radios
+  const keepOrigRadios = document.querySelectorAll('input[name="setting-keep-original"]');
+  keepOrigRadios.forEach((r) => { r.checked = (r.value === (settings.keepOriginal ? 'keep' : 'delete')); });
+
+  // After download retention radios
+  const delDownloadRadios = document.querySelectorAll('input[name="setting-delete-on-download"]');
+  delDownloadRadios.forEach((r) => { r.checked = (r.value === (settings.deleteOnDownload ? 'delete' : 'keep')); });
 }
 
 if (settingsBtn) settingsBtn.addEventListener('click', openSettingsSlideover);
@@ -442,6 +469,22 @@ if (settingsSlideover) {
     if (e.target === settingsSlideover) closeSettingsSlideover();
   });
 }
+
+// Keep original radio handlers
+document.querySelectorAll('input[name="setting-keep-original"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.keepOriginal = (radio.value === 'keep');
+    persistSettings();
+  });
+});
+
+// Delete on download radio handlers
+document.querySelectorAll('input[name="setting-delete-on-download"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.deleteOnDownload = (radio.value === 'delete');
+    persistSettings();
+  });
+});
 
 // Format radios
 document.querySelectorAll('input[name="setting-default-format"]').forEach((radio) => {
@@ -1599,6 +1642,22 @@ async function reconvertAllItems() {
       item.outputs = outputs;
       item.status = 'done';
       item.error = null;
+
+      // Update IndexedDB with reconverted output
+      if (outputs.length > 0) {
+        await dbSaveFile({
+          id: item.id,
+          name: item.name,
+          format: target,
+          sizeIn: item.originalSize,
+          sizeOut: outputs[0].size,
+          originalBlob: item.originalDeleted ? null : (item.file || null),
+          convertedBlob: outputs[0].blob,
+          alphaPreserved: outputs[0].alphaPreserved,
+          originalDeleted: Boolean(item.originalDeleted),
+          createdAt: Date.now(),
+        });
+      }
     } catch (err) {
       item.status = 'error';
       item.error = err.message || 'Conversion failed';
@@ -1686,6 +1745,43 @@ async function downloadBatchZip() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  // Lifecycle Management: Auto-remove from browser storage if deleteOnDownload is enabled
+  const count = allOutputs.length;
+  if (settings.deleteOnDownload) {
+    for (const [id, it] of convertedItems.entries()) {
+      downloadRestoreCache.set(id, it);
+      await dbDeleteFile(id);
+    }
+    convertedItems.clear();
+    await dbClearFiles();
+    renderResultsView();
+    showToast(t('toast.downloaded_batch_removed', `Downloaded ${count} file(s). Removed from browser.`), {
+      restoreAction: async () => {
+        for (const [id, it] of downloadRestoreCache.entries()) {
+          convertedItems.set(id, it);
+          if (it.outputs?.[0]) {
+            await dbSaveFile({
+              id,
+              name: it.name,
+              format: it.outputs[0].format,
+              sizeIn: it.originalSize,
+              sizeOut: it.outputs[0].size,
+              originalBlob: it.file || null,
+              convertedBlob: it.outputs[0].blob,
+              alphaPreserved: it.outputs[0].alphaPreserved,
+              originalDeleted: Boolean(it.originalDeleted),
+              createdAt: Date.now(),
+            });
+          }
+        }
+        downloadRestoreCache.clear();
+        renderResultsView();
+      },
+    });
+  } else {
+    showToast(t('toast.downloaded_batch', `Downloaded ${count} file(s).`));
+  }
 }
 
 // ==========================================================================
@@ -1695,6 +1791,38 @@ const batchHeaderBar = document.querySelector('#batch-header-bar');
 const btnBatchAdd = document.querySelector('#btn-batch-add');
 const btnDownloadAll = document.querySelector('#btn-download-all');
 const btnDeleteAll = document.querySelector('#btn-delete-all');
+
+// Restore Cache for auto-cleared downloads
+const downloadRestoreCache = new Map();
+
+function showToast(message, options = {}) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const item = document.createElement('div');
+  item.className = 'toast-item';
+  item.innerHTML = `<span>${message}</span>`;
+
+  if (options.restoreAction) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-restore-btn';
+    btn.textContent = t('button.restore', 'Restore');
+    btn.addEventListener('click', async () => {
+      await options.restoreAction();
+      item.classList.add('is-hiding');
+      setTimeout(() => item.remove(), 200);
+    });
+    item.appendChild(btn);
+  }
+
+  container.appendChild(item);
+  setTimeout(() => {
+    if (item.isConnected) {
+      item.classList.add('is-hiding');
+      setTimeout(() => item.remove(), 200);
+    }
+  }, options.duration || 4500);
+}
 
 if (batchHeaderBar) {
   batchHeaderBar.addEventListener('click', (e) => {
@@ -1726,7 +1854,7 @@ if (btnDeleteAll) {
   });
 }
 
-function downloadSingleOutput(out) {
+async function downloadSingleOutput(out) {
   if (!out?.url) return;
   const a = document.createElement('a');
   a.href = out.url;
@@ -1734,6 +1862,47 @@ function downloadSingleOutput(out) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+
+  // Lifecycle Management: Auto-remove from browser storage if deleteOnDownload is enabled
+  if (settings.deleteOnDownload) {
+    for (const [id, it] of convertedItems.entries()) {
+      if (it.outputs?.some((o) => o.name === out.name || o.url === out.url)) {
+        downloadRestoreCache.set(id, it);
+        convertedItems.delete(id);
+        await dbDeleteFile(id);
+        break;
+      }
+    }
+    if (convertedItems.size === 0) {
+      await dbClearFiles();
+    }
+    renderResultsView();
+    showToast(t('toast.downloaded_removed', 'Downloaded 1 file. Removed from browser.'), {
+      restoreAction: async () => {
+        for (const [id, it] of downloadRestoreCache.entries()) {
+          convertedItems.set(id, it);
+          if (it.outputs?.[0]) {
+            await dbSaveFile({
+              id,
+              name: it.name,
+              format: it.outputs[0].format,
+              sizeIn: it.originalSize,
+              sizeOut: it.outputs[0].size,
+              originalBlob: it.file || null,
+              convertedBlob: it.outputs[0].blob,
+              alphaPreserved: it.outputs[0].alphaPreserved,
+              originalDeleted: Boolean(it.originalDeleted),
+              createdAt: Date.now(),
+            });
+          }
+        }
+        downloadRestoreCache.clear();
+        renderResultsView();
+      },
+    });
+  } else {
+    showToast(t('toast.downloaded_single', 'Downloaded 1 file.'));
+  }
 }
 
 function renderResultsView() {
@@ -1774,9 +1943,17 @@ function renderResultsView() {
     singleCard.className = 'single-result-card';
     singleCard.innerHTML = `
       <div class="single-card-top">
-        <div class="single-status-badge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>${t('single.converted', 'Converted')}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="single-status-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>${t('single.converted', 'Converted')}</span>
+          </div>
+          ${item.originalDeleted ? `
+            <div class="single-orig-removed-badge" title="${t('single.original_removed', 'Original removed')}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>${t('single.original_removed', 'Original removed')}</span>
+            </div>
+          ` : ''}
         </div>
         <div class="single-fmt-pill">${(item.originalFormat || 'SRC').toUpperCase()} → ${out.format.toUpperCase()}</div>
       </div>
@@ -2132,6 +2309,7 @@ async function clearAllItems() {
     if (it.originalUrl) URL.revokeObjectURL(it.originalUrl);
   }
   convertedItems.clear();
+  downloadRestoreCache.clear();
   await dbClearFiles();
   renderResultsView();
 }
@@ -2393,17 +2571,18 @@ async function handleFiles(files) {
       item.outputs = outputs;
       item.status = 'done';
 
-      // Save to IndexedDB
+      // Save to IndexedDB (awaited to prevent delete race conditions)
       if (outputs.length > 0) {
-        dbSaveFile({
+        await dbSaveFile({
           id: item.id,
           name: item.name,
           format: target,
           sizeIn: item.originalSize,
           sizeOut: outputs[0].size,
-          originalBlob: item.file,
+          originalBlob: settings.keepOriginal ? item.file : null,
           convertedBlob: outputs[0].blob,
           alphaPreserved: outputs[0].alphaPreserved,
+          originalDeleted: !settings.keepOriginal,
           createdAt: Date.now()
         });
       }
@@ -2425,18 +2604,19 @@ async function restoreSavedFiles() {
     const records = await dbGetAllFiles();
     if (records && records.length) {
       for (const rec of records) {
-        if (rec.originalBlob && rec.convertedBlob) {
-          const originalUrl = URL.createObjectURL(rec.originalBlob);
+        if (rec.convertedBlob) {
+          const originalUrl = rec.originalBlob ? URL.createObjectURL(rec.originalBlob) : null;
           const convertedUrl = URL.createObjectURL(rec.convertedBlob);
           const ext = rec.format === 'jpeg' ? 'jpg' : rec.format;
           const baseName = rec.name.replace(/\.[^.]+$/, '');
           const outName = `${baseName}.${ext}`;
           const item = {
             id: rec.id,
-            file: new File([rec.originalBlob], rec.name, { type: rec.originalBlob.type }),
+            file: rec.originalBlob ? new File([rec.originalBlob], rec.name, { type: rec.originalBlob.type }) : null,
             name: rec.name,
             originalSize: rec.sizeIn,
             originalUrl,
+            originalDeleted: Boolean(rec.originalDeleted),
             status: 'done',
             error: null,
             outputs: [{

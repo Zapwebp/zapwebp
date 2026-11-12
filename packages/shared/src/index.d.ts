@@ -22,6 +22,9 @@ export interface ZapwebpOptions {
   emitManifest: boolean;
   fit: string;
   to: string;
+  keepOriginal: boolean;
+  deleteOnDownload: boolean;
+  cleanupDelay: 'immediate' | 'session' | 'manual';
 }
 
 export interface ConversionPolicy {

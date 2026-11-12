@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir, stat, glob, rename, rm } from 'node:fs/promises';
-import { watch } from 'node:fs';
+import { watch, rmSync } from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { zipSync } from 'fflate';
@@ -179,6 +179,28 @@ function parseArgs(argv) {
     }
     else if (arg === '--clean') parsed.options.clean = true;
     else if (arg === '--no-clean') parsed.options.clean = false;
+    else if (arg === '--delete-original') {
+      parsed.deleteOriginal = true;
+      parsed.options.keepOriginal = false;
+    } else if (arg === '--keep-original') {
+      parsed.keepOriginal = true;
+      parsed.options.keepOriginal = true;
+    } else if (arg === '--yes' || arg === '-y') {
+      parsed.yes = true;
+    } else if (arg === '--all') {
+      parsed.all = true;
+    } else if (arg === '--cleanup' || arg === '--cleanup-delay') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a mode: immediate, session, or manual.`);
+      parsed.cleanup = value.toLowerCase();
+      parsed.options.cleanupDelay = value.toLowerCase();
+    } else if (arg === '--delete-after') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a duration (e.g. 1h, 30m).`);
+      parsed.deleteAfter = value.toLowerCase();
+      parsed.cleanup = 'manual';
+      parsed.options.cleanupDelay = 'manual';
+    }
     else if (arg === '--verify-clean') parsed.options.verifyClean = true;
     else if (arg === '--assert-alpha') parsed.options.assertAlpha = true;
     else if (arg === '--report') parsed.options.report = true;
@@ -377,8 +399,18 @@ async function main() {
 
   // 6. Subcommand: gc
   if (args.inputs[0] === 'gc') {
-    const res = await pruneJournal(rootDir);
-    process.stdout.write(`✓ Garbage collected journal: pruned ${res.prunedCount} old transaction logs.\n`);
+    if (args.all && !args.yes && process.stdin.isTTY) {
+      process.stdout.write('⚠️  zapwebp gc --all will permanently purge all backups.\n');
+    }
+    const res = await pruneJournal(rootDir, 50, 30, {
+      all: args.all,
+      dryRun: args.dryRun,
+    });
+    if (args.dryRun) {
+      process.stdout.write(`ℹ Dry-run: would prune ${res.prunedCount} transaction backup(s).\n`);
+    } else {
+      process.stdout.write(`✓ Garbage collected journal: pruned ${res.prunedCount} old transaction logs.\n`);
+    }
     return;
   }
 
@@ -813,6 +845,18 @@ async function main() {
   const transactionId = generateTransactionId();
   const operations = [];
   const records = [];
+  const sessionCleanups = [];
+
+  if (args.deleteOriginal && !args.yes && !args.dryRun && !args.check) {
+    if (!process.stdin.isTTY) {
+      throw new ZapwebpError({
+        code: 'E_CONFIRMATION_REQUIRED',
+        message: `--delete-original will permanently delete ${inScopeFiles.length} source file(s). Pass --yes to confirm.`,
+        fix: 'Add --yes to the command line to confirm original file deletion.',
+      });
+    }
+    process.stderr.write(`⚠️  --delete-original will permanently delete ${inScopeFiles.length} source file(s) after conversion.\n`);
+  }
 
   for (const fileItem of inScopeFiles) {
     // TOCTOU Guard: Re-read & re-hash immediately before processing
@@ -901,6 +945,40 @@ async function main() {
         });
       }
     }
+
+    // Lifecycle Management: If deleteOriginal is requested, back up and delete the source asset
+    if (args.deleteOriginal && !args.dryRun && !args.check) {
+      const relSrc = path.relative(rootDir, fileItem.path).replace(/\\/g, '/');
+      const backupRel = path.join('.zapwebp', 'backups', transactionId, relSrc).replace(/\\/g, '/');
+      const backupFull = path.resolve(rootDir, backupRel);
+
+      await mkdir(path.dirname(backupFull), { recursive: true });
+      await writeFile(backupFull, currentBytes);
+
+      operations.push({
+        type: 'delete',
+        path: relSrc,
+        sha256Before: fileItem.sha256,
+        backupPath: backupRel,
+      });
+
+      const cleanupMode = args.cleanup || 'immediate';
+      if (cleanupMode === 'immediate') {
+        await rm(fileItem.path, { force: true });
+      } else if (cleanupMode === 'session') {
+        sessionCleanups.push(fileItem.path);
+      }
+    }
+  }
+
+  if (sessionCleanups.length > 0) {
+    process.on('exit', () => {
+      for (const p of sessionCleanups) {
+        try {
+          rmSync(p, { force: true });
+        } catch {}
+      }
+    });
   }
 
   // Handle --zip

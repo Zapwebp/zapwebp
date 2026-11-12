@@ -1848,8 +1848,8 @@
             <!-- Clean Metadata Toggle -->
             <div class="setting-group setting-row-toggle">
               <div class="setting-meta-text">
-                <span class="setting-group-label">Clean Metadata</span>
-                <p class="setting-hint">
+                <span class="setting-group-label" data-i18n="settings.clean_metadata">Clean Metadata</span>
+                <p class="setting-hint" data-i18n="settings.clean_metadata_hint">
                   Strips EXIF, GPS, and C2PA provenance
                 </p>
               </div>
@@ -1862,6 +1862,92 @@
                   <span class="setting-switch-thumb"></span>
                 </span>
               </label>
+            </div>
+
+            <!-- Original Files Lifecycle -->
+            <div class="setting-group" id="setting-lifecycle-group">
+              <span class="setting-group-label" data-i18n="settings.original_files">Original Files</span>
+              <p class="setting-hint" data-i18n="settings.original_files_hint">
+                Control source image storage after conversion
+              </p>
+              <div
+                class="setting-size-options"
+                role="radiogroup"
+                aria-label="Original files conversion lifecycle"
+              >
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-keep-original"
+                    value="keep"
+                    id="setting-keep-orig-keep"
+                    checked
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.keep_orig_title">Keep originals (recommended)</span>
+                    <span class="setting-card-sub" data-i18n="settings.keep_orig_desc"
+                      >Keep source file blobs in browser memory &amp; IndexedDB</span
+                    >
+                  </div>
+                </label>
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-keep-original"
+                    value="delete"
+                    id="setting-keep-orig-delete"
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.delete_orig_title">Delete after conversion</span>
+                    <span class="setting-card-sub" data-i18n="settings.delete_orig_desc"
+                      >Drop source blob; keep only converted output in storage</span
+                    >
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- After Download Lifecycle -->
+            <div class="setting-group" id="setting-download-lifecycle-group">
+              <span class="setting-group-label" data-i18n="settings.after_download">After download</span>
+              <p class="setting-hint" data-i18n="settings.after_download_hint">
+                Retention of files in browser storage after download
+              </p>
+              <div
+                class="setting-size-options"
+                role="radiogroup"
+                aria-label="After download retention"
+              >
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-delete-on-download"
+                    value="keep"
+                    id="setting-del-download-keep"
+                    checked
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.keep_browser_title">Keep in browser</span>
+                    <span class="setting-card-sub" data-i18n="settings.keep_browser_desc"
+                      >Files stay in browser storage until manually cleared</span
+                    >
+                  </div>
+                </label>
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-delete-on-download"
+                    value="delete"
+                    id="setting-del-download-remove"
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.remove_browser_title">Remove from browser</span>
+                    <span class="setting-card-sub" data-i18n="settings.remove_browser_desc"
+                      >Automatically clear downloaded items from IndexedDB</span
+                    >
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -1970,10 +2056,10 @@
         aria-describedby="confirm-delete-desc"
         aria-modal="true"
       >
-        <h3 class="confirm-modal-title" id="confirm-delete-title">
+        <h3 class="confirm-modal-title" id="confirm-delete-title" data-i18n="modal.del_all_title">
           Delete all converted files?
         </h3>
-        <p class="confirm-modal-desc" id="confirm-delete-desc">
+        <p class="confirm-modal-desc" id="confirm-delete-desc" data-i18n="modal.del_all_desc">
           This cannot be undone. All converted images will be removed from your
           browser storage.
         </p>
@@ -1982,6 +2068,7 @@
             type="button"
             class="btn-confirm-cancel"
             id="confirm-delete-cancel"
+            data-i18n="button.cancel"
           >
             Cancel
           </button>
@@ -1989,6 +2076,7 @@
             type="button"
             class="btn-confirm-delete"
             id="confirm-delete-confirm"
+            data-i18n="button.delete_all"
           >
             Delete All
           </button>
@@ -1996,7 +2084,46 @@
       </div>
     </div>
 
+    <!-- Confirm Delete Original Modal -->
+    <div class="confirm-modal-backdrop" id="confirm-delete-original-modal" hidden>
+      <div
+        class="confirm-modal-panel"
+        role="alertdialog"
+        aria-labelledby="confirm-delete-orig-title"
+        aria-describedby="confirm-delete-orig-desc"
+        aria-modal="true"
+      >
+        <h3 class="confirm-modal-title" id="confirm-delete-orig-title" data-i18n="modal.del_orig_title">
+          Delete original file?
+        </h3>
+        <p class="confirm-modal-desc" id="confirm-delete-orig-desc">
+          <strong id="confirm-delete-orig-name">logo.svg</strong> (<span id="confirm-delete-orig-size">0 KB</span>) <span data-i18n="modal.del_orig_desc">will be permanently removed. The converted file will remain available in your browser.</span>
+        </p>
+        <div class="confirm-modal-actions">
+          <button
+            type="button"
+            class="btn-confirm-cancel"
+            id="confirm-delete-orig-cancel"
+            data-i18n="button.cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-confirm-delete"
+            id="confirm-delete-orig-confirm"
+            data-i18n="modal.btn_delete_orig"
+          >
+            Delete original
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifecycle Toast Notification Container -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
     <script src="/vendor/fflate.min.js" defer></script>
-    <script src="/app.js?v=2.14.0" defer></script>
+    <script src="/app.js?v=2.15.0" defer></script>
   </body>
 </html>

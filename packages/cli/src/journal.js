@@ -113,7 +113,14 @@ export async function undoTransaction(rootDir, targetId, options = {}) {
         undoneOperations.push({ type: 'delete_created', path: op.path });
       }
     } else if (op.type === 'modify' || op.type === 'delete') {
-      const backupFile = path.resolve(backupsDir, tx.id, op.backupPath || op.path);
+      let backupFile;
+      if (op.backupPath && path.isAbsolute(op.backupPath)) {
+        backupFile = op.backupPath;
+      } else if (op.backupPath && op.backupPath.includes('.zapwebp')) {
+        backupFile = path.resolve(rootDir, op.backupPath);
+      } else {
+        backupFile = path.resolve(backupsDir, tx.id, op.backupPath || op.path);
+      }
       const backupData = await readFile(backupFile).catch(() => null);
       if (!backupData) {
         throw new Error(`Backup data missing for ${op.path} in transaction ${tx.id}`);
@@ -184,24 +191,37 @@ export async function redoTransaction(rootDir, targetId) {
  * @param {string} rootDir
  * @param {number} [maxKeep=50]
  * @param {number} [maxAgeDays=30]
- * @returns {Promise<{ prunedCount: number }>}
+ * @param {object} [options={}]
+ * @param {boolean} [options.all=false] - Purge all backups regardless of age
+ * @param {boolean} [options.dryRun=false] - Preview without deleting
+ * @returns {Promise<{ prunedCount: number, prunedFiles: string[] }>}
  */
-export async function pruneJournal(rootDir, maxKeep = 50, maxAgeDays = 30) {
+export async function pruneJournal(rootDir, maxKeep = 50, maxAgeDays = 30, options = {}) {
   const transactions = await listTransactions(rootDir);
   const now = Date.now();
   const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
   const { journalDir, backupsDir } = getJournalPaths(rootDir);
 
   let prunedCount = 0;
+  const prunedFiles = [];
+
   for (let i = 0; i < transactions.length; i++) {
     const tx = transactions[i];
     const age = now - new Date(tx.startedAt).getTime();
-    if (i >= maxKeep || age > maxAgeMs) {
-      await rm(path.join(journalDir, `${tx.id}.json`), { force: true }).catch(() => {});
-      await rm(path.join(backupsDir, tx.id), { recursive: true, force: true }).catch(() => {});
+    const shouldPrune = Boolean(options.all) || i >= maxKeep || age > maxAgeMs;
+
+    if (shouldPrune) {
+      const journalFile = path.join(journalDir, `${tx.id}.json`);
+      const backupDir = path.join(backupsDir, tx.id);
+      prunedFiles.push(journalFile, backupDir);
       prunedCount++;
+
+      if (!options.dryRun) {
+        await rm(journalFile, { force: true }).catch(() => {});
+        await rm(backupDir, { recursive: true, force: true }).catch(() => {});
+      }
     }
   }
 
-  return { prunedCount };
+  return { prunedCount, prunedFiles };
 }
