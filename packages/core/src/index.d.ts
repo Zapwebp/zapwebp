@@ -1,4 +1,21 @@
-import type { ConversionPolicy } from '@zapwebp/shared';
+import type { ConversionPolicy, ZapwebpError } from '@zapwebp/shared';
+export { ZapwebpError };
+
+export interface McpToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: Record<string, any>;
+}
+
+export function listTools(): McpToolDefinition[];
+export function getAgentManifest(): Record<string, any>;
+export function createMockSvg(options?: { width?: number; height?: number; transparent?: boolean; fill?: string; withMetadata?: boolean }): Buffer;
+export function createMockImage(options?: { format?: 'svg' | 'png' | 'webp' | 'jpeg' | 'avif'; width?: number; height?: number; transparent?: boolean; withMetadata?: boolean }): Promise<Buffer>;
+
+export const testing: {
+  createMockSvg: typeof createMockSvg;
+  createMockImage: typeof createMockImage;
+};
 
 export type InputFormat = 'svg' | 'png' | 'jpeg' | 'webp' | 'avif' | 'gif' | 'tiff';
 export type OutputFormat = 'webp' | 'png' | 'jpeg' | 'avif';

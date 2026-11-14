@@ -363,7 +363,21 @@ if (ROUTE_MAP['/docs']) {
 if (ROUTE_MAP['/safety']) ROUTE_MAP['/transparency'] = ROUTE_MAP['/safety'];
 if (ROUTE_MAP['/clean']) ROUTE_MAP['/clean-mode'] = ROUTE_MAP['/clean'];
 if (ROUTE_MAP['/cli']) ROUTE_MAP['/multipliers'] = ROUTE_MAP['/cli'];
-if (ROUTE_MAP['/sdk/core']) ROUTE_MAP['/sdk'] = ROUTE_MAP['/sdk/core'];
+if (ROUTE_MAP['/sdk/core']) {
+  ROUTE_MAP['/sdk'] = ROUTE_MAP['/sdk/core'];
+  ROUTE_MAP['/docs/sdk/core'] = ROUTE_MAP['/sdk/core'];
+  ROUTE_MAP['/core-sdk'] = ROUTE_MAP['/sdk/core'];
+}
+if (ROUTE_MAP['/sdk/plugin']) {
+  ROUTE_MAP['/plugins/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
+  ROUTE_MAP['/docs/plugins/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
+  ROUTE_MAP['/docs/sdk/plugin'] = ROUTE_MAP['/sdk/plugin'];
+  ROUTE_MAP['/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
+}
+if (ROUTE_MAP['/sdk/cli']) {
+  ROUTE_MAP['/docs/sdk/cli'] = ROUTE_MAP['/sdk/cli'];
+  ROUTE_MAP['/cli-sdk'] = ROUTE_MAP['/sdk/cli'];
+}
 if (ROUTE_MAP['/plugins/vite']) ROUTE_MAP['/vite'] = ROUTE_MAP['/plugins/vite'];
 if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
 if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];

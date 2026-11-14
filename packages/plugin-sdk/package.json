@@ -24,13 +24,15 @@
     "./storage": {
       "types": "./src/storage.d.ts",
       "default": "./src/storage.js"
-    }
+    },
+    "./agent.json": "./agent.json"
   },
   "dependencies": {
     "@zapwebp/storage": "workspace:*"
   },
   "files": [
     "src",
+    "agent.json",
     "README.md",
     "LICENSE"
   ],

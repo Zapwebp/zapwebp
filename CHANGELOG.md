@@ -2,7 +2,46 @@
 
 This changelog records the changes included in each Zapwebp version.
 
-## [2.16.1] - 2026-11-14
+## [2.17.0] - 2026-11-14
+
+### Added
+
+- **Zapwebp SDKs — Agentic Development & DX Enhancement (`@zapwebp/core`, `@zapwebp/sdk`, `@zapwebp/plugin-sdk`, `@zapwebp/create-zapwebp`)**:
+  - **`agent.json` Runtime Discovery Manifest**: Shipped machine-readable agent manifests in `@zapwebp/core`, `@zapwebp/sdk`, and `@zapwebp/plugin-sdk` allowing AI coding agents (Cursor, Claude Desktop, Antigravity, Windsurf) to discover all functions, options, errors, and copy-paste examples directly from `node_modules` or `unpkg`.
+  - **Structured Error Envelope (`ZapwebpError`)**: Upgraded error instances across core and SDK with `code`, `message`, `fix`, `docs`, `retryable: boolean`, `suggestedFix?: Record<string, unknown>`, and machine-readable `.toJSON()` serialization.
+  - **`nextAction` Chaining Hints**: All SDK methods (`convert`, `inspect`, `verifyClean`, `verifyAlpha`, `suggestConversion`, `auditCommand`) attach contextual `nextAction` objects `{ tool, arguments, reason }` to guide autonomous agent workflows.
+  - **Typed Tool Discovery (`listTools()`)**: Exported typed tool schemas matching MCP specifications from `@zapwebp/core` and `@zapwebp/sdk` for runtime UI and tool menu discovery.
+  - **Complete 12-Method `@zapwebp/sdk` API**:
+    - `convert(opts | input, options)`: Single and multi-target conversion with alpha preservation and `nextAction`.
+    - `convertBatch(opts | inputs, options)`: Concurrent batch processing with progress report.
+    - `convertUrl(opts | url, options)`: Private-subnet guarded remote URL fetch and conversion.
+    - `inspect(opts | input)`: Container chunk analysis, alpha detection, and target recommendations.
+    - `inspectUrl(opts | url)`: Remote URL inspection without persisting to disk.
+    - `verifyClean(opts | input)`: Residual metadata audit for EXIF/XMP/IPTC/C2PA chunks.
+    - `verifyAlpha(opts | input)`: Pixel-level alpha inspection confirming transparency presence.
+    - `suggestConversion(opts)`: AI agent helper analyzing format and placement (`icon`, `hero`, `thumbnail`, `photo`).
+    - `auditCommand(opts | command)`: Automated analyzer detecting alpha loss bugs in ImageMagick/ffmpeg/cwebp.
+    - `listTools()`: Runtime MCP tool discovery.
+    - `getAgentManifest()`: Programmatic retrieval of SDK discovery manifest.
+    - `getUsage()`: Local offline memory/operations metrics and remote quota tracking.
+  - **Universal `ImageInput` Adapter**: Standardized `resolveInput` across `Buffer`, `Uint8Array`, `ArrayBuffer`, `Blob`, inline SVG markup (`<svg`), Base64 Data URIs, and local file paths.
+  - **Testing Fixtures (`@zapwebp/core/testing`)**: Exported `createMockSvg` and `createMockImage` helper utilities for reproducible integration testing.
+  - **`@zapwebp/create-zapwebp` Scaffolder Enhancement**: Generated plugins now include `agent.json`, `EXAMPLES.md`, and `TEST_SPEC.md` out of the box.
+
+- **`zapwebp-lens` — Read-Only Hardening & CI Capabilities (`packages/lens`)**:
+  - **Safe I/O & Sandbox**: Enforced symlink rejection (`E_SYMLINK`) and 100 MB read limits (`--max-bytes`) with `E_FILE_TOO_LARGE`.
+  - **Isolated Temp Writes**: Implemented `safeTempWrite` via `mkdtemp` in `os.tmpdir()` with `realpath` escape verification and owner-only `0o600` permissions.
+  - **Decode Timeouts**: Guarded all decodes with automated 5,000ms timeout (`--timeout`) with `E_DECODE_TIMEOUT`.
+  - **SVG Security Gate**: Integrated `checkSvgSafety` rejecting active SVG elements with `E_UNSAFE_SVG` unless `--allow-unsafe` is provided.
+  - **Standardized CI Semantics**: Standard exit codes (`0`: success, `1`: user error / dirty metadata, `2`: argument error, `3`: internal error), stable JSON envelope `{ version, tool, command, result, errors }`, and `E_OPEN_IN_CI` guard.
+  - **3 New Read-Only Capabilities**:
+    - `verify <file>`: Cryptographic SHA-256 verification against `--expected-sha256` or `--from-manifest`.
+    - `diff --visual <src> <tgt>`: Interactive browser viewer with pixel diff count, percentage, and SSIM estimation.
+    - `report <files...> --html [out]`: Self-contained static HTML report table for GitHub Actions PR review artifacts.
+
+### Fixed
+
+- **Documentation Route Aliases**: Added explicit route resolution for `/sdk/plugin`, `/sdk/core`, and `/sdk/cli` across `zapwebp-docs/src/routes.ts`.
 
 ### Fixed
 

@@ -226,6 +226,67 @@ npm test
   await fs.writeFile(path.join(resolvedDir, 'README.md'), readmeContent);
   files.push('README.md');
 
+  // 6. agent.json (Runtime Agent Discovery Manifest)
+  const agentManifest = {
+    name: `zapwebp-${archetype}-${name}`,
+    version: '1.0.0',
+    archetype,
+    description: `Zapwebp ${archetype} plugin for ${name}.`,
+    author,
+    capabilities: [archetype, `${archetype}_${name}`],
+    agent: {
+      description: `Integrates ${name} ${archetype} into the Zapwebp conversion ecosystem.`,
+      examples: [
+        {
+          name: `Use ${name} plugin`,
+          code: `import { convert } from '@zapwebp/core';\n// Plugin auto-registered\nconst output = await convert(bytes, { to: 'webp' });`,
+        },
+      ],
+    },
+    docs: `https://zapwebp-docs.vercel.app/docs/plugins/${name}`,
+  };
+  await fs.writeFile(path.join(resolvedDir, 'agent.json'), JSON.stringify(agentManifest, null, 2) + '\n');
+  files.push('agent.json');
+
+  // 7. EXAMPLES.md (Copy-paste runnable scripts for developers and AI agents)
+  const examplesContent = `# Usage Examples for zapwebp-${archetype}-${name}
+
+## 1. Basic Integration
+
+\`\`\`javascript
+const { convert } = require('@zapwebp/core');
+const plugin = require('zapwebp-${archetype}-${name}');
+
+// Registered plugin is detected automatically
+async function run() {
+  console.log('Plugin loaded:', plugin.name || '${name}');
+}
+run();
+\`\`\`
+
+## 2. Agentic Discovery
+
+\`\`\`javascript
+const fs = require('node:fs');
+const manifest = JSON.parse(fs.readFileSync('node_modules/zapwebp-${archetype}-${name}/agent.json', 'utf8'));
+console.log('Capabilities:', manifest.capabilities);
+\`\`\`
+`;
+  await fs.writeFile(path.join(resolvedDir, 'EXAMPLES.md'), examplesContent);
+  files.push('EXAMPLES.md');
+
+  // 8. TEST_SPEC.md (Test specifications for developer & agent verification)
+  const testSpecContent = `# Test Specification for zapwebp-${archetype}-${name}
+
+## Assertions
+1. Module exports a valid ${archetype} handler/plugin.
+2. Preserves input transparency where supported.
+3. Throws structured errors on corrupt or unsafe input.
+4. Conforms to Zapwebp zero-trust memory-only execution bounds.
+`;
+  await fs.writeFile(path.join(resolvedDir, 'TEST_SPEC.md'), testSpecContent);
+  files.push('TEST_SPEC.md');
+
   return { targetDir: resolvedDir, files };
 }
 

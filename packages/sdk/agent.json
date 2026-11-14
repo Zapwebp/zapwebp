@@ -1,0 +1,127 @@
+{
+  "name": "@zapwebp/sdk",
+  "version": "1.1.2",
+  "description": "Official JavaScript and TypeScript client SDK for Zapwebp with agentic runtime discovery, typed tool exports, and self-correcting error envelopes.",
+  "capabilities": [
+    "convert",
+    "batch",
+    "url",
+    "inspect",
+    "verify_clean",
+    "verify_alpha",
+    "suggest",
+    "audit",
+    "tools",
+    "manifest",
+    "usage"
+  ],
+  "functions": [
+    {
+      "name": "convert",
+      "signature": "convert(opts: ConvertOptions | ImageInput, options?: ConvertOptions): Promise<ConvertResult>",
+      "description": "Convert an image to WebP, AVIF, PNG, or JPEG. Preserves transparency and strips metadata by default. Returns nextAction hint.",
+      "example": "import { Zapwebp } from '@zapwebp/sdk';\nconst zap = new Zapwebp();\nconst res = await zap.convert({ input: 'icon.svg', to: 'webp' });",
+      "options": {
+        "input": { "type": "ImageInput", "description": "Buffer, Uint8Array, Blob, URL string, or file path" },
+        "to": { "type": "string", "enum": ["webp", "avif", "png", "jpeg"], "default": "webp" },
+        "quality": { "type": "number", "default": 85 },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "clean": { "type": "boolean", "default": true },
+        "lossless": { "type": "boolean", "default": false },
+        "background": { "type": "string" }
+      },
+      "throws": ["E_ALPHA_NOT_REPRESENTABLE", "E_UNSAFE_SVG", "E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "convertBatch",
+      "signature": "convertBatch(opts: BatchOptions): Promise<BatchConvertResult>",
+      "description": "Convert multiple images concurrently with shared or per-item target formats.",
+      "example": "const batch = await zap.convertBatch({ inputs: ['a.png', 'b.svg'], to: 'webp' });",
+      "throws": ["E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "convertUrl",
+      "signature": "convertUrl(opts: { url: string, to?: string, quality?: number }): Promise<ConvertResult>",
+      "description": "Fetch a remote image URL securely with private subnet SSRF guard and convert it in memory.",
+      "example": "const res = await zap.convertUrl({ url: 'https://example.com/logo.png', to: 'webp' });"
+    },
+    {
+      "name": "inspect",
+      "signature": "inspect(opts: InspectOptions | ImageInput): Promise<InspectResult>",
+      "description": "Inspect image container chunks, format, dimensions, transparency, and receive recommended targets with nextAction hint.",
+      "example": "const info = await zap.inspect('banner.png');\nconsole.log(info.format, info.hasAlpha, info.nextAction);",
+      "throws": ["E_CORRUPT_HEADER", "E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "inspectUrl",
+      "signature": "inspectUrl(opts: { url: string }): Promise<InspectResult>",
+      "description": "Inspect a remote image without persisting it to disk.",
+      "example": "const remoteInfo = await zap.inspectUrl({ url: 'https://example.com/photo.jpg' });"
+    },
+    {
+      "name": "verifyClean",
+      "signature": "verifyClean(opts: { input: ImageInput }): Promise<VerifyResult>",
+      "description": "Verify whether an image has zero residual EXIF, XMP, IPTC, or C2PA metadata chunks.",
+      "example": "const check = await zap.verifyClean({ input: outputBytes });\nif (!check.clean) console.warn('Metadata found:', check.metadataChunks);"
+    },
+    {
+      "name": "verifyAlpha",
+      "signature": "verifyAlpha(opts: { input: ImageInput }): Promise<VerifyAlphaResult>",
+      "description": "Directly inspect image pixel alpha channels to confirm transparency preservation.",
+      "example": "const alpha = await zap.verifyAlpha({ input: 'avatar.webp' });"
+    },
+    {
+      "name": "suggestConversion",
+      "signature": "suggestConversion(opts: { input: ImageInput, useCase?: string }): Promise<SuggestResult>",
+      "description": "AI agent helper: analyzes image properties and useCase to recommend format, quality, and nextAction conversion call.",
+      "example": "const suggestion = await zap.suggestConversion({ input: 'hero.png', useCase: 'hero' });"
+    },
+    {
+      "name": "auditCommand",
+      "signature": "auditCommand(opts: { command: string }): Promise<AuditResult>",
+      "description": "Analyze an ImageMagick, ffmpeg, or cwebp command for alpha loss bugs and return a safe Zapwebp equivalent.",
+      "example": "const audit = await zap.auditCommand({ command: 'convert logo.svg logo.jpg' });"
+    },
+    {
+      "name": "listTools",
+      "signature": "listTools(): Promise<McpToolDefinition[]>",
+      "description": "Discover all available Zapwebp tool schemas at runtime for dynamic agent execution menus.",
+      "example": "const tools = await zap.listTools();"
+    },
+    {
+      "name": "getAgentManifest",
+      "signature": "getAgentManifest(): Promise<AgentManifest>",
+      "description": "Retrieve the full runtime agent discovery manifest.",
+      "example": "const manifest = await zap.getAgentManifest();"
+    },
+    {
+      "name": "getUsage",
+      "signature": "getUsage(): Promise<UsageStats>",
+      "description": "Inspect offline operations count and memory usage, or remote API quota statistics.",
+      "example": "const usage = await zap.getUsage();"
+    }
+  ],
+  "errors": {
+    "E_ALPHA_NOT_REPRESENTABLE": {
+      "message": "JPEG cannot store transparency.",
+      "fix": "Pass background: '#ffffff' to flatten, or choose webp/png/avif.",
+      "docs": "https://zapwebp-docs.vercel.app/backgrounds",
+      "retryable": true,
+      "suggestedFix": { "background": "#ffffff" }
+    },
+    "E_UNSAFE_SVG": {
+      "message": "SVG contains scripts, inline event handlers, or external entities.",
+      "fix": "Remove active elements or pass allowUnsafe: true in isolated environments.",
+      "docs": "https://zapwebp-docs.vercel.app/safety",
+      "retryable": true
+    },
+    "E_TOO_LARGE": {
+      "message": "Input exceeds size boundaries or resolution limit.",
+      "fix": "Compress the file or raise maxInputBytes in policy.",
+      "docs": "https://zapwebp-docs.vercel.app/policy",
+      "retryable": true
+    }
+  },
+  "docs": "https://zapwebp-docs.vercel.app/sdk/cli"
+}

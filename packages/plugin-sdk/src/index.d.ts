@@ -25,13 +25,22 @@ export interface ZapPluginHooks {
   afterConvert?: (ctx: ConvertContext, outputs: ConvertOutput[]) => Promise<ConvertOutput[] | void> | ConvertOutput[] | void;
 }
 
+export interface ZapPluginAgentMetadata {
+  description?: string;
+  examples?: Array<{ name: string; code: string }>;
+  supportedFormats?: string[];
+}
+
 export interface ZapPlugin {
   name: string;
   version: string;
   description?: string;
   hooks?: ZapPluginHooks;
   adapters?: Record<string, StorageAdapter>;
+  agent?: ZapPluginAgentMetadata;
 }
+
+export type ZapwebpPlugin = ZapPlugin;
 
 export interface RawImage {
   data: Uint8ClampedArray;

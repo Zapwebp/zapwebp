@@ -1,93 +1,124 @@
 {
-  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/core",
-  "version": "1.1.0",
-  "type": "sdk",
-  "description": "Core image conversion engine guaranteeing alpha preservation, zero black backgrounds, SVG sanitization, and clean metadata stripping.",
-  "install": "npm install @zapwebp/core",
-  "homepage": "https://zapwebp.vercel.app",
-  "docs": "https://zapwebp-docs.vercel.app/sdk/core",
-  "docsMarkdown": "https://zapwebp.vercel.app/sdk/core.md",
-  "repository": "https://github.com/Zapwebp/core",
-  "contact": "eldrexdelosreyesbula@gmail.com",
-  "entrypoint": "dist/index.js",
+  "version": "1.1.1",
+  "description": "The Zapwebp core conversion engine. Converts images with deterministic transparency preservation and zero-trust metadata stripping.",
   "capabilities": [
-    "transparency-preservation",
-    "svg-sanitization",
-    "multi-format-conversion",
-    "metadata-stripping",
-    "stream-processing"
+    "convert",
+    "inspect",
+    "clean",
+    "verify_alpha",
+    "audit",
+    "safety",
+    "policy",
+    "testing"
   ],
-  "supportedFormats": {
-    "inputs": [
-      "svg",
-      "png",
-      "jpeg",
-      "webp",
-      "avif",
-      "tiff",
-      "gif"
-    ],
-    "outputs": [
-      "webp",
-      "avif",
-      "png",
-      "jpeg"
-    ]
-  },
-  "exports": [
-    "convertImage",
-    "convertSvgToWebp",
-    "assertAlphaPreserved",
-    "detectFormat",
-    "cleanMetadata",
-    "stripMetadata",
-    "INPUT_FORMATS",
-    "OUTPUT_FORMATS"
-  ],
-  "options": {
-    "format": {
-      "type": "string",
-      "enum": [
-        "webp",
-        "avif",
-        "png",
-        "jpeg"
-      ],
-      "default": "webp"
-    },
-    "quality": {
-      "type": "number",
-      "minimum": 1,
-      "maximum": 100,
-      "default": 85
-    },
-    "lossless": {
-      "type": "boolean",
-      "default": false
-    },
-    "clean": {
-      "type": "boolean",
-      "default": true
-    },
-    "baseWidth": {
-      "type": "number",
-      "minimum": 1,
-      "maximum": 16384,
-      "default": 512
-    },
-    "multipliers": {
-      "type": "array",
-      "items": {
-        "type": "number"
+  "functions": [
+    {
+      "name": "convert",
+      "signature": "convert(input: Buffer | Uint8Array, options?: ConvertOptions): Promise<Buffer>",
+      "description": "Convert an image to a target format. Preserves transparency and strips privacy metadata by default.",
+      "example": "import { convert } from '@zapwebp/core';\nconst webp = await convert(svgBytes, { to: 'webp', quality: 85 });",
+      "options": {
+        "to": { "type": "string", "enum": ["webp", "avif", "png", "jpeg"], "default": "webp" },
+        "quality": { "type": "number", "minimum": 1, "maximum": 100, "default": 85 },
+        "clean": { "type": "boolean", "default": true },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "lossless": { "type": "boolean", "default": false },
+        "background": { "type": "string" },
+        "maxOutputBytes": { "type": "number" }
       },
-      "default": [
-        1
+      "throws": [
+        "E_UNSAFE_SVG",
+        "E_ALPHA_NOT_REPRESENTABLE",
+        "E_TOO_LARGE",
+        "E_UNSUPPORTED_FORMAT"
       ]
     },
-    "backgroundColor": {
-      "type": "string",
-      "default": "transparent"
+    {
+      "name": "convertImage",
+      "signature": "convertImage(input: Buffer | Uint8Array, options?: ConvertOptions): Promise<ConvertResult>",
+      "description": "Convert an image and return comprehensive metadata including dimensions, byte count, alpha preservation state, and format.",
+      "example": "import { convertImage } from '@zapwebp/core';\nconst result = await convertImage(inputBytes, { to: 'avif' });\nconsole.log(result.data, result.width, result.alphaPreserved);",
+      "options": {
+        "to": { "type": "string", "enum": ["webp", "avif", "png", "jpeg"], "default": "webp" },
+        "quality": { "type": "number", "default": 85 }
+      },
+      "throws": ["E_ALPHA_NOT_REPRESENTABLE", "E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "convertSvgToWebp",
+      "signature": "convertSvgToWebp(svgStringOrBuffer: string | Buffer, options?: object): Promise<Buffer>",
+      "description": "Specialized high-performance vector-to-raster conversion via Rust resvg and libvips with crisp anti-aliasing.",
+      "example": "import { convertSvgToWebp } from '@zapwebp/core';\nconst webp = await convertSvgToWebp('<svg ...></svg>', { width: 512 });",
+      "throws": ["E_UNSAFE_SVG"]
+    },
+    {
+      "name": "inspectImage",
+      "signature": "inspectImage(input: Buffer | Uint8Array): Promise<InspectResult>",
+      "description": "Inspect image container chunks, format signature, dimensions, and alpha channel presence without re-encoding.",
+      "example": "import { inspectImage } from '@zapwebp/core';\nconst info = await inspectImage(bytes);\nconsole.log(info.format, info.width, info.hasAlpha);",
+      "throws": ["E_CORRUPT_HEADER", "E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "detectFormat",
+      "signature": "detectFormat(input: Buffer | Uint8Array): 'svg' | 'png' | 'jpeg' | 'webp' | 'avif' | 'gif' | 'tiff'",
+      "description": "Sniff magic bytes and header markers to identify image container format deterministically.",
+      "example": "import { detectFormat } from '@zapwebp/core';\nconst fmt = detectFormat(bytes);",
+      "throws": ["E_UNSUPPORTED_FORMAT"]
+    },
+    {
+      "name": "verifyAlpha",
+      "signature": "verifyAlpha(input: Buffer | Uint8Array): Promise<AlphaVerification>",
+      "description": "Examine decoded pixel buffer to verify if any pixel has an alpha value below 255.",
+      "example": "import { verifyAlpha } from '@zapwebp/core';\nconst check = await verifyAlpha(bytes);\nconsole.log(check.hasAlpha, check.transparentPixels);",
+      "throws": ["E_CORRUPT_HEADER"]
+    },
+    {
+      "name": "cleanMetadata",
+      "signature": "cleanMetadata(input: Buffer | Uint8Array): Promise<Buffer>",
+      "description": "Strip EXIF, XMP, IPTC, and C2PA metadata from an image while preserving container integrity.",
+      "example": "import { cleanMetadata } from '@zapwebp/core';\nconst scrubbed = await cleanMetadata(rawBytes);"
+    },
+    {
+      "name": "listTools",
+      "signature": "listTools(): Array<ToolDefinition>",
+      "description": "Return typed MCP-compliant tool schemas for runtime agent discovery without reading external docs.",
+      "example": "import { listTools } from '@zapwebp/core';\nconst tools = listTools();"
     }
-  }
+  ],
+  "errors": {
+    "E_ALPHA_NOT_REPRESENTABLE": {
+      "message": "JPEG cannot store transparency. Pass a background color to flatten, or choose WebP, PNG, or AVIF.",
+      "fix": "Pass background: '#ffffff' or choose to: 'webp'.",
+      "suggestedFix": { "background": "#ffffff" }
+    },
+    "E_UNSAFE_SVG": {
+      "message": "SVG contains active content (<script>, inline event handlers, or external entity).",
+      "fix": "Sanitize the SVG or pass allowUnsafe: true if in an isolated sandbox."
+    },
+    "E_TOO_LARGE": {
+      "message": "Input image exceeds maximum allowed dimension or byte limit.",
+      "fix": "Downscale the image or adjust maxInputBytes in conversion policy."
+    },
+    "E_UNSUPPORTED_FORMAT": {
+      "message": "Cannot decode or encode the requested container format.",
+      "fix": "Use one of the supported formats: svg, png, jpeg, webp, avif, gif, tiff."
+    }
+  },
+  "examples": [
+    {
+      "name": "Convert SVG to WebP preserving transparency",
+      "code": "import { convert } from '@zapwebp/core';\nimport { readFile, writeFile } from 'node:fs/promises';\n\nconst input = await readFile('logo.svg');\nconst output = await convert(input, { to: 'webp', quality: 90 });\nawait writeFile('logo.webp', output);"
+    },
+    {
+      "name": "Inspect before converting",
+      "code": "import { inspectImage, convert } from '@zapwebp/core';\n\nconst info = await inspectImage(inputBytes);\nif (info.hasAlpha) {\n  const webp = await convert(inputBytes, { to: 'webp', clean: true });\n} else {\n  const avif = await convert(inputBytes, { to: 'avif', quality: 65 });\n}"
+    },
+    {
+      "name": "Generate mock SVG in test",
+      "code": "import { createMockSvg } from '@zapwebp/core/testing';\nimport { convert } from '@zapwebp/core';\n\nconst mock = createMockSvg({ width: 200, height: 200, transparent: true });\nconst webp = await convert(mock, { to: 'webp' });"
+    }
+  ],
+  "docs": "https://zapwebp-docs.vercel.app/sdk/core"
 }

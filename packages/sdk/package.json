@@ -8,10 +8,12 @@
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
-    }
+    },
+    "./agent.json": "./agent.json"
   },
   "files": [
     "src",
+    "agent.json",
     "README.md",
     "LICENSE"
   ],

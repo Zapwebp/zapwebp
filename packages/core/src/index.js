@@ -17,6 +17,8 @@ const {
   checkPolicyInput,
   evaluateQuality,
 } = require('./policy');
+const { listTools, getAgentManifest } = require('./tools');
+const { createMockSvg, createMockImage } = require('./testing');
 
 let _sharpInstance = null;
 function getSharp() {
@@ -1200,6 +1202,17 @@ module.exports = {
   registerTransform,
   getVersion,
   getFormats,
+
+  // Agentic & Tool Discovery Surfaces
+  listTools,
+  getAgentManifest,
+  ZapwebpError,
+  createMockSvg,
+  createMockImage,
+  testing: {
+    createMockSvg,
+    createMockImage,
+  },
 
   // Backwards-Compatible Surfaces
   convertImage,

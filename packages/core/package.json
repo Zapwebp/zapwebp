@@ -8,10 +8,16 @@
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
-    }
+    },
+    "./testing": {
+      "types": "./src/testing.d.ts",
+      "default": "./src/testing.js"
+    },
+    "./agent.json": "./agent.json"
   },
   "files": [
     "src",
+    "agent.json",
     "README.md",
     "LICENSE"
   ],

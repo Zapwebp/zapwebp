@@ -15,7 +15,7 @@ class ZapwebpError extends Error {
    * @param {string} [params.target]
    * @param {object} [params.suggestedFix]
    */
-  constructor({ code, message, fix, docs, exitCode = 1, input, target, suggestedFix, ...rest }) {
+  constructor({ code, message, fix, docs, exitCode = 1, input, target, suggestedFix, retryable, ...rest }) {
     super(message);
     this.name = 'ZapwebpError';
     this.code = code;
@@ -25,7 +25,25 @@ class ZapwebpError extends Error {
     if (input !== undefined) this.input = input;
     if (target !== undefined) this.target = target;
     if (suggestedFix !== undefined) this.suggestedFix = suggestedFix;
+    this.retryable = typeof retryable === 'boolean'
+      ? retryable
+      : Boolean(this.suggestedFix || code === 'E_ALPHA_NOT_REPRESENTABLE' || code === 'E_TOO_LARGE' || code === 'E_UNSAFE_SVG');
     Object.assign(this, rest);
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      code: this.code,
+      message: this.message,
+      fix: this.fix,
+      docs: this.docs,
+      retryable: this.retryable,
+      ...(this.suggestedFix !== undefined ? { suggestedFix: this.suggestedFix } : {}),
+      ...(this.input !== undefined ? { input: this.input } : {}),
+      ...(this.target !== undefined ? { target: this.target } : {}),
+      exitCode: this.exitCode,
+    };
   }
 }
 

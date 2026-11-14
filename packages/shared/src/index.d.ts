@@ -63,7 +63,33 @@ export interface ConversionPolicy {
 export const DEFAULT_OPTIONS: ZapwebpOptions;
 export const DEFAULT_CONVERSION_POLICY: ConversionPolicy;
 
-export const ERROR_CATALOG: Record<string, { code: string; message: string }>;
+export class ZapwebpError extends Error {
+  readonly code: string;
+  readonly fix: string;
+  readonly docs: string;
+  readonly exitCode: number;
+  readonly retryable: boolean;
+  readonly input?: any;
+  readonly target?: string;
+  readonly suggestedFix?: Record<string, unknown>;
+
+  constructor(opts: {
+    code: string;
+    message: string;
+    fix?: string;
+    docs?: string;
+    exitCode?: number;
+    input?: any;
+    target?: string;
+    suggestedFix?: Record<string, unknown>;
+    retryable?: boolean;
+    [key: string]: any;
+  });
+
+  toJSON(): Record<string, any>;
+}
+
+export const ERROR_CATALOG: Record<string, { code: string; message: string; fix?: string; suggestedFix?: Record<string, unknown> }>;
 
 export const INPUT_FORMATS: readonly string[];
 export const OUTPUT_FORMATS: readonly string[];

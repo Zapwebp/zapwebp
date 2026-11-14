@@ -1,83 +1,167 @@
-export type InputFormat = 'svg' | 'png' | 'jpeg' | 'webp' | 'avif' | 'gif' | 'tiff';
-export type OutputFormat = 'webp' | 'png' | 'jpeg' | 'avif';
-export type FitMode = 'contain' | 'cover' | 'fill' | 'inside' | 'outside';
+import type { ZapwebpError } from '@zapwebp/shared';
+export { ZapwebpError };
+
+export type ImageInput = Uint8Array | Buffer | ArrayBuffer | Blob | string;
+
+export interface NextAction {
+  tool: string;
+  arguments: Record<string, unknown>;
+  reason: string;
+}
 
 export interface ConvertOptions {
-  to?: OutputFormat | OutputFormat[];
+  input?: ImageInput;
+  to?: 'webp' | 'avif' | 'png' | 'jpeg' | string | string[];
+  format?: 'webp' | 'avif' | 'png' | 'jpeg' | string;
+  quality?: number;
   width?: number;
   height?: number;
-  fit?: FitMode;
-  quality?: number;
+  clean?: boolean;
   lossless?: boolean;
-  effort?: number;
   background?: string;
-  stripMetadata?: boolean;
+  fit?: 'contain' | 'cover' | 'fill' | 'inside' | 'outside';
+  maxOutputBytes?: number;
+  [key: string]: any;
 }
 
 export interface ConvertResult {
   data: Buffer;
-  format: OutputFormat;
+  output: Buffer;
+  format: string;
   width: number;
   height: number;
   size: number;
+  bytes: number;
   alphaPreserved: boolean;
+  metadataRemoved?: string[];
+  nextAction?: NextAction;
 }
 
-export interface ImageInspection {
-  format: InputFormat;
+export interface BatchConvertOptions {
+  inputs?: ImageInput[];
+  files?: ImageInput[];
+  to?: string;
+  quality?: number;
+  clean?: boolean;
+  [key: string]: any;
+}
+
+export interface BatchConvertResult {
+  total: number;
+  success: number;
+  failed: number;
+  results: Array<{ success: boolean; output?: ConvertResult; error?: any }>;
+  nextAction?: NextAction;
+}
+
+export interface InspectOptions {
+  input?: ImageInput;
+}
+
+export interface InspectResult {
+  format: string;
   width?: number;
   height?: number;
   hasAlpha: boolean;
   bytes: number;
-  recommendedTargets: Array<{ to: OutputFormat; reason: string }>;
+  chunks?: any[];
+  metadataChunks?: any[];
+  recommendedTargets: Array<{ to: string; reason: string }>;
+  nextAction?: NextAction;
 }
 
-export interface OptimizeTarget {
-  to: OutputFormat;
-  quality?: number;
-  width?: number;
+export interface VerifyResult {
+  clean: boolean;
+  metadataChunks: string[];
+  certificate?: any;
+  nextAction?: NextAction;
 }
 
-export interface OptimizeResult {
-  totalBytesBefore: number;
-  totalBytesAfter: number;
-  savedPercent: number;
-  files: Array<{
-    input: string;
-    inputBytes: number;
-    outputs: Array<{
-      format: OutputFormat;
-      bytes: number;
-      width: number;
-      height: number;
-      alphaPreserved: boolean;
-    }>;
-    savedPercent: number;
-  }>;
+export interface VerifyAlphaResult {
+  hasAlpha: boolean;
+  transparentPixelsCount: number;
+  cornerPixelsAlpha: number[];
+  nextAction?: NextAction;
 }
 
-export interface ZapClientOptions {
-  apiKey?: string;
-  baseUrl?: string;
+export interface SuggestResult {
+  useCase: string;
+  recommendedFormat: string;
+  quality: number;
+  lossless: boolean;
+  reason: string;
+  nextAction?: NextAction;
 }
 
-export class Zap {
-  constructor(options?: ZapClientOptions);
-  apiKey: string | null;
-  baseUrl: string | null;
-  isOffline: boolean;
+export interface AuditResult {
+  safe: boolean;
+  tool: string;
+  warnings: string[];
+  zapEquivalent: string;
+  nextAction?: NextAction;
+}
 
-  convert(input: Buffer | Uint8Array | string, options?: ConvertOptions & { to?: OutputFormat }): Promise<Buffer & ConvertResult>;
-  convert(input: Buffer | Uint8Array | string, options: ConvertOptions & { to: OutputFormat[] }): Promise<ConvertResult[]>;
-  inspect(input: Buffer | Uint8Array | string): Promise<ImageInspection>;
-  batch(inputs: Array<Buffer | Uint8Array | string>, options?: ConvertOptions): Promise<Array<Buffer & ConvertResult>>;
-  optimize(options: { files?: Array<string | Buffer>; targets?: OptimizeTarget[] }): Promise<OptimizeResult>;
+export interface McpToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: Record<string, any>;
+}
+
+export interface UsageStats {
+  mode: 'offline' | 'remote';
+  inMemory?: boolean;
+  operations?: number;
+  bytesProcessed?: number;
+  heapUsedMb?: number;
+  [key: string]: any;
+}
+
+export class Zapwebp {
+  readonly apiKey: string | null;
+  readonly baseUrl: string | null;
+  readonly isOffline: boolean;
+
+  constructor(options?: { apiKey?: string; baseUrl?: string });
+
+  convert(opts: ConvertOptions): Promise<Buffer & ConvertResult>;
+  convert(input: ImageInput, options?: ConvertOptions): Promise<Buffer & ConvertResult>;
+
+  convertBatch(opts: BatchConvertOptions): Promise<BatchConvertResult>;
+  convertBatch(inputs: ImageInput[], options?: ConvertOptions): Promise<BatchConvertResult>;
+  batch(inputs: ImageInput[], options?: ConvertOptions): Promise<BatchConvertResult>;
+
+  convertUrl(opts: { url: string; to?: string; quality?: number; [key: string]: any }): Promise<Buffer & ConvertResult>;
+  convertUrl(url: string, options?: ConvertOptions): Promise<Buffer & ConvertResult>;
+
+  inspect(opts: InspectOptions): Promise<InspectResult>;
+  inspect(input: ImageInput): Promise<InspectResult>;
+
+  inspectUrl(opts: { url: string }): Promise<InspectResult>;
+  inspectUrl(url: string): Promise<InspectResult>;
+
+  verifyClean(opts: { input: ImageInput }): Promise<VerifyResult>;
+  verifyClean(input: ImageInput): Promise<VerifyResult>;
+
+  verifyAlpha(opts: { input: ImageInput }): Promise<VerifyAlphaResult>;
+  verifyAlpha(input: ImageInput): Promise<VerifyAlphaResult>;
+
+  suggestConversion(opts: { input: ImageInput; useCase?: 'icon' | 'hero' | 'thumbnail' | 'photo' | 'general' }): Promise<SuggestResult>;
+
+  auditCommand(opts: { command: string }): Promise<AuditResult>;
+  auditCommand(command: string): Promise<AuditResult>;
+
+  listTools(): Promise<McpToolDefinition[]>;
+  getAgentManifest(): Promise<Record<string, any>>;
+  getUsage(): Promise<UsageStats>;
+
+  optimize(options?: { files?: ImageInput[]; targets?: Array<{ to: string; quality?: number }> }): Promise<any>;
 
   static verifyWebhookSignature(payload: string | Buffer, signature: string, secret: string): boolean;
 }
 
-export function createZapClient(options?: ZapClientOptions): Zap;
-
-export const INPUT_FORMATS: readonly InputFormat[];
-export const OUTPUT_FORMATS: readonly OutputFormat[];
-
+export const Zap: typeof Zapwebp;
+export function createZapClient(options?: { apiKey?: string; baseUrl?: string }): Zapwebp;
+export function listTools(): McpToolDefinition[];
+export const INPUT_FORMATS: readonly string[];
+export const OUTPUT_FORMATS: readonly string[];
+export function resolveInput(input: ImageInput): Promise<{ buffer: Buffer; filename: string }>;
