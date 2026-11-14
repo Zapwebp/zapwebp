@@ -59,6 +59,10 @@ export interface ConvertOptions {
   maxBytes?: number;
   maxInputBytes?: number;
   maxOutputBytes?: number;
+  minInputBytes?: number;
+  minOutputBytes?: number;
+  sameFormat?: 'passthrough' | 'reencode' | 'reject';
+  sizeMode?: 'strict' | 'compress' | 'flexible';
   transforms?: TransformStep[];
   policy?: Partial<ConversionPolicy>;
   keepOriginal?: boolean;
@@ -101,6 +105,20 @@ export interface ConvertResult {
   lifecycle?: LifecycleMetadata;
   targetLockEnforced?: boolean;
   targetLockBypassed?: boolean;
+  passedThrough?: boolean;
+  quality?: number;
+  warnings?: string[];
+  ingestion?: {
+    stage: 'passthrough' | 'converted';
+    action: string;
+    detectedFormat: string;
+    targetFormat: string;
+    sizeMode: 'strict' | 'compress' | 'flexible';
+    inputBytes: number;
+    outputBytes: number;
+    iterations?: number;
+    reason?: string;
+  };
 }
 
 export interface MetadataReport {

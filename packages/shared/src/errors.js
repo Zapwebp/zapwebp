@@ -165,11 +165,31 @@ const ERROR_CATALOG = Object.freeze({
     message: 'Input file exceeds maximum allowed bytes limit.',
     fix: 'Compress the input file or increase maxInputBytes in conversion policy.',
   },
+  E_INPUT_TOO_SMALL: {
+    code: 'E_INPUT_TOO_SMALL',
+    message: 'Input file is smaller than minimum required bytes limit.',
+    fix: 'Provide an image file meeting the minimum byte requirement.',
+  },
   E_OUTPUT_TOO_LARGE: {
     code: 'E_OUTPUT_TOO_LARGE',
     message: 'Could not compress image below target output bytes limit.',
     fix: 'Increase maxOutputBytes, adjust quality, or downscale image dimensions.',
     suggestedFix: { quality: 70 },
+  },
+  E_OUTPUT_TOO_SMALL: {
+    code: 'E_OUTPUT_TOO_SMALL',
+    message: 'Converted output is smaller than minimum required output bytes.',
+    fix: 'Increase quality, adjust size limits, or provide a higher resolution input.',
+  },
+  E_OUTPUT_BELOW_RANGE: {
+    code: 'E_OUTPUT_BELOW_RANGE',
+    message: 'Converted output falls below the configured target size range.',
+    fix: 'Adjust minOutputBytes or allow flexible compression mode.',
+  },
+  E_SAME_FORMAT_REJECTED: {
+    code: 'E_SAME_FORMAT_REJECTED',
+    message: 'Input format matches target lock format and same-format uploads are rejected by policy.',
+    fix: 'Change sameFormat policy to "passthrough" or "reencode", or provide a different input format.',
   },
   E_SYMLINK_LOOP: {
     code: 'E_SYMLINK_LOOP',

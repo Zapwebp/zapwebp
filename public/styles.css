@@ -4879,6 +4879,36 @@ body {
   color: #e57373;
 }
 
+.single-passthrough-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green-primary);
+  background: var(--green-alpha-13);
+  border: 1px solid rgba(141, 198, 63, 0.35);
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.single-passthrough-badge svg {
+  color: var(--green-primary);
+}
+
+.result-passthrough-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--green-primary);
+  background: var(--green-alpha-13);
+  border: 1px solid rgba(141, 198, 63, 0.35);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
 .toast-container {
   position: fixed;
   bottom: 24px;

@@ -98,7 +98,7 @@
     <link rel="icon" type="image/svg+xml" href="/zapwebp.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="stylesheet" href="/tokens.css" />
-    <link rel="stylesheet" href="/styles.css?v=2.4.0" />
+    <link rel="stylesheet" href="/styles.css?v=2.16.0" />
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -1959,46 +1959,138 @@
             aria-labelledby="tab-btn-advanced"
             hidden
           >
-            <!-- Compression Target -->
-            <div class="setting-group">
-              <span class="setting-group-label">Compression Target</span>
-              <p class="setting-hint">
-                Optimization strategy when an output limit is active
+            <!-- Same-Format Ingestion Strategy -->
+            <div class="setting-group" id="setting-same-format-group">
+              <span class="setting-group-label" data-i18n="settings.same_format">Same-Format Ingestion</span>
+              <p class="setting-hint" data-i18n="settings.same_format_hint">
+                Action when input image already matches the requested target format
               </p>
               <div
                 class="setting-size-options"
                 role="radiogroup"
-                aria-label="Compression target strategy"
+                aria-label="Same-format ingestion action"
               >
                 <label class="setting-radio-card">
                   <input
                     type="radio"
-                    name="setting-compression-target"
-                    value="limit"
+                    name="setting-same-format"
+                    value="passthrough"
+                    id="setting-same-fmt-passthrough"
                     checked
                   />
                   <div class="setting-radio-card-body">
-                    <span class="setting-card-title">Limit (Strict)</span>
-                    <span class="setting-card-sub"
-                      >Lowers quality iteratively until file is strictly under
-                      limit</span
+                    <span class="setting-card-title" data-i18n="settings.same_fmt_pass_title">Pass-through (Instant)</span>
+                    <span class="setting-card-sub" data-i18n="settings.same_fmt_pass_desc"
+                      >Zero decode/re-encode overhead, 0% generational quality loss</span
                     >
                   </div>
                 </label>
                 <label class="setting-radio-card">
                   <input
                     type="radio"
-                    name="setting-compression-target"
-                    value="target"
+                    name="setting-same-format"
+                    value="reencode"
+                    id="setting-same-fmt-reencode"
                   />
                   <div class="setting-radio-card-body">
-                    <span class="setting-card-title">Target (Best effort)</span>
-                    <span class="setting-card-sub"
-                      >Binary searches to get as close to target as possible
-                      without exceeding</span
+                    <span class="setting-card-title" data-i18n="settings.same_fmt_reencode_title">Re-encode</span>
+                    <span class="setting-card-sub" data-i18n="settings.same_fmt_reencode_desc"
+                      >Decode and re-compress with the current quality settings</span
                     >
                   </div>
                 </label>
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-same-format"
+                    value="reject"
+                    id="setting-same-fmt-reject"
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.same_fmt_reject_title">Reject</span>
+                    <span class="setting-card-sub" data-i18n="settings.same_fmt_reject_desc"
+                      >Block uploads already in the target format (E_SAME_FORMAT_REJECTED)</span
+                    >
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Size Contract Mode -->
+            <div class="setting-group" id="setting-size-mode-group">
+              <span class="setting-group-label" data-i18n="settings.size_mode">Size Contract Mode</span>
+              <p class="setting-hint" data-i18n="settings.size_mode_hint">
+                Enforcement policy when output byte limits are configured
+              </p>
+              <div
+                class="setting-size-options"
+                role="radiogroup"
+                aria-label="Size contract mode"
+              >
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-size-mode"
+                    value="compress"
+                    id="setting-size-mode-compress"
+                    checked
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.size_mode_compress_title">Compress (Binary Search)</span>
+                    <span class="setting-card-sub" data-i18n="settings.size_mode_compress_desc"
+                      >Smart binary search finds optimal quality in &le; 5 steps to fit under limit</span
+                    >
+                  </div>
+                </label>
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-size-mode"
+                    value="strict"
+                    id="setting-size-mode-strict"
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.size_mode_strict_title">Strict (Fail Fast)</span>
+                    <span class="setting-card-sub" data-i18n="settings.size_mode_strict_desc"
+                      >Strictly reject conversion if output exceeds byte limit without degrading quality</span
+                    >
+                  </div>
+                </label>
+                <label class="setting-radio-card">
+                  <input
+                    type="radio"
+                    name="setting-size-mode"
+                    value="flexible"
+                    id="setting-size-mode-flexible"
+                  />
+                  <div class="setting-radio-card-body">
+                    <span class="setting-card-title" data-i18n="settings.size_mode_flexible_title">Flexible (Warn Only)</span>
+                    <span class="setting-card-sub" data-i18n="settings.size_mode_flexible_desc"
+                      >Preserves full quality and emits a non-blocking size warning banner</span
+                    >
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Minimum Output Bounds -->
+            <div class="setting-group">
+              <span class="setting-group-label" data-i18n="settings.min_output">Minimum Output Bound</span>
+              <p class="setting-hint" data-i18n="settings.min_output_hint">
+                Validate that output files meet a minimum threshold (detects blank / placeholder assets)
+              </p>
+              <div class="setting-input-inline">
+                <span class="setting-input-pre">Minimum output</span>
+                <input
+                  type="number"
+                  id="setting-min-output-input"
+                  class="setting-num-input"
+                  min="0"
+                  max="10000"
+                  value="0"
+                  aria-label="Minimum output file size in kilobytes"
+                />
+                <span class="setting-unit-label">KB (0 = off)</span>
               </div>
             </div>
 
@@ -2124,6 +2216,6 @@
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
     <script src="/vendor/fflate.min.js" defer></script>
-    <script src="/app.js?v=2.15.0" defer></script>
+    <script src="/app.js?v=2.16.0" defer></script>
   </body>
 </html>

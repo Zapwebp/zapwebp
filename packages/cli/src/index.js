@@ -94,6 +94,13 @@ OPTIONS
       --lock-target <fmt> Enforce many-to-one conversion to specified format
       --strict            Strictly fail on unconvertible inputs (default when locked)
       --no-strict         Pass through unconvertible files unchanged
+      --same-format <mod> Action when input matches target: passthrough (default), reencode, reject
+      --size-mode <mode>  Size contract enforcement: compress (default), strict, flexible
+      --flexible          Alias for --size-mode flexible (warn only, never reject or degrade)
+      --min-input <bytes> Reject inputs smaller than minimum byte limit (e.g. 500B, 10KB)
+      --max-input <bytes> Reject inputs larger than maximum byte limit (e.g. 15MB)
+      --min-output <byte> Validate output meets minimum byte size
+      --max-output <byte> Compress or validate output under maximum byte size
       --override-lock     Explicit opt-in to bypass configured target lock
       --zip               Bundle outputs into a single ZIP archive
       --srcset            Print responsive <img srcset> HTML tags
@@ -121,6 +128,23 @@ SAFETY & PRIVACY
   • TOCTOU safe: files are re-verified immediately before writing.
   • Atomic writes: tmp -> rename ensures no half-written files.
 `;
+
+function parseByteSize(val) {
+  if (typeof val === 'number') return val;
+  const str = String(val).trim();
+  const match = str.match(/^(\d+(?:\.\d+)?)\s*([kmg]?b)?$/i);
+  if (!match) {
+    const num = Number(str);
+    if (!Number.isFinite(num)) throw new Error(`Invalid byte size: "${val}". Expected e.g. 500B, 15KB, 1MB, or numeric bytes.`);
+    return Math.round(num);
+  }
+  const count = parseFloat(match[1]);
+  const unit = (match[2] || '').toUpperCase();
+  if (unit === 'KB') return Math.round(count * 1024);
+  if (unit === 'MB') return Math.round(count * 1024 * 1024);
+  if (unit === 'GB') return Math.round(count * 1024 * 1024 * 1024);
+  return Math.round(count);
+}
 
 function parseArgs(argv) {
   const parsed = { inputs: [], options: {} };
@@ -170,9 +194,36 @@ function parseArgs(argv) {
     } else if (arg === '--strict') {
       parsed.strict = true;
       parsed.options.strict = true;
+      parsed.options.sizeMode = 'strict';
     } else if (arg === '--no-strict') {
       parsed.strict = false;
       parsed.options.strict = false;
+    } else if (arg === '--same-format') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a mode: passthrough, reencode, or reject.`);
+      parsed.options.sameFormat = value.toLowerCase();
+    } else if (arg === '--size-mode') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a mode: compress, strict, or flexible.`);
+      parsed.options.sizeMode = value.toLowerCase();
+    } else if (arg === '--flexible') {
+      parsed.options.sizeMode = 'flexible';
+    } else if (arg === '--min-input') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a byte size (e.g. 100B, 5KB).`);
+      parsed.options.minInputBytes = parseByteSize(value);
+    } else if (arg === '--max-input') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a byte size (e.g. 15MB).`);
+      parsed.options.maxInputBytes = parseByteSize(value);
+    } else if (arg === '--min-output') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a byte size (e.g. 500B, 10KB).`);
+      parsed.options.minOutputBytes = parseByteSize(value);
+    } else if (arg === '--max-output') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a byte size (e.g. 15KB, 1MB).`);
+      parsed.options.maxOutputBytes = parseByteSize(value);
     } else if (arg === '--override-lock') {
       parsed.overrideLock = true;
       parsed.options.overrideLock = true;
@@ -907,15 +958,22 @@ async function main() {
         }
 
         if (converted.passedThrough) {
-          await writeAtomic(dest, currentBytes);
+          await writeAtomic(dest, converted.data);
+          operations.push({
+            type: 'create',
+            path: path.relative(rootDir, dest).replace(/\\/g, '/'),
+            sha256: sha256(converted.data),
+            bytes: converted.size,
+          });
           records.push({
             input: fileItem.path,
             output: dest,
             scale,
-            format: 'unknown',
-            size: currentBytes.length,
+            format: converted.targetFormat || target,
+            size: converted.size,
             passedThrough: true,
             status: 'passed_through',
+            warnings: converted.warnings || [],
           });
           continue;
         }
@@ -1049,7 +1107,14 @@ async function main() {
     process.stdout.write(`${JSON.stringify(records)}\n`);
   } else {
     for (const r of records) {
-      process.stdout.write(`${r.status === 'converted' ? '✓' : '='} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}\n`);
+      const prefix = r.passedThrough ? '⚡' : (r.status === 'converted' ? '✓' : '=');
+      const passTag = r.passedThrough ? ' [same-format passthrough]' : '';
+      process.stdout.write(`${prefix} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}${passTag}\n`);
+      if (r.warnings && r.warnings.length) {
+        for (const w of r.warnings) {
+          process.stderr.write(`  ⚠️  Warning: ${w}\n`);
+        }
+      }
     }
   }
 

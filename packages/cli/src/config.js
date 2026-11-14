@@ -69,6 +69,8 @@ export function resolveConfigPrecedence({ cliOptions = {}, fileConfig = {}, env 
     'outDir', 'background', 'clean', 'stripMetadata', 'verifyClean', 'assertAlpha', 'report',
     'maxFileSizeBytes', 'followSymlinks', 'allowOutsideRoot',
     'lockTarget', 'strict', 'overrideLock',
+    'sameFormat', 'sizeMode', 'minInputBytes', 'maxInputBytes', 'minOutputBytes', 'maxOutputBytes',
+    'keepOriginal', 'cleanupDelay',
   ];
 
   for (const field of fields) {

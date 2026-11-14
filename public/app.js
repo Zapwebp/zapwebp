@@ -82,6 +82,9 @@ const settings = {
   inputSizeLimitMb: 50,
   keepOriginal: true, // Keep source file in browser IndexedDB
   deleteOnDownload: false, // Auto-remove from browser storage upon download
+  sameFormat: 'passthrough', // 'passthrough' | 'reencode' | 'reject'
+  sizeMode: 'compress', // 'compress' | 'strict' | 'flexible'
+  minOutputBytes: 0,
 };
 
 function loadStoredSettings() {
@@ -113,6 +116,9 @@ function persistSettings() {
       inputSizeLimitMb: settings.inputSizeLimitMb,
       keepOriginal: settings.keepOriginal,
       deleteOnDownload: settings.deleteOnDownload,
+      sameFormat: settings.sameFormat,
+      sizeMode: settings.sizeMode,
+      minOutputBytes: settings.minOutputBytes,
     }));
   } catch {}
 }
@@ -460,6 +466,20 @@ function syncSettingsSlideoverUI() {
   // After download retention radios
   const delDownloadRadios = document.querySelectorAll('input[name="setting-delete-on-download"]');
   delDownloadRadios.forEach((r) => { r.checked = (r.value === (settings.deleteOnDownload ? 'delete' : 'keep')); });
+
+  // Same-format ingestion radios
+  const sameFmtRadios = document.querySelectorAll('input[name="setting-same-format"]');
+  sameFmtRadios.forEach((r) => { r.checked = (r.value === (settings.sameFormat || 'passthrough')); });
+
+  // Size mode contract radios
+  const sizeModeContractRadios = document.querySelectorAll('input[name="setting-size-mode"]');
+  sizeModeContractRadios.forEach((r) => { r.checked = (r.value === (settings.sizeMode || 'compress')); });
+
+  // Minimum output input
+  const settingMinOutputInput = document.querySelector('#setting-min-output-input');
+  if (settingMinOutputInput) {
+    settingMinOutputInput.value = Math.round((settings.minOutputBytes || 0) / 1024);
+  }
 }
 
 if (settingsBtn) settingsBtn.addEventListener('click', openSettingsSlideover);
@@ -485,6 +505,32 @@ document.querySelectorAll('input[name="setting-delete-on-download"]').forEach((r
     persistSettings();
   });
 });
+
+// Same-format ingestion radio handlers
+document.querySelectorAll('input[name="setting-same-format"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.sameFormat = radio.value;
+    persistSettings();
+  });
+});
+
+// Size mode contract radio handlers
+document.querySelectorAll('input[name="setting-size-mode"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    settings.sizeMode = radio.value;
+    persistSettings();
+  });
+});
+
+// Min output size bound input handler
+const settingMinOutputInput = document.querySelector('#setting-min-output-input');
+if (settingMinOutputInput) {
+  settingMinOutputInput.addEventListener('change', () => {
+    const val = Number(settingMinOutputInput.value) || 0;
+    settings.minOutputBytes = val * 1024;
+    persistSettings();
+  });
+}
 
 // Format radios
 document.querySelectorAll('input[name="setting-default-format"]').forEach((radio) => {
@@ -656,6 +702,8 @@ const I18N_DICTIONARIES = {
     'cockpit.lossless': 'Lossless',
     'cockpit.clean_mode': 'Clean Mode',
     'single.converted': 'Converted',
+    'single.passthrough': '⚡ No Re-encode',
+    'single.same_format_pass': 'Same-format pass-through: zero generational loss',
     'single.preview': 'Inspect',
     'single.share': 'Share',
     'single.download': 'Download',
@@ -663,6 +711,7 @@ const I18N_DICTIONARIES = {
     'card.preview': 'Preview',
     'card.download': 'Download',
     'card.delete': 'Delete',
+    'card.passthrough': '⚡ Passthrough',
     'card.add_more_title': 'Add More Images',
     'card.add_more_hint': 'Drop files here or click',
     'modal.title': 'Inspection & Comparison',
@@ -735,6 +784,8 @@ const I18N_DICTIONARIES = {
     'cockpit.lossless': 'Walang bawas',
     'cockpit.clean_mode': 'Malinis na Mode',
     'single.converted': 'Na-convert',
+    'single.passthrough': '⚡ Walang Pagbabago',
+    'single.same_format_pass': 'Direktang passthrough: walang pagkawala sa kalidad',
     'single.preview': 'Pagsusuri',
     'single.share': 'Ibahagi',
     'single.download': 'I-download',
@@ -742,6 +793,7 @@ const I18N_DICTIONARIES = {
     'card.preview': 'Pagsusuri',
     'card.download': 'I-download',
     'card.delete': 'Burahin',
+    'card.passthrough': '⚡ Diretso',
     'card.add_more_title': 'Magdagdag Pa ng Larawan',
     'card.add_more_hint': 'I-drop dito o i-click',
     'modal.title': 'Pagsusuri at Paghahambing',
@@ -1321,6 +1373,49 @@ async function encodeCanvasWithOptions(canvas, mimeType, toFormat, requestedQual
 }
 
 async function convertImageFile(file, toFormat, quality, scales, isClean, isLossless, bgColor, cropOptions = null) {
+  // Smart Ingestion: Stage 2 format lock decision
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const inputFmt = ext === 'jpg' ? 'jpeg' : ext;
+  const targetFmt = toFormat === 'jpg' ? 'jpeg' : toFormat;
+
+  if (inputFmt === targetFmt && (!scales || (scales.length === 1 && scales[0] === 1)) && !cropOptions) {
+    if (settings.sameFormat === 'reject') {
+      const err = new Error(`Input "${file.name}" is already in ${targetFmt.toUpperCase()} format and sameFormat policy is "reject".`);
+      err.code = 'E_SAME_FORMAT_REJECTED';
+      throw err;
+    }
+
+    if (settings.sameFormat === 'passthrough' || !settings.sameFormat) {
+      if (settings.inputSizeLimitMb && file.size > settings.inputSizeLimitMb * 1024 * 1024) {
+        const err = new Error(`File is ${(file.size / 1024 / 1024).toFixed(1)} MB, exceeding the maximum limit of ${settings.inputSizeLimitMb} MB.`);
+        err.code = 'E_INPUT_TOO_LARGE';
+        throw err;
+      }
+
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      const outExt = targetFmt === 'jpeg' ? 'jpg' : targetFmt;
+      const outName = `${baseName}.${outExt}`;
+      const url = URL.createObjectURL(file);
+
+      return [{
+        name: outName,
+        scale: 1,
+        width: 0,
+        height: 0,
+        size: file.size,
+        originalSize: file.size,
+        blob: file,
+        url,
+        alphaPreserved: targetFmt !== 'jpeg',
+        format: targetFmt,
+        baseName,
+        relativePath: file.relativePath ? file.relativePath.replace(/\.[^.]+$/, `.${outExt}`) : outName,
+        passedThrough: true,
+        qualityReduced: false,
+      }];
+    }
+  }
+
   // Try Web Worker first for single-scale default pipelines without crop
   if ((!scales || (scales.length === 1 && scales[0] === 1)) && !cropOptions) {
     try {
@@ -1954,6 +2049,12 @@ function renderResultsView() {
               <span>${t('single.original_removed', 'Original removed')}</span>
             </div>
           ` : ''}
+          ${out.passedThrough ? `
+            <div class="single-passthrough-badge" title="${t('single.same_format_pass', 'Same-format pass-through: zero generational loss')}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>${t('single.passthrough', '⚡ No Re-encode')}</span>
+            </div>
+          ` : ''}
         </div>
         <div class="single-fmt-pill">${(item.originalFormat || 'SRC').toUpperCase()} → ${out.format.toUpperCase()}</div>
       </div>
@@ -2209,6 +2310,11 @@ function renderResultsView() {
           ${out.qualityReduced ? `
             <div class="result-downgrade-badge" title="Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB">
               📉 ${out.originalQuality} → ${out.finalQuality}
+            </div>
+          ` : ''}
+          ${out.passedThrough ? `
+            <div class="result-passthrough-badge" title="${t('single.same_format_pass', 'Same-format pass-through: zero generational loss')}">
+              ${t('card.passthrough', '⚡ Passthrough')}
             </div>
           ` : ''}
         </div>

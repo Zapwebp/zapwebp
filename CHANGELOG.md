@@ -2,6 +2,27 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.16.0] - 2026-11-14
+
+### Added
+
+- **Target Locking — Smart Ingestion & Size Validation Gateway (`@zapwebp/core`, `@zapwebp/shared`, `@zapwebp/cli`, `public/`)**:
+  - Implemented 4-Stage Ingestion Gate:
+    - **Stage 1 (Detect)**: Magic byte sniffing deterministically detects container headers without trusting file extensions.
+    - **Stage 2 (Lock Decision)**: Added `sameFormat: 'passthrough' | 'reencode' | 'reject'`. In pass-through mode, inputs already in the target format bypass decode/encode overhead entirely for zero generational loss and sub-millisecond return. In reject mode, throws structured `E_SAME_FORMAT_REJECTED`.
+    - **Stage 3 (Size Bounds)**: Pre-decode ingress bounds validation enforcing `minInputBytes` (`E_INPUT_TOO_SMALL`) and `maxInputBytes` (`E_INPUT_TOO_LARGE`).
+    - **Stage 4 (Binary Search Compression)**: Rapid binary search converges on `maxOutputBytes` over quality range $[10, initialQuality]$ in $\le 5$ iterations, reducing CPU overhead by ~70% compared to linear decrements.
+  - Implemented 3 size contract modes:
+    - `compress` (default): Optimizes quality to fit under `maxOutputBytes`.
+    - `strict`: Rejects conversion immediately if initial output exceeds limit (`E_OUTPUT_TOO_LARGE`) or falls below minimum (`E_OUTPUT_TOO_SMALL`).
+    - `flexible`: Emits non-blocking warnings while preserving full quality without rejecting.
+  - New CLI flags: `--same-format <passthrough|reencode|reject>`, `--size-mode <compress|strict|flexible>`, `--flexible`, `--min-input <bytes>`, `--max-input <bytes>`, `--min-output <bytes>`, `--max-output <bytes>`.
+  - Added CLI pass-through reporter: shows `⚡ [same-format passthrough]` prefix and size warnings.
+  - Web UI Settings slideover integrates dedicated "Same-Format Ingestion", "Size Contract Mode", and "Minimum Output Bound" controls cards.
+  - Web UI results cards render high-contrast `⚡ SAME FORMAT · NO LOSS` badge on passed-through assets.
+  - Bounded web app vertical spacing: dropzone card layout refined to maintain ergonomic breathing room on desktop and mobile viewports.
+  - Full documentation and bilingual parity in `content/lock-target.md` and `locales/tl/docs/lock-target.md`.
+
 ## [2.15.0] - 2026-11-12
 
 ### Added

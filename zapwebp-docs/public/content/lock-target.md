@@ -27,13 +27,26 @@ Or configure once for your entire project in `zapwebp.json`:
 
 ## What it does
 
-Target Lock turns Zapwebp from a discretionary converter into an **ingestion gateway**. The underlying pipeline is:
+Target Lock turns Zapwebp from a discretionary converter into a **4-stage smart ingestion gateway**:
 
 ```
-input (any format) → decode() → raw pixels → encode(target) → output
+Input Asset → [Stage 1: Detect] → [Stage 2: Lock Decision] → [Stage 3: Size Bounds] → [Stage 4: Compression] → Canonical Output
 ```
 
 The developer configures the target format once. Every asset that enters—whether SVG, PNG, JPEG, WebP, AVIF, GIF, or TIFF—is normalized to the exact canonical format. Consumers of your storage bucket, database, or CDN never encounter mixed formats.
+
+### The 4-Stage Ingestion Pipeline
+
+1. **Stage 1 (Detect)**: Magic byte sniffing deterministically detects container headers without trusting user file extensions.
+2. **Stage 2 (Lock Decision)**:
+   - `sameFormat: "passthrough"` (default): When the input already matches the target format and meets size bounds, it bypasses decode/encode overhead entirely for zero generational loss and sub-millisecond execution.
+   - `sameFormat: "reencode"`: Decodes and re-compresses using current quality settings.
+   - `sameFormat: "reject"`: Strictly rejects input if it is already in target format (`E_SAME_FORMAT_REJECTED`).
+3. **Stage 3 (Size Bounds)**: Validates `minInputBytes` and `maxInputBytes` before memory allocation, failing with `E_INPUT_TOO_SMALL` or `E_INPUT_TOO_LARGE`.
+4. **Stage 4 (Binary Search Compression)**:
+   - `sizeMode: "compress"` (default): When `maxOutputBytes` is specified, converges via binary search across quality $[10, initialQuality]$ in $\le 5$ iterations instead of slow linear decrements.
+   - `sizeMode: "strict"`: Rejects immediately if initial quality output exceeds `maxOutputBytes` (`E_OUTPUT_TOO_LARGE`) or falls below `minOutputBytes` (`E_OUTPUT_TOO_SMALL`).
+   - `sizeMode: "flexible"`: Emits non-blocking warnings while preserving full quality without failing.
 
 ### Strict Mode Contract
 
@@ -100,7 +113,11 @@ await zap.upload('bucket', 'spec.png', bytes, {
 |---|---|---|
 | `E_UNSUPPORTED_FORMAT` | Input file cannot be decoded into the locked format in strict mode | Upload a supported format or install the format expansion plugin |
 | `E_CORRUPT_HEADER` | File is truncated or smaller than valid container header | Verify source asset download integrity |
-| `E_TOO_LARGE` | File exceeds maximum byte limit (`maxBytes`) | Resize or optimize asset before conversion |
+| `E_INPUT_TOO_SMALL` | Input file is smaller than `minInputBytes` requirement | Provide a valid asset meeting minimum ingress bounds |
+| `E_INPUT_TOO_LARGE` | Input file exceeds `maxInputBytes` before memory allocation | Downscale or compress source asset before upload |
+| `E_OUTPUT_TOO_LARGE` | Output cannot fit in `maxOutputBytes` under `sizeMode: "strict"` | Increase `maxOutputBytes`, downscale dimensions, or switch to `compress` |
+| `E_OUTPUT_TOO_SMALL` | Output is smaller than `minOutputBytes` requirement | Verify image contains content (not empty placeholder) |
+| `E_SAME_FORMAT_REJECTED` | Input matches locked target under `sameFormat: "reject"` | Allow format pass-through or upload different format |
 | `E_ALPHA_NOT_REPRESENTABLE` | Locked target is JPEG and transparent input lacks a flatten background | Provide `--background "#ffffff"` or unlock target |
 
 ## For agents
@@ -108,20 +125,40 @@ await zap.upload('bucket', 'spec.png', bytes, {
 ```json
 {
   "capability": "target-lock",
-  "pipeline": "decode(any) -> pixels -> encode(target)",
-  "supportedTargets": ["webp", "png", "avif", "jpeg"],
+  "pipeline": "detect -> lock-decision -> size-bounds -> binary-search-compression",
+  "supportedTargets": ["webp", "png", "avif", "jpeg", "svg", "gif", "tiff"],
   "configuration": {
     "output.lock": "string (format)",
     "output.strict": "boolean (default: true)",
+    "output.sameFormat": "passthrough | reencode | reject (default: passthrough)",
+    "output.sizeMode": "compress | strict | flexible (default: compress)",
+    "output.minInputBytes": "number",
+    "output.maxInputBytes": "number",
+    "output.minOutputBytes": "number",
+    "output.maxOutputBytes": "number",
     "env": ["ZAPWEBP_TARGET", "ZAPWEBP_STRICT"]
   },
   "cliFlags": [
     "--lock-target <format>",
     "--strict",
     "--no-strict",
+    "--same-format <passthrough|reencode|reject>",
+    "--size-mode <compress|strict|flexible>",
+    "--flexible",
+    "--min-input <bytes>",
+    "--max-input <bytes>",
+    "--min-output <bytes>",
+    "--max-output <bytes>",
     "--override-lock"
   ],
-  "errorCode": "E_UNSUPPORTED_FORMAT"
+  "errorCodes": [
+    "E_UNSUPPORTED_FORMAT",
+    "E_INPUT_TOO_SMALL",
+    "E_INPUT_TOO_LARGE",
+    "E_OUTPUT_TOO_LARGE",
+    "E_OUTPUT_TOO_SMALL",
+    "E_SAME_FORMAT_REJECTED"
+  ]
 }
 ```
 

@@ -23,6 +23,10 @@ const DEFAULT_OPTIONS = Object.freeze({
   keepOriginal: true,
   deleteOnDownload: false,
   cleanupDelay: 'immediate',
+  sameFormat: 'passthrough',
+  sizeMode: 'compress',
+  minInputBytes: undefined,
+  minOutputBytes: undefined,
 });
 
 /**
@@ -36,13 +40,19 @@ const DEFAULT_CONVERSION_POLICY = Object.freeze({
     perFormat: Object.freeze({}),
   }),
   limits: Object.freeze({
+    minInputBytes: undefined,
     maxInputBytes: 5 * 1024 * 1024,
+    minOutputBytes: undefined,
     maxOutputBytes: undefined,
     targetOutputBytes: undefined,
   }),
   formats: Object.freeze({
     accept: Object.freeze([]),
     reject: Object.freeze([]),
+    sameFormat: 'passthrough',
+  }),
+  size: Object.freeze({
+    mode: 'compress',
   }),
   advanced: Object.freeze({
     effort: 4,

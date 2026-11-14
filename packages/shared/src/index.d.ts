@@ -25,6 +25,11 @@ export interface ZapwebpOptions {
   keepOriginal: boolean;
   deleteOnDownload: boolean;
   cleanupDelay: 'immediate' | 'session' | 'manual';
+  sameFormat?: 'passthrough' | 'reencode' | 'reject';
+  sizeMode?: 'strict' | 'compress' | 'flexible';
+  minInputBytes?: number;
+  minOutputBytes?: number;
+  maxOutputBytes?: number;
 }
 
 export interface ConversionPolicy {
@@ -34,13 +39,19 @@ export interface ConversionPolicy {
     perFormat?: Record<string, number>;
   };
   limits: {
+    minInputBytes?: number;
     maxInputBytes: number;
+    minOutputBytes?: number;
     maxOutputBytes?: number;
     targetOutputBytes?: number;
   };
   formats: {
     accept: string[];
     reject: string[];
+    sameFormat?: 'passthrough' | 'reencode' | 'reject';
+  };
+  size?: {
+    mode: 'strict' | 'compress' | 'flexible';
   };
   advanced?: {
     effort: number;

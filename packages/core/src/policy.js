@@ -40,6 +40,14 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
 
   // 2. Limits
   const limitsConfig = policy.limits || {};
+  const minInputBytes = limitsConfig.minInputBytes !== undefined
+    ? Number(limitsConfig.minInputBytes)
+    : (optionsFallback.minInputBytes !== undefined ? Number(optionsFallback.minInputBytes) : undefined);
+
+  if (minInputBytes !== undefined && (!Number.isFinite(minInputBytes) || minInputBytes < 0)) {
+    throw new Error('Policy limits.minInputBytes must be a non-negative number.');
+  }
+
   const maxInputBytes = limitsConfig.maxInputBytes !== undefined
     ? Number(limitsConfig.maxInputBytes)
     : (optionsFallback.maxBytes !== undefined ? Number(optionsFallback.maxBytes) : DEFAULT_CONVERSION_POLICY.limits.maxInputBytes);
@@ -48,16 +56,39 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     throw new Error('Policy limits.maxInputBytes must be a positive number.');
   }
 
+  if (minInputBytes !== undefined && minInputBytes > maxInputBytes) {
+    throw new Error(`Policy limits.minInputBytes (${minInputBytes}) cannot exceed maxInputBytes (${maxInputBytes}).`);
+  }
+
+  const minOutputBytes = limitsConfig.minOutputBytes !== undefined
+    ? Number(limitsConfig.minOutputBytes)
+    : (optionsFallback.minOutputBytes !== undefined ? Number(optionsFallback.minOutputBytes) : undefined);
+
+  if (minOutputBytes !== undefined && (!Number.isFinite(minOutputBytes) || minOutputBytes < 0)) {
+    throw new Error('Policy limits.minOutputBytes must be a non-negative number.');
+  }
+
   const maxOutputBytes = limitsConfig.maxOutputBytes !== undefined
     ? Number(limitsConfig.maxOutputBytes)
     : (optionsFallback.maxOutputBytes !== undefined ? Number(optionsFallback.maxOutputBytes) : undefined);
+
+  if (maxOutputBytes !== undefined && (!Number.isFinite(maxOutputBytes) || maxOutputBytes <= 0)) {
+    throw new Error('Policy limits.maxOutputBytes must be a positive number.');
+  }
+
+  if (minOutputBytes !== undefined && maxOutputBytes !== undefined && minOutputBytes > maxOutputBytes) {
+    throw new Error(`Policy limits.minOutputBytes (${minOutputBytes}) cannot exceed maxOutputBytes (${maxOutputBytes}).`);
+  }
 
   const targetOutputBytes = limitsConfig.targetOutputBytes !== undefined
     ? Number(limitsConfig.targetOutputBytes)
     : (optionsFallback.targetOutputBytes !== undefined ? Number(optionsFallback.targetOutputBytes) : undefined);
 
-  // 3. Formats Allowlist / Denylist
+  // 3. Formats Allowlist / Denylist & Same-Format Action
   const formatsConfig = policy.formats || {};
+  const sameFormatRaw = formatsConfig.sameFormat || optionsFallback.sameFormat || DEFAULT_CONVERSION_POLICY.formats.sameFormat;
+  const sameFormat = ['passthrough', 'reencode', 'reject'].includes(sameFormatRaw) ? sameFormatRaw : 'passthrough';
+
   const normalizeList = (list, fallbackStr) => {
     if (Array.isArray(list)) {
       return list.map((f) => String(f).toLowerCase().trim() === 'jpg' ? 'jpeg' : String(f).toLowerCase().trim()).filter(Boolean);
@@ -74,7 +105,12 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
   const accept = normalizeList(formatsConfig.accept, optionsFallback.accept);
   const reject = normalizeList(formatsConfig.reject, optionsFallback.reject);
 
-  // 4. Advanced
+  // 4. Size Mode
+  const sizeConfig = policy.size || {};
+  const sizeModeRaw = sizeConfig.mode || optionsFallback.sizeMode || (optionsFallback.strict ? 'strict' : undefined) || DEFAULT_CONVERSION_POLICY.size.mode;
+  const sizeMode = ['strict', 'compress', 'flexible'].includes(sizeModeRaw) ? sizeModeRaw : 'compress';
+
+  // 5. Advanced
   const advancedConfig = policy.advanced || {};
   const effort = advancedConfig.effort !== undefined
     ? Number(advancedConfig.effort)
@@ -95,13 +131,19 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
       perFormat,
     },
     limits: {
+      minInputBytes,
       maxInputBytes,
+      minOutputBytes,
       maxOutputBytes,
       targetOutputBytes,
     },
     formats: {
       accept,
       reject,
+      sameFormat,
+    },
+    size: {
+      mode: sizeMode,
     },
     advanced: {
       effort,
@@ -123,7 +165,22 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
 function checkPolicyInput({ policy, data, detectedFormat }) {
   if (!policy || !data) return;
 
-  // 1. Max Input Bytes (before decode memory allocation)
+  // 1. Min Input Bytes (before decode memory allocation)
+  if (policy.limits?.minInputBytes && data.length < policy.limits.minInputBytes) {
+    throw new ZapwebpError({
+      code: 'E_INPUT_TOO_SMALL',
+      message: `Input is ${data.length} bytes, minimum required is ${policy.limits.minInputBytes} bytes.`,
+      fix: 'Provide an image file meeting the minimum size requirement.',
+      inputBytes: data.length,
+      minBytes: policy.limits.minInputBytes,
+      suggestedFix: {
+        minInputBytes: data.length,
+        reason: 'Input is smaller than the minimum allowed ingress bytes.',
+      },
+    });
+  }
+
+  // 2. Max Input Bytes (before decode memory allocation)
   if (policy.limits?.maxInputBytes && data.length > policy.limits.maxInputBytes) {
     throw new ZapwebpError({
       code: 'E_INPUT_TOO_LARGE',

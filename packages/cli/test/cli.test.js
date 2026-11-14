@@ -319,4 +319,35 @@ test('CLI supports --lock-target, --strict, and --override-lock', async (t) => {
   assert.match(strictRes.stderr, /E_UNSUPPORTED_FORMAT/);
 });
 
+test('CLI supports smart ingestion: --same-format, --size-mode, and byte bounds', async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'zapwebp-ingest-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+
+  await mkdir(path.join(directory, 'src'), { recursive: true });
+  await writeFile(path.join(directory, 'src', 'vector.svg'), svg);
+
+  // 1. Convert SVG to WebP first
+  const prepRes = run(['src/vector.svg', '--to', 'webp', '--out-dir', 'src', '--json'], directory);
+  assert.equal(prepRes.status, 0, prepRes.stderr);
+  assert.ok(await stat(path.join(directory, 'src', 'vector.webp')));
+
+  // 2. Same format pass-through: WebP input to WebP target with --same-format passthrough
+  const passRes = run(['src/vector.webp', '--to', 'webp', '--same-format', 'passthrough', '--out-dir', 'out-pass', '--json'], directory);
+  assert.equal(passRes.status, 0, passRes.stderr);
+  const passData = JSON.parse(passRes.stdout);
+  assert.equal(passData[0].passedThrough, true);
+  assert.equal(passData[0].status, 'passed_through');
+  assert.equal(passData[0].format, 'webp');
+
+  // 3. Same format rejection: --same-format reject throws E_SAME_FORMAT_REJECTED
+  const rejectRes = run(['src/vector.webp', '--to', 'webp', '--same-format', 'reject', '--out-dir', 'out-reject'], directory);
+  assert.equal(rejectRes.status, 1);
+  assert.match(rejectRes.stderr, /E_SAME_FORMAT_REJECTED/);
+
+  // 4. Min input bytes bounds: --min-input rejects undersized files
+  const minRes = run(['src/vector.webp', '--to', 'png', '--min-input', '500KB', '--out-dir', 'out-min'], directory);
+  assert.equal(minRes.status, 1);
+  assert.match(minRes.stderr, /E_INPUT_TOO_SMALL/);
+});
+
 

@@ -480,7 +480,11 @@ function normalizeOptions(options = {}) {
     strict,
     overrideLock,
     policy: options.policy,
-    maxOutputBytes: options.maxOutputBytes,
+    sameFormat: options.sameFormat || (options.policy?.formats?.sameFormat) || DEFAULT_OPTIONS.sameFormat || 'passthrough',
+    sizeMode: options.sizeMode || (options.policy?.size?.mode) || (options.strict ? 'strict' : undefined) || DEFAULT_OPTIONS.sizeMode || 'compress',
+    minInputBytes: options.minInputBytes !== undefined ? Number(options.minInputBytes) : (options.policy?.limits?.minInputBytes),
+    minOutputBytes: options.minOutputBytes !== undefined ? Number(options.minOutputBytes) : (options.policy?.limits?.minOutputBytes),
+    maxOutputBytes: options.maxOutputBytes !== undefined ? Number(options.maxOutputBytes) : (options.policy?.limits?.maxOutputBytes),
     targetOutputBytes: options.targetOutputBytes,
     accept: options.accept,
     reject: options.reject,
@@ -570,6 +574,96 @@ async function convertImage(input, options = {}) {
 
   // Policy check 2: Format allowlist & denylist based on detected bytes
   checkPolicyInput({ policy, data, detectedFormat: format });
+
+  // Stage 2: Format Lock Decision & Smart Ingestion
+  const normalizedFormat = (format || '').toLowerCase() === 'jpg' ? 'jpeg' : (format || '').toLowerCase();
+  const normalizedTarget = (opts.to || '').toLowerCase() === 'jpg' ? 'jpeg' : (opts.to || '').toLowerCase();
+  const isSameFormat = (normalizedFormat === normalizedTarget);
+  const sameFormatAction = opts.sameFormat || policy.formats?.sameFormat || 'passthrough';
+
+  if (isSameFormat && sameFormatAction === 'reject') {
+    throw new ZapwebpError({
+      code: 'E_SAME_FORMAT_REJECTED',
+      message: `Input format (${format}) matches target lock format (${opts.to}) and same-format uploads are rejected by policy.`,
+      fix: 'Change sameFormat policy to "passthrough" or "reencode", or provide a different input format.',
+      detectedFormat: format,
+      targetFormat: opts.to,
+      suggestedFix: {
+        sameFormat: 'passthrough',
+        reason: 'Allow same-format pass-through without conversion.',
+      },
+    });
+  }
+
+  const limitMaxOutput = policy.limits?.maxOutputBytes || policy.limits?.targetOutputBytes;
+  const limitMinOutput = policy.limits?.minOutputBytes;
+  const sizeMode = policy.size?.mode || opts.sizeMode || 'compress';
+  const warnings = [];
+
+  // Fast-Path: Can we pass through without decode & re-encode?
+  const canPassthrough = isSameFormat &&
+    sameFormatAction === 'passthrough' &&
+    !opts.width &&
+    !opts.height &&
+    (!opts.transforms || opts.transforms.length === 0) &&
+    (!opts.background || normalizedTarget !== 'jpeg') &&
+    (!limitMaxOutput || data.length <= limitMaxOutput) &&
+    (!limitMinOutput || data.length >= limitMinOutput);
+
+  if (canPassthrough) {
+    let meta;
+    if (format === 'svg') {
+      const svg = validateSvg(data);
+      const dims = svgDimensions(svg);
+      meta = { width: dims.width, height: dims.height, hasAlpha: true };
+    } else {
+      meta = await getSharp()(data, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
+    }
+    const hasAlpha = Boolean(meta.hasAlpha);
+    const alphaPreserved = normalizedTarget !== 'jpeg' && hasAlpha;
+    const backgroundStatus = hasAlpha ? 'preserved_alpha' : 'preserved_opaque';
+    const transparency = hasAlpha ? 'preserved' : 'preserved_opaque';
+
+    return {
+      data,
+      format: normalizedTarget,
+      width: meta.width,
+      height: meta.height,
+      size: data.length,
+      alphaPreserved,
+      alphaVerified: alphaPreserved,
+      backgroundStatus,
+      transparency,
+      flattenColor: opts.background || undefined,
+      clean: Boolean(policy.advanced.stripMetadata),
+      qualityReducedBy: 0,
+      maxOutputHit: false,
+      quality: 100,
+      passedThrough: true,
+      ingestion: {
+        stage: 'passthrough',
+        action: 'same_format_passthrough',
+        detectedFormat: format,
+        targetFormat: opts.to,
+        sizeMode,
+        inputBytes: data.length,
+        outputBytes: data.length,
+        iterations: 0,
+        reason: 'Input matches target format and satisfies all size bounds with zero generational loss.',
+      },
+      warnings: [],
+      removedMetadata: [],
+      targetLockEnforced: Boolean(opts.lockTarget && !opts.overrideLock),
+      targetLockBypassed: Boolean(opts.lockTarget && opts.overrideLock),
+      sourceStatus: opts.keepOriginal ? 'kept' : 'deleted',
+      lifecycle: {
+        keepOriginal: opts.keepOriginal,
+        cleanupDelay: opts.cleanupDelay,
+        sourceStatus: opts.keepOriginal ? 'kept' : 'deleted',
+        undoEligible: !opts.keepOriginal,
+      },
+    };
+  }
 
   let source = data;
   let sourceHasAlpha;
@@ -694,35 +788,101 @@ async function convertImage(input, options = {}) {
 
   let qualityReducedBy = 0;
   let maxOutputHit = false;
-  const limitMaxOutput = policy.limits?.maxOutputBytes || policy.limits?.targetOutputBytes;
+  let compressionIterations = 0;
 
   if (limitMaxOutput && output.length > limitMaxOutput) {
-    let currentQ = effectiveQuality;
-    while (output.length > limitMaxOutput && currentQ > 10) {
-      currentQ -= 5;
-      const res = await encodeWithQuality(currentQ, false);
-      output = res.data;
-      info = res.info;
-    }
-
-    if (output.length > limitMaxOutput) {
+    if (sizeMode === 'strict') {
       throw new ZapwebpError({
         code: 'E_OUTPUT_TOO_LARGE',
-        message: `Cannot fit output in ${limitMaxOutput} bytes (reached ${output.length} bytes at quality ${currentQ}).`,
-        fix: 'Increase maxOutputBytes, or downscale the image.',
+        message: `Output size (${output.length} bytes) exceeds maximum limit (${limitMaxOutput} bytes) in strict mode.`,
+        fix: 'Increase maxOutputBytes, downscale image, or switch to compress/flexible sizeMode.',
         actualBytes: output.length,
         maxBytes: limitMaxOutput,
-        suggestedFix: {
-          quality: 10,
-          reason: 'Image exceeds maxOutputBytes even after reducing quality to 10.',
-        },
       });
     }
 
-    qualityReducedBy = effectiveQuality - currentQ;
-    effectiveQuality = currentQ;
-    effectiveLossless = false;
-    maxOutputHit = true;
+    // Binary search over quality [10, effectiveQuality]
+    let low = 10;
+    let high = effectiveQuality;
+    let bestResult = null;
+    const maxIterations = 5;
+
+    while (low <= high && compressionIterations < maxIterations) {
+      compressionIterations++;
+      const mid = Math.floor((low + high) / 2);
+      const res = await encodeWithQuality(mid, false);
+      if (res.data.length <= limitMaxOutput) {
+        bestResult = { ...res, quality: mid };
+        low = mid + 1; // Try higher quality
+      } else {
+        high = mid - 1; // Needs stronger compression
+      }
+    }
+
+    if (bestResult) {
+      qualityReducedBy = effectiveQuality - bestResult.quality;
+      effectiveQuality = bestResult.quality;
+      effectiveLossless = false;
+      maxOutputHit = true;
+      output = bestResult.data;
+      info = bestResult.info;
+    } else {
+      compressionIterations++;
+      const minRes = await encodeWithQuality(10, false);
+      if (minRes.data.length <= limitMaxOutput) {
+        qualityReducedBy = effectiveQuality - 10;
+        effectiveQuality = 10;
+        effectiveLossless = false;
+        maxOutputHit = true;
+        output = minRes.data;
+        info = minRes.info;
+      } else {
+        if (sizeMode === 'flexible') {
+          warnings.push(`Output size (${minRes.data.length} bytes) exceeds target limit (${limitMaxOutput} bytes) despite compression down to quality 10.`);
+          qualityReducedBy = effectiveQuality - 10;
+          effectiveQuality = 10;
+          effectiveLossless = false;
+          maxOutputHit = true;
+          output = minRes.data;
+          info = minRes.info;
+        } else {
+          throw new ZapwebpError({
+            code: 'E_OUTPUT_TOO_LARGE',
+            message: `Cannot fit output in ${limitMaxOutput} bytes (reached ${minRes.data.length} bytes at quality 10).`,
+            fix: 'Increase maxOutputBytes, downscale the image, or switch to flexible sizeMode.',
+            actualBytes: minRes.data.length,
+            maxBytes: limitMaxOutput,
+            suggestedFix: {
+              quality: 10,
+              reason: 'Image exceeds maxOutputBytes even after reducing quality to 10.',
+            },
+          });
+        }
+      }
+    }
+  }
+
+  // Min output size validation
+  if (limitMinOutput && output.length < limitMinOutput) {
+    if (sizeMode === 'strict') {
+      throw new ZapwebpError({
+        code: 'E_OUTPUT_TOO_SMALL',
+        message: `Output size (${output.length} bytes) is below minimum required (${limitMinOutput} bytes) in strict mode.`,
+        fix: 'Increase quality or adjust minOutputBytes.',
+        actualBytes: output.length,
+        minBytes: limitMinOutput,
+      });
+    } else if (sizeMode === 'compress') {
+      throw new ZapwebpError({
+        code: 'E_OUTPUT_BELOW_RANGE',
+        message: `Output size (${output.length} bytes) is below configured minimum (${limitMinOutput} bytes).`,
+        fix: 'Adjust minOutputBytes or switch to flexible sizeMode.',
+        actualBytes: output.length,
+        minBytes: limitMinOutput,
+      });
+    } else {
+      warnings.push(`Output size (${output.length} bytes) is below minimum threshold (${limitMinOutput} bytes).`);
+    }
   }
 
   const inputMetadata = detectMetadata(data);
@@ -759,6 +919,21 @@ async function convertImage(input, options = {}) {
     transparency,
     flattenColor: opts.background || undefined,
     clean: opts.clean,
+    qualityReducedBy,
+    maxOutputHit,
+    quality: effectiveQuality,
+    warnings,
+    ingestion: {
+      stage: 'converted',
+      action: isSameFormat ? 'same_format_reencoded' : 'transcoded',
+      detectedFormat: format,
+      targetFormat: opts.to,
+      sizeMode,
+      inputBytes: data.length,
+      outputBytes: output.length,
+      iterations: compressionIterations,
+      reason: isSameFormat ? 'Same format re-encoded per policy.' : 'Image successfully transcoded to target format.',
+    },
     removedMetadata: inputMetadata.summary,
     certificate,
     transforms: transformReports.length > 0 ? transformReports : undefined,
@@ -780,7 +955,9 @@ async function convertImage(input, options = {}) {
         reason: qualityReducedBy > 0 ? 'to fit maxOutputBytes' : 'as specified',
       },
       limits: {
+        minInputBytes: policy.limits.minInputBytes,
         maxInputBytes: policy.limits.maxInputBytes,
+        minOutputBytes: limitMinOutput,
         maxOutputBytes: limitMaxOutput,
         maxOutputHit,
       },
@@ -788,6 +965,9 @@ async function convertImage(input, options = {}) {
         input: format,
         output: opts.to,
         accepted: true,
+      },
+      size: {
+        mode: sizeMode,
       },
     },
   };
@@ -814,6 +994,9 @@ async function convert(input, options = {}) {
   out.data = result.data;
   out.policy = result.policy;
   out.lifecycle = result.lifecycle;
+  out.ingestion = result.ingestion;
+  out.warnings = result.warnings;
+  out.quality = result.quality;
   return out;
 }
 
