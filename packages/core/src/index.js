@@ -19,6 +19,8 @@ const {
 } = require('./policy');
 const { listTools, getAgentManifest } = require('./tools');
 const { createMockSvg, createMockImage } = require('./testing');
+const { computeCacheKey, ConversionCache, defaultCache } = require('./cache');
+const { parallelMap, ConversionPool, defaultPool } = require('./parallel');
 
 let _sharpInstance = null;
 function getSharp() {
@@ -539,6 +541,21 @@ async function convertImage(input, options = {}) {
   }
 
   validateImageBytes(data);
+
+  const useCache = Boolean(opts.cache);
+  const cacheKey = useCache ? computeCacheKey(data, opts) : null;
+  if (useCache && cacheKey) {
+    const cached = defaultCache.get(cacheKey);
+    if (cached) return cached;
+  }
+
+  const finish = (result) => {
+    if (useCache && cacheKey) {
+      defaultCache.set(cacheKey, result);
+    }
+    return result;
+  };
+
   let format;
   try {
     format = detectFormat(data);
@@ -626,7 +643,7 @@ async function convertImage(input, options = {}) {
     const backgroundStatus = hasAlpha ? 'preserved_alpha' : 'preserved_opaque';
     const transparency = hasAlpha ? 'preserved' : 'preserved_opaque';
 
-    return {
+    return finish({
       data,
       format: normalizedTarget,
       width: meta.width,
@@ -664,7 +681,7 @@ async function convertImage(input, options = {}) {
         sourceStatus: opts.keepOriginal ? 'kept' : 'deleted',
         undoEligible: !opts.keepOriginal,
       },
-    };
+    });
   }
 
   let source = data;
@@ -909,7 +926,7 @@ async function convertImage(input, options = {}) {
     ? 'flattened'
     : (sourceHasAlpha ? 'preserved' : 'preserved_opaque');
 
-  return {
+  return finish({
     data: output,
     format: opts.to,
     width: info.width,
@@ -972,7 +989,7 @@ async function convertImage(input, options = {}) {
         mode: sizeMode,
       },
     },
-  };
+  });
 }
 
 /**
@@ -1213,6 +1230,14 @@ module.exports = {
     createMockSvg,
     createMockImage,
   },
+
+  // Performance Optimization Surfaces (Masterplan)
+  computeCacheKey,
+  ConversionCache,
+  defaultCache,
+  parallelMap,
+  ConversionPool,
+  defaultPool,
 
   // Backwards-Compatible Surfaces
   convertImage,

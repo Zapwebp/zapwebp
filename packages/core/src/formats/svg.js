@@ -36,6 +36,29 @@ function getSvgDimensions(svg) {
   return { width, height };
 }
 
+let _cachedResvg = null;
+function getResvg() {
+  if (_cachedResvg) return _cachedResvg;
+  try {
+    const mod = require('@resvg/resvg-js');
+    _cachedResvg = mod.Resvg || mod;
+    return _cachedResvg;
+  } catch (err) {
+    throw new Error('Native resvg engine is not available: ' + err.message);
+  }
+}
+
+let _cachedSharp = null;
+function getSharp() {
+  if (_cachedSharp) return _cachedSharp;
+  try {
+    _cachedSharp = require('sharp');
+    return _cachedSharp;
+  } catch (err) {
+    throw new Error('Native sharp engine is not available: ' + err.message);
+  }
+}
+
 /** @type {import('./registry').FormatHandler} */
 const svgHandler = {
   name: 'svg',
@@ -51,16 +74,25 @@ const svgHandler = {
     return /<svg(?:\s|\/?>)/i.test(sample) || /^<\?xml[\s\S]*?<svg(?:\s|\/?>)/i.test(sample);
   },
 
-  async decode(bytes) {
-    const { Resvg } = require('@resvg/resvg-js');
-    const sharp = require('sharp');
+  async decode(bytes, options = {}) {
+    const Resvg = getResvg();
+    const sharp = getSharp();
     const svg = validateSvgString(bytes);
     const dims = getSvgDimensions(svg);
-    const width = dims.width || 2048;
-    const height = dims.height || 2048;
+
+    // Target-width direct rasterization (Optimization 3)
+    let fitTo = { mode: 'original' };
+    if (options.width && options.height) {
+      fitTo = { mode: 'width', value: options.width };
+    } else if (options.width) {
+      fitTo = { mode: 'width', value: options.width };
+    } else if (options.height) {
+      fitTo = { mode: 'height', value: options.height };
+    }
+
     const resvg = new Resvg(svg, {
-      fitTo: { mode: 'original' },
-      background: 'rgba(0, 0, 0, 0)',
+      fitTo,
+      background: options.background || 'rgba(0, 0, 0, 0)',
     });
     const pngBuffer = resvg.render().asPng();
     const { data: raw, info } = await sharp(pngBuffer, { limitInputPixels: 4096 * 4096 })

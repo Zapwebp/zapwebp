@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-11-14T08:07:46.654Z",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.15.0"
+  },
+  "benchmarks": [
+    {
+      "name": "Cold start (first conversion)",
+      "timeMs": 2432.96,
+      "targetMs": 250,
+      "passed": false
+    },
+    {
+      "name": "Warm start (subsequent)",
+      "timeMs": 676.74,
+      "targetMs": 50,
+      "passed": false,
+      "iterations": 20
+    },
+    {
+      "name": "Single SVG → WebP (512×512)",
+      "timeMs": 267.25,
+      "targetMs": 25,
+      "passed": false
+    },
+    {
+      "name": "Single PNG → WebP (1080p)",
+      "timeMs": 112.9,
+      "targetMs": 80,
+      "passed": true
+    },
+    {
+      "name": "Batch of 100 SVGs",
+      "timeMs": 39625.42,
+      "targetMs": 2500,
+      "passed": false,
+      "count": 100
+    },
+    {
+      "name": "Memory (per conversion peak)",
+      "memoryMb": 0.03,
+      "targetMb": 80,
+      "passed": true
+    }
+  ]
+}

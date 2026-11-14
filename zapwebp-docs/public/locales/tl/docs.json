@@ -60,5 +60,9 @@
   "title.Security": "Kaligtasan sa Seguridad (Security)",
   "title.Code of Conduct": "Alituntunin ng Pagkilos (Code of Conduct)",
   "title.Contributing": "Pag-ambag (Contributing)",
-  "title.Translators": "Mga Tagasalin (Translators)"
+  "title.Translators": "Mga Tagasalin (Translators)",
+  "title.Common FAQs": "Mga Karaniwang Tanong (FAQ)",
+  "title.Stability": "Katatagan (Stability)",
+  "title.Performance": "Bilis at Performance",
+  "title.Core Freeze": "Pag-freeze ng Core (Hardening)"
 }

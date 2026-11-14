@@ -60,5 +60,9 @@
   "title.Security": "Security",
   "title.Code of Conduct": "Code of Conduct",
   "title.Contributing": "Contributing",
-  "title.Translators": "Translators"
+  "title.Translators": "Translators",
+  "title.Common FAQs": "Common FAQs",
+  "title.Stability": "Stability",
+  "title.Performance": "Performance",
+  "title.Core Freeze": "Core Freeze"
 }

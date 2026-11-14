@@ -76,6 +76,9 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Contributing': 'Contributing',
     'title.Translators': 'Translators',
     'title.Common FAQs': 'Common FAQs',
+    'title.Stability': 'Stability',
+    'title.Performance': 'Performance',
+    'title.Core Freeze': 'Core Freeze',
   },
   tl: {
     'header.search_placeholder': 'Maghanap sa dokumentasyon...',
@@ -141,6 +144,9 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Contributing': 'Pag-ambag (Contributing)',
     'title.Translators': 'Mga Tagasalin (Translators)',
     'title.Common FAQs': 'Mga Karaniwang Tanong (FAQ)',
+    'title.Stability': 'Katatagan (Stability)',
+    'title.Performance': 'Bilis at Performance',
+    'title.Core Freeze': 'Pag-freeze ng Core (Hardening)',
   }
 };
 
@@ -190,8 +196,14 @@ export function onLocaleChange(fn: (locale: string) => void): () => void {
   };
 }
 
-export function t(key: string, vars?: Record<string, string | number>): string {
-  let str = catalog[activeLocale]?.[key] ?? catalog.en[key] ?? key;
+export function t(key: string, vars?: Record<string, string | number>, fallback?: string): string {
+  let str = catalog[activeLocale]?.[key] ?? catalog.en[key];
+  if (str === undefined) {
+    if (fallback !== undefined) return fallback;
+    if (key.startsWith('title.')) return key.slice(6);
+    if (key.startsWith('cat.')) return key.slice(4);
+    return key;
+  }
   if (vars) {
     for (const [k, v] of Object.entries(vars)) {
       str = str.replace(new RegExp(`{{\\s*${k}\\s*}}`, 'g'), String(v));

@@ -12,6 +12,33 @@ export function getAgentManifest(): Record<string, any>;
 export function createMockSvg(options?: { width?: number; height?: number; transparent?: boolean; fill?: string; withMetadata?: boolean }): Buffer;
 export function createMockImage(options?: { format?: 'svg' | 'png' | 'webp' | 'jpeg' | 'avif'; width?: number; height?: number; transparent?: boolean; withMetadata?: boolean }): Promise<Buffer>;
 
+export interface CacheStats {
+  size: number;
+  totalBytes: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+}
+
+export class ConversionCache {
+  constructor(options?: { maxEntries?: number; maxBytes?: number });
+  get(key: string): any;
+  set(key: string, result: any): void;
+  clear(): void;
+  stats(): CacheStats;
+}
+
+export const defaultCache: ConversionCache;
+export function computeCacheKey(input: Buffer | Uint8Array, options?: object, engineVersion?: string): string;
+
+export class ConversionPool {
+  constructor(options?: { concurrency?: number });
+  processBatch(inputs: any[], options: any, convertFn: Function): Promise<any[]>;
+}
+
+export const defaultPool: ConversionPool;
+export function parallelMap<T, R>(items: T[], concurrency: number, workerFn: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
 export const testing: {
   createMockSvg: typeof createMockSvg;
   createMockImage: typeof createMockImage;

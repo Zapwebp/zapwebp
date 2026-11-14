@@ -41,6 +41,10 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **Documentation i18n & Sitemap Title Keys (`zapwebp-docs`, `locales/`)**:
+  - Fixed untranslated `title.Stability`, `title.Performance`, and `title.Core Freeze` keys displaying raw key names in footer sitemaps, breadcrumbs, pagination, and sidebars across documentation pages.
+  - Added localized strings for `title.Stability` ("Katatagan (Stability)"), `title.Performance` ("Bilis at Performance"), `title.Core Freeze` ("Pag-freeze ng Core (Hardening)"), and `title.Common FAQs` across English and Tagalog catalogs.
+  - Hardened `t()` translation helper to safely fall back to route titles and clean key prefixes (`key.slice(6)`) if any key is missing, preventing raw template strings from leaking to UI surfaces.
 - **Documentation Route Aliases**: Added explicit route resolution for `/sdk/plugin`, `/sdk/core`, and `/sdk/cli` across `zapwebp-docs/src/routes.ts`.
 
 ### Fixed

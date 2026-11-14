@@ -491,7 +491,7 @@ export function buildComprehensiveFooter(fileKey?: string): HTMLElement {
           (r) => `
         <li>
           <a href="${r.path}" class="docs-footer-sitemap-link">
-            <span>${t(`title.${r.title}`) || r.title}</span>
+            <span>${t(`title.${r.title}`, undefined, r.title)}</span>
             ${r.badge ? `<span class="docs-footer-badge">${escapeHtml(r.badge)}</span>` : ''}
           </a>
         </li>
