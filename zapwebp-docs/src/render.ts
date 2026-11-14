@@ -473,7 +473,7 @@ function appendPagination(mount: HTMLElement, currentRoute: DocRoute) {
 /**
  * Appends comprehensive documentation sitemap and open-source governance footer
  */
-function appendArticleFooter(mount: HTMLElement, fileKey: string) {
+export function buildComprehensiveFooter(fileKey?: string): HTMLElement {
   const categories: Array<'Core' | 'Plugins' | 'Developers' | 'Platform'> = ['Core', 'Plugins', 'Developers', 'Platform'];
 
   const categoryHeaders: Record<string, string> = {
@@ -513,6 +513,7 @@ function appendArticleFooter(mount: HTMLElement, fileKey: string) {
   const footer = document.createElement('footer');
   footer.className = 'docs-comprehensive-footer';
   footer.innerHTML = `
+    ${fileKey ? `
     <!-- Helpful Article Meta Bar -->
     <div class="docs-article-meta-row">
       <div class="meta-left">
@@ -525,7 +526,7 @@ function appendArticleFooter(mount: HTMLElement, fileKey: string) {
           <span>${t('footer.github_issues')}</span>
         </a>
         <a href="https://github.com/Zapwebp/zapwebp/tree/main/locales" target="_blank" rel="noopener noreferrer" class="meta-link" title="Help translate Zapwebp docs">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>
           <span>${t('footer.contribute_trans')}</span>
         </a>
       </div>
@@ -536,6 +537,7 @@ function appendArticleFooter(mount: HTMLElement, fileKey: string) {
         </a>
       </div>
     </div>
+    ` : ''}
 
     <!-- Full 4-Column Documentation Sitemap Grid -->
     <div class="docs-footer-sitemap-section">
@@ -579,7 +581,11 @@ function appendArticleFooter(mount: HTMLElement, fileKey: string) {
     </div>
   `;
 
-  mount.appendChild(footer);
+  return footer;
+}
+
+function appendArticleFooter(mount: HTMLElement, fileKey: string) {
+  mount.appendChild(buildComprehensiveFooter(fileKey));
 }
 
 /**

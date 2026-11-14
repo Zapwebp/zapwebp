@@ -74,6 +74,13 @@ async function deployOne(item) {
       execSync(`git remote add origin https://github.com/Zapwebp/${item.repo}.git`, { cwd: tmp, stdio: ['ignore', 'pipe', 'pipe'] });
     }
 
+    // Clean out existing working files in clone except .git
+    const existingEntries = fs.readdirSync(tmp);
+    for (const entry of existingEntries) {
+      if (entry === '.git') continue;
+      fs.rmSync(path.join(tmp, entry), { recursive: true, force: true });
+    }
+
     // Copy all files from source directory
     copyRecursive(item.dir, tmp, item.dir === 'apps/vscode');
 

@@ -354,7 +354,12 @@ ROUTE_MAP['/'] = DOC_ROUTES[0];
 
 // Sitemap canonical URL aliases (Ecosystem & Tools, Guides & Formats, Developer SDKs, Open Platform)
 if (ROUTE_MAP['/plugins/vscode']) ROUTE_MAP['/vscode'] = ROUTE_MAP['/plugins/vscode'];
-if (ROUTE_MAP['/docs']) ROUTE_MAP['/getting-started'] = ROUTE_MAP['/docs'];
+if (ROUTE_MAP['/docs']) {
+  ROUTE_MAP['/getting-started'] = ROUTE_MAP['/docs'];
+  ROUTE_MAP['/quickstart'] = ROUTE_MAP['/docs'];
+  ROUTE_MAP['/overview'] = ROUTE_MAP['/docs'];
+  ROUTE_MAP['/introduction'] = ROUTE_MAP['/docs'];
+}
 if (ROUTE_MAP['/safety']) ROUTE_MAP['/transparency'] = ROUTE_MAP['/safety'];
 if (ROUTE_MAP['/clean']) ROUTE_MAP['/clean-mode'] = ROUTE_MAP['/clean'];
 if (ROUTE_MAP['/cli']) ROUTE_MAP['/multipliers'] = ROUTE_MAP['/cli'];
@@ -362,7 +367,27 @@ if (ROUTE_MAP['/sdk/core']) ROUTE_MAP['/sdk'] = ROUTE_MAP['/sdk/core'];
 if (ROUTE_MAP['/plugins/vite']) ROUTE_MAP['/vite'] = ROUTE_MAP['/plugins/vite'];
 if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
 if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];
-if (ROUTE_MAP['/plugins/github-action']) ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
+if (ROUTE_MAP['/plugins/github-action']) {
+  ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
+  ROUTE_MAP['/actions'] = ROUTE_MAP['/plugins/github-action'];
+}
+if (ROUTE_MAP['/plugins/crop']) ROUTE_MAP['/crop'] = ROUTE_MAP['/plugins/crop'];
+if (ROUTE_MAP['/plugins/lens']) ROUTE_MAP['/lens'] = ROUTE_MAP['/plugins/lens'];
+if (ROUTE_MAP['/plugins/laravel']) ROUTE_MAP['/laravel'] = ROUTE_MAP['/plugins/laravel'];
+if (ROUTE_MAP['/lock-target']) {
+  ROUTE_MAP['/target-lock'] = ROUTE_MAP['/lock-target'];
+  ROUTE_MAP['/lock'] = ROUTE_MAP['/lock-target'];
+}
+if (ROUTE_MAP['/mcp']) {
+  ROUTE_MAP['/mcp-agent'] = ROUTE_MAP['/mcp'];
+  ROUTE_MAP['/ai'] = ROUTE_MAP['/mcp'];
+  ROUTE_MAP['/ai-agent'] = ROUTE_MAP['/mcp'];
+}
 if (ROUTE_MAP['/faq']) ROUTE_MAP['/faqs'] = ROUTE_MAP['/faq'];
 if (ROUTE_MAP['/freeze']) ROUTE_MAP['/core/freeze'] = ROUTE_MAP['/freeze'];
+if (ROUTE_MAP['/privacy']) ROUTE_MAP['/privacy-policy'] = ROUTE_MAP['/privacy'];
+if (ROUTE_MAP['/terms']) {
+  ROUTE_MAP['/terms-of-service'] = ROUTE_MAP['/terms'];
+  ROUTE_MAP['/tos'] = ROUTE_MAP['/terms'];
+}
 

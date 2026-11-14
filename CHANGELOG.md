@@ -2,6 +2,17 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.16.1] - 2026-11-14
+
+### Fixed
+
+- **Documentation SPA Routing & 404 Resolution (`zapwebp-docs`, `public/`)**:
+  - Eliminated stale static `404.html` from satellite repository deployments by updating `scripts/deploy-repos.js` to prune deleted source files before mirroring into distribution repositories.
+  - Replaced abrupt static 404 intercepts with a high-craft in-SPA 404 error boundary card displaying brand lockup, exact requested path, and 1-click navigation to Overview, Web Converter, and key documentation sections.
+  - Added comprehensive route aliases in `zapwebp-docs/src/routes.ts` (`/vscode`, `/crop`, `/lens`, `/laravel`, `/actions`, `/quickstart`, `/target-lock`, `/mcp-agent`, `/ai`, `/privacy-policy`, etc.) resolving all shorthand documentation URLs without 404 errors.
+  - Attached full 4-column documentation sitemap directory and trust bar directly to 404 and error boundaries in `zapwebp-docs/src/router.ts`.
+  - Corrected all outbound documentation and extension links in `public/index.html` footer to canonical destinations (`/plugins/vscode`, `/docs`, `/safety`, `/clean`, `/cli`, `/sdk/core`, `/plugins/vite`, `/plugins/next`, `/plugins/storage`, `/plugins/github-action`).
+
 ## [2.16.0] - 2026-11-14
 
 ### Added
