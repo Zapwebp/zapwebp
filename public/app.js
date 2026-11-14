@@ -3433,3 +3433,78 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && window.loca
       .catch(() => {});
   });
 }
+
+// ==========================================================================
+// 14. WebMCP (Web Model Context Protocol) - In-Browser AI Agent Tools
+// ==========================================================================
+if (typeof navigator !== 'undefined' && 'modelContext' in navigator && typeof navigator.modelContext.registerTool === 'function') {
+  try {
+    navigator.modelContext.registerTool({
+      name: 'get_converter_state',
+      description: 'Get current in-browser image converter status, selected target format, quality, and staged file counts.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: async () => {
+        const formatBtn = document.querySelector('.fmt-btn.active');
+        const qualitySlider = document.getElementById('quality');
+        const queueItems = document.querySelectorAll('.queue-item');
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              targetFormat: formatBtn ? formatBtn.dataset.format : 'webp',
+              quality: qualitySlider ? Number(qualitySlider.value) : 85,
+              stagedFilesCount: queueItems.length,
+              memoryExecution: true,
+              alphaSafe: true
+            })
+          }]
+        };
+      }
+    });
+
+    navigator.modelContext.registerTool({
+      name: 'set_target_format',
+      description: 'Set the target conversion format in the web application (webp, avif, png, jpeg, or svg).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          format: { type: 'string', enum: ['webp', 'avif', 'png', 'jpeg', 'svg'], description: 'Desired target image format' }
+        },
+        required: ['format']
+      },
+      execute: async ({ format }) => {
+        const btn = document.querySelector(`.fmt-btn[data-format="${format}"]`);
+        if (btn) {
+          btn.click();
+          return { content: [{ type: 'text', text: JSON.stringify({ success: true, activeFormat: format }) }] };
+        }
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: 'Format button not found' }) }] };
+      }
+    });
+
+    navigator.modelContext.registerTool({
+      name: 'set_quality',
+      description: 'Set conversion compression quality (1 to 100).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          quality: { type: 'number', minimum: 1, maximum: 100, description: 'Compression quality percentage' }
+        },
+        required: ['quality']
+      },
+      execute: async ({ quality }) => {
+        const slider = document.getElementById('quality');
+        if (slider) {
+          slider.value = String(quality);
+          slider.dispatchEvent(new Event('input', { bubbles: true }));
+          slider.dispatchEvent(new Event('change', { bubbles: true }));
+          return { content: [{ type: 'text', text: JSON.stringify({ success: true, quality }) }] };
+        }
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: 'Quality slider not found' }) }] };
+      }
+    });
+  } catch (_) {
+    // Non-blocking progressive enhancement
+  }
+}
+

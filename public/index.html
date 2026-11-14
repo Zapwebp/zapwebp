@@ -47,6 +47,10 @@
     <link rel="preconnect" href="https://zapwebp-docs.vercel.app" />
     <link rel="dns-prefetch" href="https://zapwebp-docs.vercel.app" />
 
+    <!-- Agentic Resource Discovery (ARD) Manifest -->
+    <link rel="service-desc" type="application/json" href="/ai-catalog.json" />
+    <link rel="alternate" type="application/json" href="/.well-known/ai-catalog.json" title="Agentic Resource Discovery Catalog" />
+
     <!-- Open Graph (Facebook / LinkedIn) -->
     <meta property="og:site_name" content="Zapwebp" />
     <meta
@@ -397,13 +401,14 @@
         </div>
 
         <!-- The Interactive Converter -->
-        <div class="converter-card" id="converter-container">
+        <div class="converter-card" id="converter-container" toolname="convert_image" tooldescription="Convert images into WebP, AVIF, PNG, or JPEG with guaranteed transparency preservation in local browser memory">
           <input
             id="file-input"
             type="file"
             accept=".svg,.png,.jpg,.jpeg,.webp,.avif,.gif,.tif,.tiff,image/*"
             multiple
             hidden
+            toolparamdescription="Image files to convert (SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF)"
           />
 
           <!-- Dropzone Workspace -->
@@ -413,6 +418,7 @@
             tabindex="0"
             role="button"
             aria-label="Drop images here to convert"
+            toolparamdescription="Dropzone area to drop image files"
           >
             <!-- Idle State -->
             <div class="idle-glyph" id="idle-glyph">

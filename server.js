@@ -140,6 +140,20 @@ app.get('/feed.xml', (_req, res) => {
 
 app.use('/content', express.static(contentDir));
 app.use('/locales', express.static(path.join(__dirname, 'locales')));
+
+app.get(['/ai-catalog.json', '/.well-known/ai-catalog.json'], (_req, res) => {
+  const catalogPath = path.join(__dirname, 'public', 'ai-catalog.json');
+  if (fs.existsSync(catalogPath)) {
+    res.set({
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    });
+    return res.sendFile(catalogPath);
+  }
+  res.status(404).json({ error: 'E_NOT_FOUND', message: 'ai-catalog.json not found' });
+});
+
 app.use('/tokens.css', (_req, res) => {
   res.set('Content-Type', 'text/css');
   res.sendFile(path.join(__dirname, 'public', 'tokens.css'));

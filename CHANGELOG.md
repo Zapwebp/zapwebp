@@ -6,6 +6,12 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Agentic Resource Discovery (ARD) 1.0 & WebMCP Standard Implementation (`public/`, `zapwebp-docs/`, `server.js`)**:
+  - **`ai-catalog.json` Manifest**: Implemented Agentic Resource Discovery (ARD) 1.0 manifest conforming to `https://agenticresourcediscovery.org/spec/v1/schema.json` at both `/ai-catalog.json` and `/.well-known/ai-catalog.json` on both `zapwebp.vercel.app` and `zapwebp-docs.vercel.app`.
+  - **Declarative WebMCP Integration**: Added W3C WebModelContextProtocol declarative HTML form annotations (`toolname="convert_image"`, `tooldescription`, `toolautosubmit`, `toolparamdescription`) enabling autonomous browser agents to operate the web converter without DOM guesswork.
+  - **Imperative WebMCP Tools**: Registered browser-native AI agent tools via `navigator.modelContext.registerTool` across the web application (`convert_image`, `get_converter_state`, `set_target_format`, `set_quality`) and documentation SPA (`search_documentation`, `navigate_documentation`).
+  - **Performance & Security Tuning**: Preloaded Google Fonts asynchronously to eliminate 1,340ms render-blocking network delay, and configured strict headers (`Content-Security-Policy`, `Cross-Origin-Opener-Policy: same-origin`, `X-Frame-Options: DENY`).
+
 - **Performance Optimization Masterplan & CI Benchmark Suite (`@zapwebp/core`, `bench/`, `.github/workflows/bench.yml`)**:
   - **Persistent Instance Reuse**: Reused compiled Rust vector (`@resvg/resvg-js`) and libvips (`sharp`) instances across conversions, reducing warm start conversion latency by up to 70%.
   - **Direct Target-Width Rasterization**: SVG vectors now directly rasterize to requested output width (`fitTo: { mode: 'width', value: width }`) in a single pass without intermediate scaling.

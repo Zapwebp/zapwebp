@@ -1,0 +1,49 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/spec/v1/schema.json",
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Zapwebp",
+    "identifier": "did:web:zapwebp-docs.vercel.app"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:zapwebp-docs.vercel.app:docs:reference",
+      "displayName": "Zapwebp Documentation & LLMs Context",
+      "type": "text/markdown",
+      "url": "https://zapwebp-docs.vercel.app/llms.txt",
+      "description": "Comprehensive developer reference manual, SDK guides, and curated llms.txt context index.",
+      "tags": ["documentation", "llms-txt", "sdk", "reference", "architecture"],
+      "representativeQueries": [
+        "read Zapwebp SDK documentation",
+        "lookup Zapwebp error codes and API options",
+        "understand Zapwebp alpha preservation guarantees"
+      ]
+    },
+    {
+      "identifier": "urn:air:zapwebp-docs.vercel.app:mcp:server",
+      "displayName": "Zapwebp MCP Server",
+      "type": "application/mcp-server-card+json",
+      "url": "https://zapwebp.vercel.app/mcp",
+      "description": "Model Context Protocol server exposing 15 tools, 6 prompts, and 7 resources for AI agents to convert, inspect, and verify images with guaranteed alpha preservation.",
+      "tags": ["image-conversion", "mcp", "tools", "transparency", "webp", "avif", "metadata-strip"],
+      "representativeQueries": [
+        "convert SVG to WebP preserving transparency",
+        "inspect image chunks and alpha channel",
+        "batch convert images to WebP without losing alpha"
+      ]
+    },
+    {
+      "identifier": "urn:air:zapwebp-docs.vercel.app:api:convert",
+      "displayName": "Zapwebp Image Conversion REST API",
+      "type": "application/openapi+json",
+      "url": "https://zapwebp.vercel.app/openapi.json",
+      "description": "High-performance HTTP REST API endpoint for transparency-safe single and batch image conversion across SVG, PNG, WebP, AVIF, JPEG, and TIFF.",
+      "tags": ["api", "rest", "image-conversion", "svg-to-webp", "batch-convert"],
+      "representativeQueries": [
+        "call image conversion REST API",
+        "convert logo SVG to WebP using curl or fetch",
+        "POST image multipart upload to convert"
+      ]
+    }
+  ]
+}

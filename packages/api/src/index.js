@@ -68,24 +68,35 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     return targets;
   }
 
-  router.get('/', (_req, res) => res.json({
-    ok: true,
-    service: 'zapwebp',
-    version: '1.1.0',
-    endpoints: {
-      health: 'GET /api/v1/health',
-      convert: 'POST /api/v1/convert',
-      inspect: 'POST /api/v1/inspect',
-      batch: 'POST /api/v1/batch',
-    },
-    docs: 'https://zapwebp-docs.vercel.app',
-  }));
-  router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
+  function isBrowserRequest(req) {
+    const accept = String(req?.headers?.accept || '');
+    return accept.includes('text/html');
+  }
 
   const docsUrl = 'https://zapwebp-docs.vercel.app/api';
 
+  router.get('/', (req, res) => {
+    if (isBrowserRequest(req)) {
+      return res.redirect(303, docsUrl);
+    }
+    res.json({
+      ok: true,
+      service: 'zapwebp',
+      version: '1.1.0',
+      endpoints: {
+        health: 'GET /api/v1/health',
+        convert: 'POST /api/v1/convert',
+        inspect: 'POST /api/v1/inspect',
+        batch: 'POST /api/v1/batch',
+      },
+      docs: docsUrl,
+    });
+  });
+
+  router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
+
   router.get('/convert', (req, res) => {
-    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+    if (isBrowserRequest(req)) {
       return res.redirect(303, docsUrl);
     }
     res.json({
@@ -109,7 +120,7 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
   });
 
   router.get('/inspect', (req, res) => {
-    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+    if (isBrowserRequest(req)) {
       return res.redirect(303, docsUrl);
     }
     res.json({
@@ -126,7 +137,7 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
   });
 
   router.get('/batch', (req, res) => {
-    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+    if (isBrowserRequest(req)) {
       return res.redirect(303, docsUrl);
     }
     res.json({
