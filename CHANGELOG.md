@@ -49,6 +49,12 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **REST API Endpoint Discoverability & Browser Routing (`@zapwebp/api`, `server.js`)**:
+  - Added dedicated GET descriptor handlers for `/api/v1/convert`, `/api/v1/inspect`, and `/api/v1/batch` returning machine-readable JSON endpoint schema, required fields, and copy-pasteable curl examples.
+  - Browser requests (`Accept: text/html`) hitting API endpoints directly in browser URL bars are automatically redirected (303) to the interactive documentation at `https://zapwebp-docs.vercel.app/api`.
+  - Added seamless endpoint aliases for `/api/convert`, `/api/inspect`, and `/api/batch` routing directly to `/api/v1/*`.
+  - Replaced the static HTML 404 fallback for API requests with a structured JSON error response (`E_NOT_FOUND`) detailing available endpoints and documentation links.
+  - Removed deprecated static stubs in `public/api/` preventing static file handler collision with live Express API routes.
 - **Documentation i18n & Sitemap Title Keys (`zapwebp-docs`, `locales/`)**:
   - Fixed untranslated `title.Stability`, `title.Performance`, and `title.Core Freeze` keys displaying raw key names in footer sitemaps, breadcrumbs, pagination, and sidebars across documentation pages.
   - Added localized strings for `title.Stability` ("Katatagan (Stability)"), `title.Performance` ("Bilis at Performance"), `title.Core Freeze` ("Pag-freeze ng Core (Hardening)"), and `title.Common FAQs` across English and Tagalog catalogs.

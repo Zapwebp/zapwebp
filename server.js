@@ -264,6 +264,11 @@ app.get('/api', (_req, res) => {
   res.redirect(301, '/api/v1');
 });
 
+app.all(['/api/convert', '/api/inspect', '/api/batch', '/api/health'], (req, res, next) => {
+  req.url = req.url.replace(/^\/api\//, '/api/v1/');
+  next();
+});
+
 app.use('/api/v1', createApiRouter({ maxFileBytes, maxBatchBytes, maxFiles: 20, maxWidth, maxResponseBytes }));
 
 app.post('/api/convert', upload.array('files', 20), async (req, res) => {
@@ -317,6 +322,19 @@ app.post('/api/convert', upload.array('files', 20), async (req, res) => {
 });
 
 app.use((req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path === '/api') {
+    return res.status(404).json({
+      error: 'E_NOT_FOUND',
+      message: `Endpoint "${req.method} ${req.path}" was not found.`,
+      endpoints: {
+        health: 'GET /api/v1/health',
+        convert: 'POST /api/v1/convert',
+        inspect: 'POST /api/v1/inspect',
+        batch: 'POST /api/v1/batch',
+      },
+      docs: 'https://zapwebp-docs.vercel.app/api',
+    });
+  }
   const html404 = path.join(__dirname, 'public', '404.html');
   if (fs.existsSync(html404)) {
     return res.status(404).sendFile(html404);

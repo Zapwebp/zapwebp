@@ -81,6 +81,68 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     docs: 'https://zapwebp-docs.vercel.app',
   }));
   router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
+
+  const docsUrl = 'https://zapwebp-docs.vercel.app/api';
+
+  router.get('/convert', (req, res) => {
+    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+      return res.redirect(303, docsUrl);
+    }
+    res.json({
+      endpoint: 'POST /api/v1/convert',
+      method: 'POST',
+      description: 'Single image conversion with transparency safety, sizing, and metadata stripping.',
+      contentType: 'multipart/form-data',
+      parameters: {
+        file: 'Required. Binary image file (or form fields: file, image, svg). Supported: svg, png, jpeg, webp, avif, gif, tiff.',
+        to: 'Target output format: webp, png, avif, jpeg, svg (default: webp).',
+        width: 'Optional. Output pixel width (1-4096).',
+        height: 'Optional. Output pixel height (1-4096).',
+        quality: 'Optional. Compression quality 0-100 (default: 85).',
+        lossless: 'Optional. Boolean string "true" or "false" (default: false).',
+        background: 'Optional. Hex or RGB color string to flatten alpha (e.g., "#ffffff"). Required for JPEG when input has transparency.',
+        stripMetadata: 'Optional. Boolean string "true" or "false" (default: true).',
+      },
+      curlExample: "curl -X POST https://zapwebp.vercel.app/api/v1/convert -F 'file=@logo.svg' -F 'to=webp' -F 'quality=85' --output logo.webp",
+      docs: docsUrl,
+    });
+  });
+
+  router.get('/inspect', (req, res) => {
+    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+      return res.redirect(303, docsUrl);
+    }
+    res.json({
+      endpoint: 'POST /api/v1/inspect',
+      method: 'POST',
+      description: 'Pre-flight container chunk analysis, alpha detection, and target format recommendations.',
+      contentType: 'multipart/form-data',
+      parameters: {
+        file: 'Required. Binary image file in the `file` form field.',
+      },
+      curlExample: "curl -X POST https://zapwebp.vercel.app/api/v1/inspect -F 'file=@logo.svg'",
+      docs: docsUrl,
+    });
+  });
+
+  router.get('/batch', (req, res) => {
+    if (req.accepts && req.accepts('html') && !req.accepts('json')) {
+      return res.redirect(303, docsUrl);
+    }
+    res.json({
+      endpoint: 'POST /api/v1/batch',
+      method: 'POST',
+      description: 'Multi-image batch conversion returning base64 encoded payloads in a single JSON envelope.',
+      contentType: 'multipart/form-data',
+      parameters: {
+        files: 'Required. Array of up to 20 image files in the `files` form field.',
+        targets: 'Optional. Comma-separated target formats (e.g., "webp,avif").',
+        quality: 'Optional. Compression quality 0-100 (default: 85).',
+      },
+      curlExample: "curl -X POST https://zapwebp.vercel.app/api/v1/batch -F 'files=@icon1.svg' -F 'files=@icon2.png' -F 'targets=webp,avif'",
+      docs: docsUrl,
+    });
+  });
   const convertUpload = upload.fields([
     { name: 'file', maxCount: 1 },
     { name: 'image', maxCount: 1 },

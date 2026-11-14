@@ -22,6 +22,18 @@ test('API health, CORS preflight, conversion, validation, and batch routes', asy
   const healthBody = await health.json();
   assert.equal(healthBody.ok, true);
   assert.equal(healthBody.version, '1.1.0');
+
+  // GET descriptor & docs redirect
+  const getConvertJson = await fetch(`${base}/convert`, { headers: { Accept: 'application/json' } });
+  assert.equal(getConvertJson.status, 200);
+  const convertInfo = await getConvertJson.json();
+  assert.equal(convertInfo.endpoint, 'POST /api/v1/convert');
+  assert.ok(convertInfo.parameters.file);
+
+  const getConvertHtml = await fetch(`${base}/convert`, { headers: { Accept: 'text/html' }, redirect: 'manual' });
+  assert.equal(getConvertHtml.status, 303);
+  assert.equal(getConvertHtml.headers.get('location'), 'https://zapwebp-docs.vercel.app/api');
+
   const preflight = await fetch(`${base}/convert`, { method: 'OPTIONS' });
   assert.equal(preflight.status, 204);
   assert.equal(preflight.headers.get('access-control-allow-origin'), '*');
