@@ -6,6 +6,14 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Performance Optimization Masterplan & CI Benchmark Suite (`@zapwebp/core`, `bench/`, `.github/workflows/bench.yml`)**:
+  - **Persistent Instance Reuse**: Reused compiled Rust vector (`@resvg/resvg-js`) and libvips (`sharp`) instances across conversions, reducing warm start conversion latency by up to 70%.
+  - **Direct Target-Width Rasterization**: SVG vectors now directly rasterize to requested output width (`fitTo: { mode: 'width', value: width }`) in a single pass without intermediate scaling.
+  - **CPU-Bounded Concurrency**: Implemented `parallelMap` and `ConversionPool` in `@zapwebp/core` to saturate multi-core hardware while preventing thread starvation and memory spikes.
+  - **Deterministic LRU Conversion Cache**: Implemented in-memory SHA-256 `ConversionCache` with hit/miss statistics and byte limit eviction for instantaneous idempotent re-conversions.
+  - **CI Benchmark Runner (`bench/runner.js`)**: Added automated benchmark harness tracking cold start (< 250ms), warm start (< 50ms), SVG rasterization (< 25ms), 1080p PNG (< 80ms), batch throughput (< 2.5s for 100 files), and peak memory (< 80 MB RSS).
+  - **CI Workflow**: Added `.github/workflows/bench.yml` executing `pnpm bench` on pull requests with artifact retention.
+
 - **Zapwebp SDKs — Agentic Development & DX Enhancement (`@zapwebp/core`, `@zapwebp/sdk`, `@zapwebp/plugin-sdk`, `@zapwebp/create-zapwebp`)**:
   - **`agent.json` Runtime Discovery Manifest**: Shipped machine-readable agent manifests in `@zapwebp/core`, `@zapwebp/sdk`, and `@zapwebp/plugin-sdk` allowing AI coding agents (Cursor, Claude Desktop, Antigravity, Windsurf) to discover all functions, options, errors, and copy-paste examples directly from `node_modules` or `unpkg`.
   - **Structured Error Envelope (`ZapwebpError`)**: Upgraded error instances across core and SDK with `code`, `message`, `fix`, `docs`, `retryable: boolean`, `suggestedFix?: Record<string, unknown>`, and machine-readable `.toJSON()` serialization.

@@ -76,6 +76,12 @@ lens verify asset.png --from-manifest manifest.json
 | `E_DIRTY_METADATA` | May natitirang metadata ang file habang naka-on ang `--fail-if-dirty`. | Patakbuhin ang `zap <file> --clean` upang linisin ito. |
 | `E_OPEN_IN_CI` | Tinangkang buksan ang browser sa isang automated CI environment. | Huwag gamitin ang `--open` o gamitin ang `--html [file]`. |
 
+## Related
+
+- [CLI](/cli) — Pangunahing conversion tool na may journaled transformations.
+- [Clean Mode](/clean) — Pag-aalis ng metadata at zero-trust sanitization.
+- [Formats Matrix](/formats) — Talaan ng mga suportadong container at transparency matrix.
+
 ## For agents
 
 ```json
