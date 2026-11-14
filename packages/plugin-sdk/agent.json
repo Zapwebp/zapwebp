@@ -1,6 +1,8 @@
 {
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/plugin-sdk",
   "version": "1.1.1",
+  "type": "plugin-sdk",
   "description": "The Zapwebp Plugin Development Kit. Defines contracts, lifecycle hooks, and adapters for formats, storage, cropping, and transforms.",
   "capabilities": [
     "format_plugin",

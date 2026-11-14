@@ -6,6 +6,13 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **SEO Disambiguation, Knowledge Graph Entity Binding & Manifest Schema Validation (`public/`, `zapwebp-docs/`, `packages/*`)**:
+  - **Manifest Schema Compliance**: Added `$schema` (`schemas/agent-manifest.json`) and package classification `type` across `packages/sdk/agent.json`, `packages/core/agent.json`, and `packages/plugin-sdk/agent.json`, eliminating all VS Code schema diagnostics.
+  - **Exact Brand Match Title & Visible H1**: Updated `public/index.html` title to `Zapwebp Converter — Fast & Free Online WebP & Image Converter` and added prominent visible `<h1>Zapwebp Converter</h1>` above the tool workspace to prevent search engines from confusing the brand name with third-party converters.
+  - **Knowledge Graph Entity Disambiguation (`JSON-LD`)**: Added `alternateName` declarations (`["Zapwebp Converter", "Zap Webp Converter", "Zap WebP", "Zap Webp"]`) across `WebApplication`, `Organization`, and `WebSite` schemas to resolve Google spellchecker ("Did you mean: Zap Webp") query divergence.
+  - **Targeted FAQ Schema**: Added comprehensive FAQ schema covering "What is Zapwebp Converter?" and privacy/transparency comparisons against server-side alternatives.
+  - **Sitemap Refresh**: Updated all XML sitemap lastmod timestamps to `2026-11-14` across `public/sitemap.xml` and `zapwebp-docs/public/sitemap.xml` to accelerate Google Search Console re-crawling.
+
 - **Agentic Resource Discovery (ARD) 1.0 & WebMCP Standard Implementation (`public/`, `zapwebp-docs/`, `server.js`)**:
   - **`ai-catalog.json` Manifest**: Implemented Agentic Resource Discovery (ARD) 1.0 manifest conforming to `https://agenticresourcediscovery.org/spec/v1/schema.json` at both `/ai-catalog.json` and `/.well-known/ai-catalog.json` on both `zapwebp.vercel.app` and `zapwebp-docs.vercel.app`.
   - **Declarative WebMCP Integration**: Added W3C WebModelContextProtocol declarative HTML form annotations (`toolname="convert_image"`, `tooldescription`, `toolautosubmit`, `toolparamdescription`) enabling autonomous browser agents to operate the web converter without DOM guesswork.

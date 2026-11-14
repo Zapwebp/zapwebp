@@ -1,6 +1,8 @@
 {
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/core",
   "version": "1.1.1",
+  "type": "core",
   "description": "The Zapwebp core conversion engine. Converts images with deterministic transparency preservation and zero-trust metadata stripping.",
   "capabilities": [
     "convert",
