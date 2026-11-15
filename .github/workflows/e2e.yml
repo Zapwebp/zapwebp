@@ -1,0 +1,34 @@
+name: Real-World E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  real-world-e2e:
+    name: E2E (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify Real-World Fixture Corpus
+        run: node -e "require('./scripts/create-fixtures.js')"
+      - name: Run Web Real-World E2E Tests
+        run: node --test test/web-real-world.test.js
+      - name: Run VS Code Real-World E2E Tests
+        run: node --test apps/vscode/test/real-world.test.js
+      - name: Build VS Code Extension
+        run: pnpm build:vscode

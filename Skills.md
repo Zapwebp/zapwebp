@@ -19,7 +19,8 @@
 - `@modelcontextprotocol/server` (^2.4.0) — Official SDK for exposing standard JSON-RPC tools, prompts, and resources to AI agent runtimes.
 - `zod` (^4.0.0) — Strict runtime validation and JSON-schema generation for MCP tool inputs.
 - `multer` (^2.5.0) — In-memory streaming multipart file upload parsing.
-- `@kitelet/core` (^1.0.0) — Framework-free, HTML-first client toolkit for reactive document components.
+- `@kitelet/core` (^1.0.0) — Lightweight documentation SPA router and component renderer (retained exclusively in zapwebp-docs).
+- `@zapwebp/ui` (workspace) — Enterprise-grade Web Components, WCAG 2.2 AA accessible design tokens, motion vocabulary, and reactive state machine for the main web service.
 - `marked` (^18.1.2) — Lightweight, fast Markdown to HTML parser for agentic documentation rendering.
 - `esbuild` (^0.25.0) — Ultra-fast bundler for VS Code extension packaging.
 - `@changesets/cli` (^2.29.8) — SemVer automated versioning and package release governance.

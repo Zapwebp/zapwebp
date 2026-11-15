@@ -1112,7 +1112,7 @@ async function convertImage(input, options = {}) {
           height: rawBufferInfo.rawOptions.height,
         };
       } else {
-        rawImage = await decodeToRgba(source, format);
+        rawImage = await decodeToRgba(source, format === 'svg' ? 'png' : format);
       }
       const encoded = await customEncoder.encode(rawImage, {
         ...opts,

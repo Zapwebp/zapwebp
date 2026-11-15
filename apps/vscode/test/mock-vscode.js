@@ -18,7 +18,23 @@ const config = {
   outputExtension: 'webp',
 };
 
+class Position {
+  constructor(line, character) {
+    this.line = line;
+    this.character = character;
+  }
+}
+
+class Range {
+  constructor(start, end) {
+    this.start = start;
+    this.end = end;
+  }
+}
+
 const activeMock = {
+  Position,
+  Range,
   FileType: {
     Unknown: 0,
     File: 1,

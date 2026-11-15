@@ -18,8 +18,10 @@
     "cli:zapwebp": "node packages/cli/bin/zapwebp.js",
     "zap": "node packages/cli/bin/zap.js",
     "mcp": "node packages/mcp/bin/zapwebp-mcp.js",
-    "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js",
+    "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js && node --test test/reliability.test.js && node --test test/web-service.test.js",
+    "test:e2e": "node --test test/web-real-world.test.js && node --test apps/vscode/test/real-world.test.js",
     "build": "node scripts/build-llms.js",
+    "build:ui": "node scripts/build-ui.js",
     "build:docs": "node scripts/build-docs.js",
     "build:llms": "node scripts/build-llms.js",
     "bench": "node bench/runner.js",
@@ -33,7 +35,6 @@
     "build:vscode": "pnpm --filter zapwebp-vscode build"
   },
   "dependencies": {
-    "@kitelet/core": "^1.0.0",
     "@zapwebp/api": "workspace:*",
     "@zapwebp/core": "workspace:*",
     "@zapwebp/shared": "workspace:*",

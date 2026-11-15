@@ -6,6 +6,14 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Real-World E2E Test Corpus & Test Suites (`test/fixtures/`, `test/web-real-world.test.js`, `apps/vscode/test/real-world.test.js`, `.github/workflows/e2e.yml`, `test/SMOKE.md`)**:
+  - **Authentic Fixture Corpus (`test/fixtures/`)**: Sourced and structured authentic real-world test assets across `test/fixtures/` (`svg/`, `png/`, `jpg/`, `ico/`, `edge-cases/`), including Tabler icons, Lucide icons, Simple Icons brand assets, dense diagrams, Material icons, Unsplash photography, multi-resolution ICO containers, and adversarial edge cases (`script-injection.svg`, `billion-laughs.svg`, `empty.svg`, `corrupt.png`).
+  - **Web Real-World Test Suite (`test/web-real-world.test.js`)**: 10 comprehensive end-to-end integration scenarios verifying drag-and-drop alpha preservation, parallel batch conversion with in-memory ZIP bundle creation (`fflate`), quality scaling, lossless verification, multi-size ICO roundtrips, and zero-trust security rejections.
+  - **VS Code Extension Real-World Test Suite (`apps/vscode/test/real-world.test.js`)**: 7 end-to-end integration scenarios verifying right-click conversion, folder batch conversions, preference recall, rich hover previews, and malicious file sandboxing.
+  - **Manual Smoke Test Checklist (`test/SMOKE.md`)**: Comprehensive pre-release human verification protocol covering 19 Web App checkpoints and 14 VS Code extension checkpoints (~15 min execution).
+  - **Multi-OS CI Workflow (`.github/workflows/e2e.yml`)**: Automated cross-platform verification on Ubuntu, macOS, and Windows.
+  - **Core Pipeline Bug Fix**: Fixed custom output format encoding in `packages/core/src/index.js` where rasterized intermediate PNG buffers from SVG inputs were incorrectly re-validated against XML/SVG rules.
+
 - **High-Resolution ICO Plugin & Favicon Generator (`@zapwebp/format-ico`, `packages/format-ico`)**:
   - **Multi-Resolution Container Writer (`encodeIco`)**: Builds standard multi-resolution ICO containers embedding PNG slices (`16×16`, `32×32`, `48×48`, `64×64`, `128×128`, `256×256`) with full 8-bit alpha transparency preservation and zero black background discoloration.
   - **Universal Container Parser & Decoder (`parseIco`, `decodeIco`)**: Parses ICONDIR (6 bytes) and ICONDIRENTRY (16 bytes) headers with strict memory boundary checks. Decodes modern embedded PNG streams and legacy Windows BMP DIBs (32-bit ARGB, 24-bit BGR, and 8/4/1 bpp palletized with 1-bit AND transparency masks).
@@ -96,10 +104,15 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Changed
 
+- **Web Service Foundation Migration (`@zapwebp/ui`, `public/`)**: Migrated the main web service from the educational Kite HTML toolkit (`@kitelet/core`) to a production-grade Web Components (Custom Elements v1) architecture powered by `@zapwebp/ui`. Integrated native accessible custom elements (`<zap-toast>`, `<zap-banner>`, `<zap-modal>`, `<zap-dropzone>`, `<zap-card>`), centralized reactive state machine (`createZapStore`), and design system tokens (`tokens.css`). Retained Kite exclusively in `zapwebp-docs/` for the documentation SPA.
 - **Standardized Error Architecture (`@zapwebp/core`, `@zapwebp/shared`)**: Replaced all raw `new Error()` throws across `packages/core/src/` with structured `ZapwebpError` containing machine-readable `code`, actionable `fix`, documentation URL, and retryability flags.
 - **Fail-Loud Metadata Verification (`@zapwebp/core`)**: Removed empty `.catch()` blocks in `MetadataRegistry` verification pass. Inspector failures or surviving metadata now fail loudly with `E_CLEAN_FAILED`.
 - **In-Memory Lifecycle Truthfulness**: Fixed `convertImage` to return `originalDeleted: false` and `action: 'in_memory_only'` when running strictly in memory without filesystem deletion handlers.
 - **Format Handler Error Discipline**: Added `failOn: 'error'` uniformly to all Sharp format decoders (`avif`, `gif`, `jpeg`, `png`, `svg`, `tiff`, `webp`), catching truncated or corrupt streams early.
+
+### Removed
+
+- **Kite Toolkit from Core Web Service (`public/vendor/kite.min.js`, root `package.json`)**: Completely removed `public/vendor/kite.min.js` (88.7 KB) and decoupled `@kitelet/core` from root workspace dependencies, eliminating 88.7 KB of unreferenced legacy runtime while preserving `@kitelet/core` in `zapwebp-docs/`.
 
 ### Fixed
 

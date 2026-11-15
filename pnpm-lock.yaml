@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@kitelet/core':
-        specifier: ^1.0.0
-        version: 1.0.0
       '@zapwebp/api':
         specifier: workspace:*
         version: link:packages/api
