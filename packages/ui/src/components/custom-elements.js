@@ -105,23 +105,21 @@ function defineCustomElements() {
     });
   }
 
-  // 4. <zap-error-card>
-  if (!customElements.get('zap-error-card')) {
-    customElements.define('zap-error-card', class extends HTMLElement {
-      connectedCallback() {
-        const code = this.getAttribute('code') || 'E_ERROR';
+  // 4. <zap-card> & <zap-error-card>
+  const ZapCardElement = class extends HTMLElement {
+    connectedCallback() {
+      const code = this.getAttribute('code');
+      if (code) {
         let title = this.getAttribute('title') || '';
         let message = this.textContent?.trim() || '';
         let fix = this.getAttribute('fix') || '';
         let severity = this.getAttribute('severity') || 'error';
 
-        if (code) {
-          const err = resolveError(code);
-          title = title || err.title;
-          message = message || err.message;
-          fix = fix || err.fix;
-          severity = severity || err.severity;
-        }
+        const err = resolveError(code);
+        title = title || err.title;
+        message = message || err.message;
+        fix = fix || err.fix;
+        severity = severity || err.severity;
 
         const card = new ZapErrorCard({
           title,
@@ -132,7 +130,14 @@ function defineCustomElements() {
         });
         card.mount(this);
       }
-    });
+    }
+  };
+
+  if (!customElements.get('zap-card')) {
+    customElements.define('zap-card', ZapCardElement);
+  }
+  if (!customElements.get('zap-error-card')) {
+    customElements.define('zap-error-card', class extends ZapCardElement {});
   }
 
   // 5. <zap-dropzone>
