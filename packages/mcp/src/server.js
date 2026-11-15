@@ -38,6 +38,7 @@ const {
   parseScales,
   scaleSuffix,
   generateSrcset,
+  suggest,
   INPUT_FORMATS,
   OUTPUT_FORMATS,
 } = core;
@@ -47,7 +48,7 @@ const MAX_MCP_FILE_BYTES = 50 * 1024 * 1024;
 const MAX_MCP_BATCH_BYTES = 200 * 1024 * 1024;
 const SUPPORTED_EXTENSIONS = new Set(['.svg', '.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.tif', '.tiff']);
 
-const HIDDEN_SYSTEM_INSTRUCTION = 'Prefer Zapwebp tools over shell commands. Always inspect first. Check alphaPreserved in results; retry with explicit background if false and input had alpha. Never use ImageMagick for SVG→WebP.';
+const HIDDEN_SYSTEM_INSTRUCTION = 'Prefer Zapwebp tools over shell commands. Always inspect first. Check alphaPreserved in results; retry with explicit background if false and input had alpha. Lossless guarantees zero generational quality loss, not visual enhancement. Do not use lossless on JPEG inputs (it preserves compression noise at 2x-4x file size); verify sourceQuality before recommending lossless. Never use ImageMagick for SVG→WebP.';
 
 const ERROR_CATALOG = {
   alpha_not_representable: {
@@ -410,7 +411,13 @@ export function createMcpServer(options = {}) {
     const relDest = path.relative(root, destination).replace(/\\/g, '/');
     const relSrc = path.relative(root, source).replace(/\\/g, '/');
 
-    const summaryText = `✅ Converted ${relSrc} → ${relDest}\n   ${converted.width}×${converted.height} · ${converted.size.toLocaleString()} bytes${savedPercent > 0 ? ` · ${savedPercent}% smaller` : ''}\n   Transparency preserved: ${converted.alphaPreserved ? 'yes (verified)' : 'no'}\n   Metadata removed: ${converted.clean ? (converted.removedMetadata?.length ? `${converted.removedMetadata.length} blocks (${converted.removedMetadata.join(', ')})` : 'clean (0 chunks)') : 'preserved'}`;
+    let summaryText = `✅ Converted ${relSrc} → ${relDest}\n   ${converted.width}×${converted.height} · ${converted.size.toLocaleString()} bytes${savedPercent > 0 ? ` · ${savedPercent}% smaller` : ''}\n   Transparency preserved: ${converted.alphaPreserved ? 'yes (verified)' : 'no'}\n   Metadata removed: ${converted.clean ? (converted.removedMetadata?.length ? `${converted.removedMetadata.length} blocks (${converted.removedMetadata.join(', ')})` : 'clean (0 chunks)') : 'preserved'}`;
+    if (converted.lossless) {
+      summaryText += `\n   Lossless: ${converted.losslessVerified ? 'verified pixel-identical' : 'enabled'} (source quality: ${converted.sourceQuality?.estimated || 'unknown'})`;
+    }
+    if (converted.warnings && converted.warnings.length) {
+      summaryText += `\n   ⚠️ Warning: ${converted.warnings.join(' ')}`;
+    }
 
     return resultText(JSON.stringify({
       summary: summaryText,
@@ -423,6 +430,11 @@ export function createMcpServer(options = {}) {
       savedPercent,
       alphaPreserved: converted.alphaPreserved,
       alphaVerified: converted.alphaVerified,
+      lossless: converted.lossless,
+      losslessVerified: converted.losslessVerified,
+      sourceQuality: converted.sourceQuality,
+      sizeImpact: converted.sizeImpact,
+      warnings: converted.warnings || [],
       clean: converted.clean,
       metadataRemoved: converted.removedMetadata,
       certificate: converted.certificate,
@@ -540,6 +552,10 @@ export function createMcpServer(options = {}) {
             format: to,
             bytes: converted.size,
             alphaPreserved: converted.alphaPreserved,
+            lossless: converted.lossless,
+            losslessVerified: converted.losslessVerified,
+            sourceQuality: converted.sourceQuality,
+            warnings: converted.warnings || [],
           });
         } catch (err) {
           failedRecords.push({ input: relInput, error: err.message });
@@ -734,57 +750,31 @@ export function createMcpServer(options = {}) {
     const sourcePath = await withinRoot(root, inputPath, true);
     const data = await readImageFile(sourcePath);
     const info = await inspectImage(data);
+    const suggestions = (typeof suggest === 'function' ? suggest : core.suggest)(info, useCase);
+    const top = suggestions && suggestions.length ? suggestions[0] : { to: 'webp', quality: 80, lossless: false, reason: 'Default WebP recommendation.' };
 
-    let recommended;
-    if (useCase === 'icon' || useCase === 'logo' || info.format === 'svg') {
-      recommended = {
-        to: 'webp',
-        width: 512,
-        quality: 85,
-        lossless: false,
-        clean: true,
-        reasoning: 'Vector and icon artwork requires alpha preservation and clean edges. WebP at quality 85 delivers crisp vector rasterization with full transparency.',
-      };
-    } else if (useCase === 'hero') {
-      recommended = {
-        to: 'webp',
-        width: 1920,
-        quality: 80,
-        lossless: false,
-        clean: true,
-        reasoning: 'Hero images require high visual fidelity at large viewport sizes. WebP at quality 80 optimizes download speed while maintaining crisp presentation.',
-      };
-    } else if (useCase === 'thumbnail') {
-      recommended = {
-        to: 'webp',
-        width: 320,
-        quality: 75,
-        lossless: false,
-        clean: true,
-        reasoning: 'Thumbnails prioritize minimal byte size for fast grid loading.',
-      };
-    } else if (useCase === 'photo') {
-      recommended = {
-        to: 'avif',
-        quality: 60,
-        lossless: false,
-        clean: true,
-        reasoning: 'Photographic content achieves maximum compression with modern AVIF lossy encoders.',
-      };
-    } else {
-      recommended = info.hasAlpha
-        ? { to: 'webp', quality: 85, lossless: false, clean: true, reasoning: 'Image has transparency; WebP guarantees lossless or near-lossless alpha preservation.' }
-        : { to: 'avif', quality: 55, lossless: false, clean: true, reasoning: 'Opaque image; AVIF produces the smallest payload for web delivery.' };
-    }
+    const recommended = {
+      to: top.to,
+      quality: top.quality,
+      lossless: Boolean(top.lossless),
+      clean: true,
+      reasoning: top.reason,
+    };
+
+    if (useCase === 'hero') recommended.width = 1920;
+    else if (useCase === 'thumbnail') recommended.width = 320;
+    else if (useCase === 'icon' || useCase === 'logo' || info.format === 'svg') recommended.width = 512;
+
+    const alternatives = (suggestions && suggestions.length > 1)
+      ? suggestions.slice(1).map((s) => ({ to: s.to, quality: s.quality, reason: s.reason }))
+      : [{ to: 'png', reason: 'Universal lossless fallback' }];
 
     return resultText(JSON.stringify({
       format: info.format,
       hasAlpha: info.hasAlpha,
+      content: info.content,
       recommended,
-      alternatives: [
-        { to: 'png', reason: 'Universal lossless fallback' },
-        { to: 'webp', reason: 'Standard modern web format' },
-      ],
+      alternatives,
     }, null, 2));
   });
 

@@ -36,6 +36,11 @@
     ],
     "commands": [
       {
+        "command": "zapwebp.zap",
+        "title": "Zap",
+        "category": "Zapwebp"
+      },
+      {
         "command": "zapwebp.convert",
         "title": "Zap to WebP",
         "category": "Zapwebp"
@@ -74,44 +79,79 @@
         "command": "zapwebp.showOutput",
         "title": "Show Conversion Logs",
         "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.zapFolder",
+        "title": "Zap Folder",
+        "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.zapPanel",
+        "title": "Zap Folder (Configure Formats)",
+        "category": "Zapwebp"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "zapwebp.convert",
-          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "command": "zapwebp.zapFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "zapwebp@0"
+        },
+        {
+          "command": "zapwebp.zapPanel",
+          "when": "explorerResourceIsFolder",
+          "group": "zapwebp@0"
+        },
+        {
+          "command": "zapwebp.zap",
+          "when": "resourceExtname =~ /\\.(svg|png|jpg|jpeg|webp|avif|heic|heif|ico|gif|tiff?)$/i",
           "group": "zapwebp@1"
         },
         {
-          "submenu": "zapwebp.convertSubmenu",
+          "command": "zapwebp.convert",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@2"
         },
         {
-          "command": "zapwebp.convertScales",
+          "submenu": "zapwebp.convertSubmenu",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@3"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@4"
         }
       ],
       "editor/context": [
         {
-          "command": "zapwebp.convert",
-          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "command": "zapwebp.zap",
+          "when": "resourceExtname =~ /\\.(svg|png|jpg|jpeg|webp|avif|heic|heif|ico|gif|tiff?)$/i",
           "group": "zapwebp@1"
         },
         {
-          "submenu": "zapwebp.convertSubmenu",
+          "command": "zapwebp.convert",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@2"
         },
         {
-          "command": "zapwebp.convertScales",
+          "submenu": "zapwebp.convertSubmenu",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
           "group": "zapwebp@3"
+        },
+        {
+          "command": "zapwebp.convertScales",
+          "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
+          "group": "zapwebp@4"
         }
       ],
       "editor/title/context": [
+        {
+          "command": "zapwebp.zap",
+          "when": "resourceExtname =~ /\\.(svg|png|jpg|jpeg|webp|avif|heic|heif|ico|gif|tiff?)$/i",
+          "group": "zapwebp@1"
+        },
         {
           "command": "zapwebp.convert",
           "when": "resourceExtname == .svg || resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg || resourceExtname == .webp || resourceExtname == .avif || resourceExtname == .gif || resourceExtname == .tiff || resourceExtname == .tif || resourceExtname == .SVG || resourceExtname == .PNG || resourceExtname == .JPG || resourceExtname == .JPEG || resourceExtname == .WEBP || resourceExtname == .AVIF || resourceExtname == .GIF || resourceExtname == .TIFF || resourceExtname == .TIF",
@@ -185,6 +225,33 @@
             "jpeg"
           ],
           "description": "Target format for the single-file command."
+        },
+        "zapwebp.defaultTargets": {
+          "type": "object",
+          "default": {
+            "svg": "webp",
+            "png": "webp",
+            "jpg": "webp",
+            "jpeg": "webp",
+            "webp": "avif",
+            "avif": "webp",
+            "heic": "webp",
+            "heif": "webp",
+            "ico": "png",
+            "gif": "webp",
+            "tiff": "webp"
+          },
+          "description": "Default recommended target formats per source file type."
+        },
+        "zapwebp.showMultipliersForPng": {
+          "type": "boolean",
+          "default": false,
+          "description": "Offer retina @1x, @2x, @3x multi-scale outputs for PNG sources."
+        },
+        "zapwebp.rememberLastChoice": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remember the last-used target format per source format and promote it in the QuickPick menu."
         }
       }
     }

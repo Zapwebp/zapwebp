@@ -14,6 +14,7 @@ const DEPLOYMENTS = [
   { dir: 'packages/features', repo: 'features' },
   { dir: 'packages/plugin-sdk', repo: 'plugin-sdk' },
   { dir: 'packages/crop', repo: 'crop' },
+  { dir: 'packages/format-ico', repo: 'format-ico' },
   { dir: 'packages/storage', repo: 'storage' },
   { dir: 'packages/edge', repo: 'edge' },
   { dir: 'packages/api', repo: 'api' },

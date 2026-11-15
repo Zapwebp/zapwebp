@@ -1,5 +1,7 @@
 'use strict';
 
+const { ZapwebpError } = require('@zapwebp/shared');
+
 /** @type {import('./registry').FormatHandler} */
 const gifHandler = {
   name: 'gif',
@@ -18,7 +20,7 @@ const gifHandler = {
 
   async decode(bytes) {
     const sharp = require('sharp');
-    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false })
+    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false, failOn: 'error' })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -31,7 +33,11 @@ const gifHandler = {
   },
 
   async encode() {
-    throw new Error('GIF output encoding is not supported. Zap converts GIF to modern web formats (WebP, PNG, AVIF).');
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: 'GIF output encoding is not supported. Zapwebp converts GIF to modern web formats (WebP, PNG, AVIF).',
+      fix: 'Choose one of: webp, png, avif, or jpeg.',
+    });
   },
 };
 

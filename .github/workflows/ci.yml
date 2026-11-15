@@ -24,6 +24,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: node scripts/verify-lockfile.js
+      - run: node scripts/check-zero-telemetry.js
       - run: pnpm run validate-locales
       - run: pnpm test
       - run: node -e "JSON.parse(require('node:fs').readFileSync('public/openapi.json', 'utf8'))"

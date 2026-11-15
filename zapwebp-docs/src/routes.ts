@@ -172,6 +172,15 @@ export const DOC_ROUTES: DocRoute[] = [
     description: 'Auto-crop with aspect ratios and face detection, manual coordinates, cover/contain fits, and pipeline composition.',
     keywords: ['crop', 'aspect ratio', 'gravity', 'face detection', 'transform', 'contain', 'avatar']
   },
+  {
+    path: '/plugins/format-ico',
+    file: 'plugins/format-ico',
+    title: 'ICO Plugin',
+    category: 'Plugins',
+    badge: 'Format',
+    description: 'High-resolution multi-size ICO/CUR container generation, embedded PNGs, BMP DIB decoding, and favicon suite generator.',
+    keywords: ['ico', 'cur', 'favicon', 'format', 'multi-size', 'apple-touch-icon', 'manifest', 'plugin']
+  },
 
   // Developers
   {
@@ -403,5 +412,9 @@ if (ROUTE_MAP['/privacy']) ROUTE_MAP['/privacy-policy'] = ROUTE_MAP['/privacy'];
 if (ROUTE_MAP['/terms']) {
   ROUTE_MAP['/terms-of-service'] = ROUTE_MAP['/terms'];
   ROUTE_MAP['/tos'] = ROUTE_MAP['/terms'];
+}
+if (ROUTE_MAP['/plugins/format-ico']) {
+  ROUTE_MAP['/ico'] = ROUTE_MAP['/plugins/format-ico'];
+  ROUTE_MAP['/favicon'] = ROUTE_MAP['/plugins/format-ico'];
 }
 

@@ -109,3 +109,32 @@ export function getSupportedPairs(): readonly ConversionPair[];
 export function supportsAlpha(format: string): boolean;
 export function getMimeType(format: string): string;
 export function getCanonicalUrl(routePath?: string): string;
+
+export interface ReliabilityMetric {
+  id: string;
+  name: string;
+  pkg: string;
+  uptimePct: number;
+  totalRuns: number;
+  failures: number;
+  soakCycles: number;
+  memoryStability: string;
+  adversarialRejection: string;
+  status: string;
+}
+
+export namespace reliability {
+  export const GOLDEN_CASES: readonly any[];
+  export const SVG_SAMPLE: string;
+  export const PNG_TRANSPARENT_SAMPLE: Buffer;
+  export const JPEG_OPAQUE_SAMPLE: Buffer;
+  export const WEBP_SAMPLE: Buffer;
+  export function hashBuffer(data: Buffer | Uint8Array): string;
+  export function verifyGoldenCase(goldenCase: any, convertFn: (input: any, opts: any) => Promise<any>): Promise<any>;
+  export const ADVERSARIAL_FIXTURES: Readonly<Record<string, any>>;
+  export function verifyAdversarialRejection(key: string, runnerFn: (data: Buffer, name: string) => Promise<any>): Promise<any>;
+  export function runSoakTest(runnerFn: (iteration: number) => Promise<any>, options?: { iterations?: number; maxRssGrowthMb?: number; name?: string }): Promise<any>;
+  export const RELIABILITY_METRICS: readonly ReliabilityMetric[];
+  export function getReliabilitySummary(): { totalIntegrations: number; totalRuns: number; averageUptime: number; activeIncidents: number; allPassing: boolean };
+  export function formatReliabilityTable(): string;
+}

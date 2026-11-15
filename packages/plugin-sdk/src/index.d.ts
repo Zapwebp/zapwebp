@@ -85,6 +85,31 @@ export function createMockRawImage(width?: number, height?: number): RawImage;
 export function validateStorageWrite(destinationPath: string, data: Buffer | Uint8Array): void;
 export const MAX_DECODE_BYTES: number;
 
+export function validatePluginPermissions(
+  manifest: Record<string, any>,
+  options?: {
+    allowNetwork?: boolean;
+    consentGranted?: boolean;
+    promptConsent?: (pluginName: string, requested: string[]) => Promise<boolean> | boolean;
+  }
+): Promise<{ allowed: boolean; permissions: string[] }>;
+
+export function runInSandbox<T>(
+  fn: () => T | Promise<T>,
+  options?: { pluginName?: string; permissions?: string[] }
+): Promise<T>;
+
+export function executeInWorker(
+  pluginModulePath: string,
+  method: string,
+  args: any[],
+  options?: { pluginName?: string; permissions?: string[] }
+): Promise<any>;
+
+export function sandboxedTransform(step: TransformStep, options?: { permissions?: string[] }): TransformStep;
+export function sandboxedFormatHandler(handler: FormatHandler, options?: { permissions?: string[] }): FormatHandler;
+export function createWorkerScriptUrl(pluginSourceCode: string): string;
+
 export class PluginManager {
   constructor();
   use(plugin: ZapPlugin): this;

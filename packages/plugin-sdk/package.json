@@ -28,6 +28,7 @@
     "./agent.json": "./agent.json"
   },
   "dependencies": {
+    "@zapwebp/shared": "workspace:*",
     "@zapwebp/storage": "workspace:*"
   },
   "files": [

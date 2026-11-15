@@ -45,7 +45,7 @@ test('rejects active SVG content and remote references', () => {
 
 test('rejects extreme aspect ratios before rasterization', async () => {
   const tallSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="100000000"><rect width="1" height="100000000"/></svg>';
-  await assert.rejects(convertSvgToWebp(tallSvg, { width: 4096 }), /dimensions exceed/);
+  await assert.rejects(convertSvgToWebp(tallSvg, { width: 4096 }), /(?:SVG aspect ratio is extreme|dimensions exceed)/);
 });
 
 test('detects raster formats and converts each supported raster input to every output', async () => {

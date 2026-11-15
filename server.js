@@ -186,6 +186,7 @@ const DOCS_ROUTES = [
   '/plugins/laravel',
   '/plugins/lens',
   '/plugins/crop',
+  '/plugins/format-ico',
   '/sdk/core',
   '/sdk/plugin',
   '/ui',

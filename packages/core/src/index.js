@@ -21,6 +21,16 @@ const { listTools, getAgentManifest } = require('./tools');
 const { createMockSvg, createMockImage } = require('./testing');
 const { computeCacheKey, ConversionCache, defaultCache } = require('./cache');
 const { parallelMap, ConversionPool, defaultPool } = require('./parallel');
+const { assertRuntimeIsolation, detectEnvironment } = require('./safety/runtime');
+const {
+  computeContentSignals,
+  suggest,
+  attachCustomMetadata,
+  extractCustomMetadata,
+  evaluateSourceQuality,
+  evaluateSizeImpact,
+  verifyLosslessPixels,
+} = require('./signals');
 
 let _sharpInstance = null;
 function getSharp() {
@@ -56,7 +66,7 @@ function getResvg() {
 const MAX_WIDTH = MAX_DIMENSION;
 const FIT_MODES = Object.freeze(['contain', 'cover', 'fill', 'inside', 'outside']);
 
-const SVG_DANGER_RE = /<(?:script|foreignObject)\b|\bon\w+\s*=|<\!ENTITY|<\!DOCTYPE|@import/i;
+const SVG_DANGER_RE = /<(?:script|foreignObject)\b|\bon\w+\s*=|javascript:|<\!ENTITY|<\!DOCTYPE|@import/i;
 
 /**
  * Validates pre-flight buffer integrity.
@@ -83,16 +93,44 @@ function validateImageBytes(input) {
   }
 }
 
+function stripCssComments(text) {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '/' && text[i + 1] === '*') {
+      const end = text.indexOf('*/', i + 2);
+      if (end === -1) {
+        return result;
+      }
+      i = end + 2;
+    } else {
+      result += text[i];
+      i++;
+    }
+  }
+  return result;
+}
+
 function asBuffer(input) {
   if (Buffer.isBuffer(input)) return input;
   if (input instanceof Uint8Array) return Buffer.from(input.buffer, input.byteOffset, input.byteLength);
   if (typeof input === 'string') return Buffer.from(input, 'utf8');
-  throw new Error('Image input must be a string or byte array.');
+  throw new ZapwebpError({
+    code: 'E_INVALID_CONFIG',
+    message: 'Image input must be a string, Buffer, or Uint8Array.',
+    fix: 'Provide a valid image buffer or file content.',
+  });
 }
 
 function detectFormat(input) {
   const data = asBuffer(input);
-  if (!data.length) throw new Error('The input file is empty.');
+  if (!data.length) {
+    throw new ZapwebpError({
+      code: 'E_EMPTY_FILE',
+      message: 'File is empty (0 bytes).',
+      fix: 'Ensure the file has non-zero size before converting.',
+    });
+  }
   const registered = formats.detectFormatHandler(data);
   if (registered) return registered.name;
   if (data.length >= 8 && data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
@@ -109,22 +147,51 @@ function detectFormat(input) {
     || data.subarray(0, 4).equals(Buffer.from([0x49, 0x49, 0x2b, 0x00]))
     || data.subarray(0, 4).equals(Buffer.from([0x4d, 0x4d, 0x00, 0x2b]))
   )) return 'tiff';
-  if (data.length >= 2 && data.subarray(0, 2).toString('ascii') === 'BM') throw new Error('BMP input is not supported yet.');
-  if (data.length >= 4 && data[0] === 0 && data[1] === 0 && data[2] === 1 && data[3] === 0) throw new Error('ICO input is not supported yet.');
+  if (data.length >= 2 && data.subarray(0, 2).toString('ascii') === 'BM') {
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: 'BMP input is not supported yet.',
+      fix: 'Convert BMP to PNG or JPEG first, or install a BMP format plugin.',
+    });
+  }
+  if (data.length >= 4 && data[0] === 0 && data[1] === 0 && data[2] === 1 && data[3] === 0) {
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: 'ICO input is not supported yet.',
+      fix: 'Convert ICO to PNG first, or install an ICO format plugin.',
+    });
+  }
   const text = data.subarray(0, Math.min(data.length, 4096)).toString('utf8').replace(/^\uFEFF/, '').trimStart();
   if (/<svg(?:\s|\/?>)/i.test(text) || /^<\?xml[\s\S]*?<svg(?:\s|\/?>)/i.test(text)) return 'svg';
-  throw new Error('Unsupported or unrecognized image format. Supported inputs: SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF.');
+  throw new ZapwebpError({
+    code: 'E_UNSUPPORTED_FORMAT',
+    message: 'Unsupported or unrecognized image format. Supported inputs: SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF.',
+    fix: 'Supply an image in a supported format, or register a custom format handler.',
+  });
 }
 
 function validateSvg(input) {
   const svg = Buffer.isBuffer(input) ? input.toString('utf8') : String(input);
-  if (Buffer.byteLength(svg) === 0 || !/<svg(?:\s|\/?>)/i.test(svg)) throw new Error('This file does not contain a valid SVG document.');
+  if (Buffer.byteLength(svg) === 0 || !/<svg(?:\s|\/?>)/i.test(svg)) {
+    throw new ZapwebpError({
+      code: 'E_CORRUPT_HEADER',
+      message: 'This file does not contain a valid SVG document.',
+      fix: 'Verify the file begins with an <svg> tag and is well-formed XML.',
+    });
+  }
   if (SVG_DANGER_RE.test(svg)) {
     if (/<(?:script|foreignObject)\b/i.test(svg) || /\bon\w+\s*=/i.test(svg)) {
       throw new ZapwebpError({
         code: 'E_UNSAFE_SVG',
         message: 'This SVG contains active content and cannot be converted.',
         fix: 'Remove <script>, inline on* handlers, or foreignObject tags before converting.',
+      });
+    }
+    if (/javascript:/i.test(svg)) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'This SVG contains active content and cannot be converted.',
+        fix: 'Remove javascript: URI schemes and active content before converting.',
       });
     }
     if (/<!ENTITY\b/i.test(svg)) {
@@ -155,19 +222,53 @@ function validateSvg(input) {
       .replace(/&#x([\da-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
       .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
       .replace(/&amp;/gi, '&');
-  } catch { throw new Error('This SVG contains an invalid character reference.'); }
+  } catch {
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'This SVG contains an invalid character reference.',
+      fix: 'Fix or remove corrupt character entity references.',
+    });
+  }
   let normalized;
   try {
-    normalized = decoded.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\\([\da-f]{1,6})\s?/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)));
-  } catch { throw new Error('This SVG contains an invalid CSS escape.'); }
+    normalized = stripCssComments(decoded).replace(/\\([\da-f]{1,6})\s?/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)));
+  } catch {
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'This SVG contains an invalid CSS escape.',
+      fix: 'Fix or remove invalid CSS escape sequences.',
+    });
+  }
   const safeReference = (value) => {
     const ref = value.trim().replace(/^("|')([\s\S]*)\1$/, '$2').trim();
     return ref.startsWith('#') || /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z\d+/=]+$/i.test(ref) || /^data:font\/(?:woff2?|ttf|otf);base64,[a-z\d+/=]+$/i.test(ref);
   };
   const attributeRefs = /(?:href|src)\s*=\s*(["'])(.*?)\1/gi;
-  for (const match of normalized.matchAll(attributeRefs)) if (!safeReference(match[2])) throw new Error('External references are not supported. Embed raster images and fonts in the SVG first.');
-  if (/@import\b/i.test(normalized)) throw new Error('External stylesheet imports are not supported.');
-  for (const match of normalized.matchAll(/url\(\s*([^)]*?)\s*\)/gi)) if (!safeReference(match[1])) throw new Error('External references are not supported. Embed images and fonts in the SVG first.');
+  for (const match of normalized.matchAll(attributeRefs)) {
+    if (!safeReference(match[2])) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'External references are not supported. Embed raster images and fonts in the SVG first.',
+        fix: 'Embed all external image and font references as inline data URIs.',
+      });
+    }
+  }
+  if (/@import\b/i.test(normalized)) {
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'External stylesheet imports are not supported.',
+      fix: 'Embed all styles inline within <style> elements without @import.',
+    });
+  }
+  for (const match of normalized.matchAll(/url\(\s*([^)]*?)\s*\)/gi)) {
+    if (!safeReference(match[1])) {
+      throw new ZapwebpError({
+        code: 'E_UNSAFE_SVG',
+        message: 'External references are not supported. Embed images and fonts in the SVG first.',
+        fix: 'Embed all external image and font references as inline data URIs.',
+      });
+    }
+  }
   return svg;
 }
 
@@ -190,16 +291,35 @@ function svgDimensions(svg) {
   const root = svg.match(/<svg\b[^>]*>/i)?.[0] || '';
   const attribute = (name) => root.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2];
   const viewBox = attribute('viewBox');
+  let width;
+  let height;
   if (viewBox) {
     const values = viewBox.trim().split(/[\s,]+/).map(Number);
-    if (values.length === 4 && values.every(Number.isFinite) && values[2] > 0 && values[3] > 0) return { width: values[2], height: values[3] };
+    if (values.length === 4 && values.every(Number.isFinite) && values[2] > 0 && values[3] > 0) {
+      width = values[2];
+      height = values[3];
+    }
   }
   const dimension = (name) => {
     const value = attribute(name);
     const match = value?.trim().match(/^([+]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(?:px)?$/i);
     return match ? Number(match[1]) : undefined;
   };
-  return { width: dimension('width'), height: dimension('height') };
+  if (width === undefined) width = dimension('width');
+  if (height === undefined) height = dimension('height');
+
+  if (width !== undefined && height !== undefined && width > 0 && height > 0) {
+    const aspect = height / width;
+    if (aspect < 0.01 || aspect > 100 || width < 0.01 || height < 0.01) {
+      throw new ZapwebpError({
+        code: 'E_EXTREME_ASPECT_RATIO',
+        message: `SVG aspect ratio is extreme (${aspect.toFixed(4)}:1) or dimensions are sub-pixel (${width}x${height}).`,
+        fix: 'Check the SVG dimensions. Aspect ratio must be between 0.01:1 and 100:1.',
+      });
+    }
+  }
+
+  return { width, height };
 }
 
 /**
@@ -369,8 +489,12 @@ async function verifyAlpha(input) {
  * @returns {{ safe: boolean, issues: string[], recommendedCommand: string }}
  */
 function auditConversionCommand(command) {
-  if (!command || typeof command !== 'string') {
-    throw new Error('Command must be a non-empty string.');
+  if (!command || typeof command !== 'string' || !command.trim()) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Command must be a non-empty string.',
+      fix: 'Pass a CLI command string to audit, e.g. "convert logo.svg logo.webp".',
+    });
   }
 
   const issues = [];
@@ -427,7 +551,13 @@ function explainBlackBackground(context = {}) {
 }
 
 function normalizeOptions(options = {}) {
-  if (!options || typeof options !== 'object' || Array.isArray(options)) throw new Error('Conversion options must be an object.');
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Conversion options must be an object.',
+      fix: 'Pass an options object, e.g. { to: "webp" }.',
+    });
+  }
   const lockTarget = options.lockTarget || options.lock;
   const overrideLock = Boolean(options.overrideLock);
   const strict = options.strict !== undefined ? Boolean(options.strict) : true;
@@ -437,24 +567,78 @@ function normalizeOptions(options = {}) {
   } else {
     to = String(options.to ?? DEFAULT_OPTIONS.to).toLowerCase();
   }
-  if (!OUTPUT_FORMATS.includes(to)) throw new Error(`Unsupported output format: ${to}. Choose ${OUTPUT_FORMATS.join(', ')}.`);
+
+  // Phase 1.1: Dynamically query registry for output formats
+  const outputHandlers = formats.getAllHandlers().filter((h) => h.isOutput);
+  const validTargets = outputHandlers.map((h) => h.name);
+  if (!validTargets.includes(to)) {
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: `Unsupported output format: ${to}. Available: ${validTargets.join(', ')}.`,
+      fix: `Register a handler with registerFormat() or use one of: ${validTargets.join(', ')}.`,
+      target: to,
+    });
+  }
+
   const quality = Number(options.quality ?? DEFAULT_OPTIONS.quality);
-  if (!Number.isInteger(quality) || quality < 0 || quality > 100) throw new Error('Quality must be an integer between 0 and 100.');
+  if (!Number.isInteger(quality) || quality < 0 || quality > 100) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Quality must be an integer between 0 and 100.',
+      fix: 'Specify a quality value between 0 and 100.',
+    });
+  }
   const effort = Number(options.effort ?? DEFAULT_OPTIONS.effort);
-  if (!Number.isInteger(effort) || effort < 0 || effort > 9) throw new Error('Effort must be an integer between 0 and 9.');
+  if (!Number.isInteger(effort) || effort < 0 || effort > 9) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Effort must be an integer between 0 and 9.',
+      fix: 'Specify an effort value between 0 and 9.',
+    });
+  }
   const dimension = (key) => {
     if (options[key] === undefined) return undefined;
     const value = Number(options[key]);
-    if (!Number.isInteger(value) || value < 1 || value > MAX_WIDTH) throw new Error(`${key} must be an integer between 1 and ${MAX_WIDTH}.`);
+    if (!Number.isInteger(value) || value < 1 || value > MAX_WIDTH) {
+      throw new ZapwebpError({
+        code: 'E_INVALID_CONFIG',
+        message: `${key} must be an integer between 1 and ${MAX_WIDTH}.`,
+        fix: `Set ${key} between 1 and ${MAX_WIDTH}.`,
+      });
+    }
     return value;
   };
   const width = dimension('width');
   const height = dimension('height');
   const fit = String(options.fit ?? DEFAULT_OPTIONS.fit).toLowerCase();
-  if (!FIT_MODES.includes(fit)) throw new Error(`Fit must be one of ${FIT_MODES.join(', ')}.`);
-  if (options.lossless !== undefined && typeof options.lossless !== 'boolean') throw new Error('Lossless must be a boolean.');
-  if (options.stripMetadata !== undefined && typeof options.stripMetadata !== 'boolean') throw new Error('stripMetadata must be a boolean.');
-  if (options.clean !== undefined && typeof options.clean !== 'boolean') throw new Error('clean must be a boolean.');
+  if (!FIT_MODES.includes(fit)) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: `Fit must be one of ${FIT_MODES.join(', ')}.`,
+      fix: `Specify fit as one of: ${FIT_MODES.join(', ')}.`,
+    });
+  }
+  if (options.lossless !== undefined && typeof options.lossless !== 'boolean') {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Lossless must be a boolean.',
+      fix: 'Set lossless to true or false.',
+    });
+  }
+  if (options.stripMetadata !== undefined && typeof options.stripMetadata !== 'boolean') {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'stripMetadata must be a boolean.',
+      fix: 'Set stripMetadata to true or false.',
+    });
+  }
+  if (options.clean !== undefined && typeof options.clean !== 'boolean') {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'clean must be a boolean.',
+      fix: 'Set clean to true or false.',
+    });
+  }
   const clean = options.clean !== undefined ? Boolean(options.clean) : (options.stripMetadata ?? DEFAULT_OPTIONS.clean);
   const stripMetadata = clean;
   const verify = Boolean(options.verify || options.verifyClean);
@@ -463,7 +647,15 @@ function normalizeOptions(options = {}) {
   const transforms = Array.isArray(options.transforms)
     ? options.transforms.filter((t) => t && typeof t.apply === 'function')
     : undefined;
-  for (const key of ['background', 'svgBackground']) if (options[key] !== undefined && (typeof options[key] !== 'string' || !options[key].trim() || options[key].length > 64)) throw new Error(`${key} must be a non-empty color string of 64 characters or fewer.`);
+  for (const key of ['background', 'svgBackground']) {
+    if (options[key] !== undefined && (typeof options[key] !== 'string' || !options[key].trim() || options[key].length > 64)) {
+      throw new ZapwebpError({
+        code: 'E_INVALID_CONFIG',
+        message: `${key} must be a non-empty color string of 64 characters or fewer.`,
+        fix: 'Supply a valid CSS color string like "#ffffff" or "rgba(0,0,0,0)".',
+      });
+    }
+  }
   return {
     to,
     width,
@@ -501,7 +693,11 @@ function normalizeOptions(options = {}) {
 
 function checkDimensions(width, height) {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1 || width > MAX_WIDTH || height > MAX_WIDTH || width * height > MAX_PIXELS) {
-    throw new Error(`Image dimensions exceed the ${MAX_WIDTH} px side or pixel-count limit.`);
+    throw new ZapwebpError({
+      code: 'E_TOO_LARGE',
+      message: `Image dimensions (${width}x${height}) exceed the ${MAX_WIDTH} px side or ${MAX_PIXELS} pixel-count limit.`,
+      fix: `Downscale image dimensions to within ${MAX_WIDTH}x${MAX_WIDTH}.`,
+    });
   }
 }
 
@@ -509,18 +705,67 @@ async function inspectImage(input) {
   const data = asBuffer(input);
   const format = detectFormat(data);
   const metadata = detectMetadata(data);
+  const custom = extractCustomMetadata(data, format);
+  if (custom) {
+    metadata.custom = custom;
+    metadata.hasMetadata = true;
+    if (!metadata.summary.includes('Zapwebp Custom Metadata')) {
+      metadata.summary.push('Zapwebp Custom Metadata');
+    }
+  }
+
+  let width;
+  let height;
+  let hasAlpha;
+
   if (format === 'svg') {
     const svg = validateSvg(data);
-    const { width, height } = svgDimensions(svg);
-    if (width && height && (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0)) throw new Error('The SVG has invalid intrinsic dimensions.');
-    return { format, width: width || undefined, height: height || undefined, hasAlpha: true, bytes: data.length, metadata };
+    const dims = svgDimensions(svg);
+    width = dims.width || undefined;
+    height = dims.height || undefined;
+    hasAlpha = true;
+    if (width && height && (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0)) {
+      throw new ZapwebpError({
+        code: 'E_INVALID_CONFIG',
+        message: 'The SVG has invalid intrinsic dimensions.',
+        fix: 'Verify SVG width, height, or viewBox attributes are positive finite numbers.',
+      });
+    }
+  } else {
+    const meta = await getSharp()(data, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
+    checkDimensions(meta.width, meta.height);
+    width = meta.width;
+    height = meta.height;
+    hasAlpha = Boolean(meta.hasAlpha);
   }
-  const meta = await getSharp()(data, { limitInputPixels: MAX_PIXELS, pages: 1, animated: false, failOn: 'error' }).metadata();
-  checkDimensions(meta.width, meta.height);
-  return { format, width: meta.width, height: meta.height, hasAlpha: Boolean(meta.hasAlpha), bytes: data.length, metadata };
+
+  const { content, palette } = await computeContentSignals(data, { format, width, height, hasAlpha }, getSharp);
+  const suggestions = suggest({
+    format,
+    width,
+    height,
+    bytes: data.length,
+    hasAlpha,
+    metadata,
+    content,
+    palette,
+  });
+
+  return {
+    format,
+    width,
+    height,
+    hasAlpha,
+    bytes: data.length,
+    metadata,
+    content,
+    palette,
+    suggestions,
+  };
 }
 
 async function convertImage(input, options = {}) {
+  assertRuntimeIsolation();
   const opts = normalizeOptions(options);
   const policy = resolvePolicy(opts.policy, opts);
   const data = asBuffer(input);
@@ -686,7 +931,50 @@ async function convertImage(input, options = {}) {
 
   let source = data;
   let sourceHasAlpha;
-  if (format === 'svg') {
+  const isCustomInput = !['svg', 'png', 'jpeg', 'webp', 'avif', 'gif', 'tiff'].includes(format);
+  const transformReports = [];
+  let rawBufferInfo = null;
+
+  if (isCustomInput) {
+    const decoder = formats.getHandlerByName(format);
+    if (!decoder || !decoder.isInput) {
+      throw new ZapwebpError({
+        code: 'E_UNSUPPORTED_FORMAT',
+        message: `No decoder registered for input format "${format}".`,
+        fix: 'Install a format plugin or register a handler with registerFormat().',
+      });
+    }
+    const decoded = await decoder.decode(data, opts);
+    if (!decoded || !decoded.data || !Number.isInteger(decoded.width) || !Number.isInteger(decoded.height)) {
+      throw new ZapwebpError({
+        code: 'E_CORRUPT_HEADER',
+        message: `Custom decoder for "${format}" returned an invalid RawImage.`,
+        fix: 'Ensure the custom format decoder returns { data, width, height } with non-empty pixel bytes.',
+      });
+    }
+    checkDimensions(decoded.width, decoded.height);
+    let hasAlpha = Boolean(decoded.hasAlpha);
+    if (decoded.hasAlpha === undefined) {
+      for (let i = 3; i < decoded.data.length; i += 4) {
+        if (decoded.data[i] < 255) {
+          hasAlpha = true;
+          break;
+        }
+      }
+    }
+    sourceHasAlpha = hasAlpha;
+    const rawBuffer = Buffer.isBuffer(decoded.data)
+      ? decoded.data
+      : Buffer.from(decoded.data.buffer, decoded.data.byteOffset, decoded.data.byteLength);
+    rawBufferInfo = {
+      buffer: rawBuffer,
+      rawOptions: {
+        width: decoded.width,
+        height: decoded.height,
+        channels: 4,
+      },
+    };
+  } else if (format === 'svg') {
     const svg = validateSvg(data);
     const dims = svgDimensions(svg);
     const aspect = dims.width && dims.height ? dims.height / dims.width : 1;
@@ -710,17 +998,28 @@ async function convertImage(input, options = {}) {
     sourceHasAlpha = Boolean(meta.hasAlpha);
   }
 
-  const transformReports = [];
-  let rawBufferInfo = null;
-
   if (opts.transforms && opts.transforms.length > 0) {
-    let raw = await decodeToRgba(source, format === 'svg' ? 'png' : format);
+    let raw;
+    if (rawBufferInfo) {
+      raw = {
+        data: rawBufferInfo.buffer,
+        width: rawBufferInfo.rawOptions.width,
+        height: rawBufferInfo.rawOptions.height,
+      };
+    } else {
+      raw = await decodeToRgba(source, format === 'svg' ? 'png' : format);
+    }
+
     for (const step of opts.transforms) {
       if (typeof step.apply === 'function') {
         const inputDims = { width: raw.width, height: raw.height };
         const transformed = await step.apply(raw, opts);
         if (!transformed || !transformed.data || !transformed.width || !transformed.height) {
-          throw new Error(`Transform "${step.name || 'unknown'}" returned an invalid RawImage.`);
+          throw new ZapwebpError({
+            code: 'E_PLUGIN_SANDBOX_VIOLATION',
+            message: `Transform "${step.name || 'unknown'}" returned an invalid RawImage.`,
+            fix: 'Ensure transform plugins return { data, width, height } with non-empty pixel data.',
+          });
         }
         checkDimensions(transformed.width, transformed.height);
         raw = transformed;
@@ -769,6 +1068,13 @@ async function convertImage(input, options = {}) {
   const targetQuality = options.quality !== undefined ? Number(options.quality) : evalQ.quality;
   const targetLossless = options.lossless !== undefined ? Boolean(options.lossless) : evalQ.lossless;
 
+  if (opts.to === 'jpeg' && targetLossless) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'JPEG output does not support lossless encoding.',
+      fix: 'Choose WebP, PNG, or AVIF for lossless output, or set lossless: false.',
+    });
+  }
   if (opts.to === 'jpeg' && sourceHasAlpha && !opts.background) {
     throw new ZapwebpError({
       code: 'E_ALPHA_NOT_REPRESENTABLE',
@@ -777,7 +1083,16 @@ async function convertImage(input, options = {}) {
       suggestedFix: { background: '#ffffff' },
     });
   }
-  if (opts.to === 'jpeg' && targetLossless) throw new Error('JPEG output does not support lossless encoding.');
+
+  const isCustomOutput = !['webp', 'png', 'jpeg', 'avif'].includes(opts.to);
+  const customEncoder = isCustomOutput ? formats.getHandlerByName(opts.to) : null;
+  if (isCustomOutput && (!customEncoder || !customEncoder.isOutput)) {
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: `No encoder registered for output format "${opts.to}".`,
+      fix: 'Install a format plugin or register a handler with registerFormat().',
+    });
+  }
 
   const createPipeline = () => {
     const sharpInstance = getSharp();
@@ -788,6 +1103,32 @@ async function convertImage(input, options = {}) {
   };
 
   const encodeWithQuality = async (q, isLossless) => {
+    if (isCustomOutput) {
+      let rawImage;
+      if (rawBufferInfo) {
+        rawImage = {
+          data: rawBufferInfo.buffer,
+          width: rawBufferInfo.rawOptions.width,
+          height: rawBufferInfo.rawOptions.height,
+        };
+      } else {
+        rawImage = await decodeToRgba(source, format);
+      }
+      const encoded = await customEncoder.encode(rawImage, {
+        ...opts,
+        quality: q,
+        lossless: isLossless,
+      });
+      const encodedBuf = Buffer.isBuffer(encoded) ? encoded : Buffer.from(encoded.buffer, encoded.byteOffset, encoded.byteLength);
+      return {
+        data: encodedBuf,
+        info: {
+          width: rawImage.width,
+          height: rawImage.height,
+          size: encodedBuf.length,
+        },
+      };
+    }
     let p = createPipeline();
     if (opts.width || opts.height) p = p.resize({ width: opts.width, height: opts.height, fit: opts.fit, withoutEnlargement: false });
     if (opts.background && sourceHasAlpha) p = p.flatten({ background: opts.background });
@@ -820,11 +1161,17 @@ async function convertImage(input, options = {}) {
       });
     }
 
-    // Binary search over quality [10, effectiveQuality]
+    // Binary search over quality [10, effectiveQuality] with format-specific iteration caps (Finding 4.1)
+    const getMaxIterationsForFormat = (fmt) => {
+      const f = String(fmt || '').toLowerCase();
+      if (f === 'avif') return 3;
+      if (f === 'webp' || f === 'jpeg') return 4;
+      return 3;
+    };
+    const maxIterations = getMaxIterationsForFormat(opts.to);
     let low = 10;
     let high = effectiveQuality;
     let bestResult = null;
-    const maxIterations = 5;
 
     while (low <= high && compressionIterations < maxIterations) {
       compressionIterations++;
@@ -914,7 +1261,11 @@ async function convertImage(input, options = {}) {
   if (opts.assertAlpha && sourceHasAlpha) {
     const check = await verifyAlpha(output);
     if (!check.hasAlpha) {
-      throw new Error('Alpha assertion failed: output image does not contain transparent pixels.');
+      throw new ZapwebpError({
+        code: 'E_ALPHA_NOT_REPRESENTABLE',
+        message: 'Alpha assertion failed: output image does not contain transparent pixels.',
+        fix: 'Ensure the target format supports transparency and no flattening background was applied.',
+      });
     }
   }
 
@@ -926,6 +1277,30 @@ async function convertImage(input, options = {}) {
     ? 'flattened'
     : (sourceHasAlpha ? 'preserved' : 'preserved_opaque');
 
+  if (options.customMetadata && typeof options.customMetadata === 'object') {
+    output = attachCustomMetadata(output, opts.to, options.customMetadata);
+  }
+
+  const sourceQuality = evaluateSourceQuality(format, data);
+  const sizeImpact = evaluateSizeImpact(output.length, data.length, format, opts.to, effectiveLossless);
+
+  let losslessVerified = false;
+  if (effectiveLossless && !opts.background && ['webp', 'png', 'avif'].includes(opts.to)) {
+    const verified = await verifyLosslessPixels(source, output, format, opts.to, getSharp);
+    if (!verified) {
+      throw new ZapwebpError({
+        code: 'E_LOSSLESS_MISMATCH',
+        message: 'Lossless verification failed: decoded output does not match input pixels.',
+        fix: 'Verify the target format supports full lossless encoding and no color-space shifting was applied.',
+      });
+    }
+    losslessVerified = true;
+  }
+
+  if (effectiveLossless && (format === 'jpeg' || format === 'jpg')) {
+    warnings.push("Lossless conversion of a JPEG source preserves existing compression artifacts and produces a larger file without improving quality.");
+  }
+
   return finish({
     data: output,
     format: opts.to,
@@ -934,6 +1309,10 @@ async function convertImage(input, options = {}) {
     size: output.length,
     alphaPreserved,
     alphaVerified: alphaPreserved,
+    lossless: effectiveLossless,
+    losslessVerified,
+    sourceQuality,
+    sizeImpact,
     backgroundStatus,
     transparency,
     flattenColor: opts.background || undefined,
@@ -961,7 +1340,9 @@ async function convertImage(input, options = {}) {
     lifecycle: {
       keepOriginal: opts.keepOriginal,
       originalPath: options.inputPath || options.filePath || options.originalPath || undefined,
-      originalDeleted: options.originalDeleted !== undefined ? Boolean(options.originalDeleted) : !opts.keepOriginal,
+      originalDeleted: options.originalDeleted !== undefined ? Boolean(options.originalDeleted) : false,
+      action: 'in_memory_only',
+      note: 'convertImage operates on buffers, not files. Use the CLI for file operations.',
       backupPath: options.backupPath || undefined,
       cleanupDelay: opts.cleanupDelay,
     },
@@ -1016,6 +1397,10 @@ async function convert(input, options = {}) {
   out.ingestion = result.ingestion;
   out.warnings = result.warnings;
   out.quality = result.quality;
+  out.lossless = result.lossless;
+  out.losslessVerified = result.losslessVerified;
+  out.sourceQuality = result.sourceQuality;
+  out.sizeImpact = result.sizeImpact;
   return out;
 }
 
@@ -1028,6 +1413,16 @@ async function convert(input, options = {}) {
 async function decodeToRgba(input, format) {
   const data = asBuffer(input);
   const fmt = format ? String(format).toLowerCase() : detectFormat(data);
+  const customHandler = formats.getHandlerByName(fmt);
+  if (customHandler && customHandler.isInput && !['svg', 'png', 'jpeg', 'webp', 'avif', 'gif', 'tiff'].includes(fmt)) {
+    const raw = await customHandler.decode(data);
+    checkDimensions(raw.width, raw.height);
+    return {
+      data: raw.data instanceof Uint8ClampedArray ? raw.data : new Uint8ClampedArray(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength),
+      width: raw.width,
+      height: raw.height,
+    };
+  }
   let source = data;
   if (fmt === 'svg') {
     const svg = validateSvg(data);
@@ -1056,10 +1451,19 @@ async function decodeToRgba(input, format) {
  */
 async function encodeFromRgba(image, options = {}) {
   if (!image || !image.data || !Number.isInteger(image.width) || !Number.isInteger(image.height)) {
-    throw new Error('image must be an object with data (RGBA bytes), width, and height.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'image must be an object with data (RGBA bytes), width, and height.',
+      fix: 'Pass a valid RawImage object.',
+    });
   }
   checkDimensions(image.width, image.height);
   const opts = normalizeOptions(options);
+  const customHandler = formats.getHandlerByName(opts.to);
+  if (customHandler && customHandler.isOutput && !['webp', 'png', 'jpeg', 'avif'].includes(opts.to)) {
+    const encoded = await customHandler.encode(image, opts);
+    return Buffer.isBuffer(encoded) ? encoded : Buffer.from(encoded.buffer, encoded.byteOffset, encoded.byteLength);
+  }
   const raw = Buffer.isBuffer(image.data)
     ? image.data
     : Buffer.from(image.data.buffer, image.data.byteOffset, image.data.byteLength);
@@ -1072,6 +1476,13 @@ async function encodeFromRgba(image, options = {}) {
     }
   }
 
+  if (opts.to === 'jpeg' && opts.lossless) {
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'JPEG output does not support lossless encoding.',
+      fix: 'Choose WebP, PNG, or AVIF for lossless output, or set lossless: false.',
+    });
+  }
   if (opts.to === 'jpeg' && hasAlpha && !opts.background) {
     throw new ZapwebpError({
       code: 'E_ALPHA_NOT_REPRESENTABLE',
@@ -1079,9 +1490,6 @@ async function encodeFromRgba(image, options = {}) {
       fix: 'Pass --background "#ffffff" or choose WebP/PNG/AVIF.',
       suggestedFix: { background: '#ffffff' },
     });
-  }
-  if (opts.to === 'jpeg' && opts.lossless) {
-    throw new Error('JPEG output does not support lossless encoding.');
   }
 
   let pipeline = getSharp()(raw, {
@@ -1138,9 +1546,14 @@ function parseScales(scaleInput) {
     ? scaleInput
     : String(scaleInput).split(',').map((s) => s.trim()).filter(Boolean);
   const parsed = list.map((item) => {
-    const num = Number(item);
+    const cleaned = String(item).trim().replace(/x$/i, '');
+    const num = Number(cleaned);
     if (!Number.isFinite(num) || num <= 0) {
-      throw new Error(`Scale multiplier must be a positive number, received: ${item}`);
+      throw new ZapwebpError({
+        code: 'E_INVALID_CONFIG',
+        message: `Scale multiplier must be a positive number, received: ${item}`,
+        fix: 'Use positive numbers like "1", "2", or "3".',
+      });
     }
     return num;
   });
@@ -1273,9 +1686,19 @@ module.exports = {
   metadataRegistry: metadata.metadataRegistry,
   getMetadataHandlers: metadata.getMetadataHandlers,
   cleanBytes: metadata.cleanBytes,
+  cleanMetadata: metadata.cleanBytes,
+  suggest,
+  evaluateSourceQuality,
+  evaluateSizeImpact,
+  verifyLosslessPixels,
+  computeContentSignals,
+  attachCustomMetadata,
+  extractCustomMetadata,
   getTransforms,
   getSharp,
   getResvg,
+  assertRuntimeIsolation,
+  detectEnvironment,
   MAX_WIDTH,
   INPUT_FORMATS,
   OUTPUT_FORMATS,

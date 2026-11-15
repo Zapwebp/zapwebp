@@ -174,6 +174,15 @@ function defineTransform(step) {
   return step;
 }
 
+const {
+  validatePluginPermissions,
+  runInSandbox,
+  executeInWorker,
+  sandboxedTransform,
+  sandboxedFormatHandler,
+} = require('./sandbox');
+const { createWorkerScriptUrl } = require('./browser-sandbox');
+
 module.exports = {
   definePlugin,
   defineTransform,
@@ -181,6 +190,12 @@ module.exports = {
   safeDecode,
   createMockRawImage,
   validateStorageWrite,
+  validatePluginPermissions,
+  runInSandbox,
+  executeInWorker,
+  sandboxedTransform,
+  sandboxedFormatHandler,
+  createWorkerScriptUrl,
   MAX_DECODE_BYTES,
 };
 

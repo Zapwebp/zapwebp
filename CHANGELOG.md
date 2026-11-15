@@ -2,6 +2,117 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.18.0] - 2026-11-15
+
+### Added
+
+- **High-Resolution ICO Plugin & Favicon Generator (`@zapwebp/format-ico`, `packages/format-ico`)**:
+  - **Multi-Resolution Container Writer (`encodeIco`)**: Builds standard multi-resolution ICO containers embedding PNG slices (`16×16`, `32×32`, `48×48`, `64×64`, `128×128`, `256×256`) with full 8-bit alpha transparency preservation and zero black background discoloration.
+  - **Universal Container Parser & Decoder (`parseIco`, `decodeIco`)**: Parses ICONDIR (6 bytes) and ICONDIRENTRY (16 bytes) headers with strict memory boundary checks. Decodes modern embedded PNG streams and legacy Windows BMP DIBs (32-bit ARGB, 24-bit BGR, and 8/4/1 bpp palletized with 1-bit AND transparency masks).
+  - **Favicon Suite Generator (`generateFaviconSuite`)**: One-call generator producing `favicon.ico`, `apple-touch-icon.png` (180×180), `icon-192.png` (PWA), `icon-512.png` (PWA splash), `favicon-32x32.png`, `favicon-16x16.png`, W3C `site.webmanifest`, and HTML link snippets.
+  - **Standalone Executable CLI (`zapwebp-favicon`)**: Terminal CLI supporting custom sizes, URL prefixes, HTML file generation, and machine-readable `--json` output for agent integration.
+  - **FormatHandler Contract**: Implements `@zapwebp/plugin-sdk` `FormatHandler` (`name: 'ico'`, `supportsAlpha: true`, `detect`, `decode`, `encode`) for immediate drop-in integration with `registerFormat(icoHandler)` in `@zapwebp/core`.
+  - **Comprehensive Agentic Docs & Localization**: Added bilingual documentation at `/plugins/format-ico` in English and Tagalog, linked in `llms.txt`, and cataloged in `agent.json`.
+
+- **VS Code Extension: Context-Aware "Zap" Command & Preference Memory (`apps/vscode`)**:
+  - **Dynamic Context-Aware Menu (`zapwebp.zap`)**: Replaced hardcoded static commands with a single context-aware "Zap" entry on right-click. Inspects true file formats via magic byte analysis rather than relying solely on file extensions.
+  - **Format-Tailored Target Filtering**: Automatically filters conversion options so the source format is never presented as a target. Hides vector retina multipliers for raster images (e.g. PNG, JPEG, WebP) while keeping them for SVGs (or PNGs when `showMultipliersForPng` is enabled).
+  - **Preference Memory (`zapwebp.rememberLastChoice`)**: Remembers developer conversion preferences per file type. Frequently chosen targets move to the top of the QuickPick marked `★ Last used`.
+  - **Configurable Default Targets (`zapwebp.defaultTargets`)**: Configurable mappings (e.g., SVG → WebP, PNG → WebP, JPEG → WebP, WebP → AVIF, ICO → PNG) ensure the recommended choice is always prioritized.
+  - **Smart Multi-Select Routing**: Single format batches convert immediately; mixed format selections offer options to convert all to WebP or route each file to its preferred target format without ambiguity.
+  - **Comprehensive Test Suite**: Added 11 new tests in `apps/vscode/test/zap.test.js` verifying format sniffing, dynamic menu generation, preference storage, and safe non-destructive conversions across all image formats.
+
+- **VS Code Extension: Zap Folder & Mixed Formats Panel (`apps/vscode`)**:
+  - **Explorer Context Menu Integration**: Added `zapwebp.zapFolder` and `zapwebp.zapPanel` commands when right-clicking folders in Explorer (`when: "explorerResourceIsFolder"`).
+  - **Single-Format Direct Conversion (Flow A)**: When all files in a folder share a single format, presents an immediate QuickPick format selector (WebP, AVIF, PNG, JPEG, and Multi-Scale `@1x/@2x/@3x` for SVG).
+  - **Mixed Formats Webview Panel (Flow B)**: When a folder contains multiple image formats, opens an interactive Webview Panel (`zapwebpFolder`) where developers can configure target formats and SVG scale multipliers per format in one unified pass.
+  - **Opt-In Subfolder Traversal (Flow C)**: Detects nested subfolders and prompts the user to choose between "Scan this folder only" and "Include subfolders", preventing accidental conversions in deep directory trees.
+  - **Silently Skipped Assets & Safety Limits**: Automatically skips non-image files without throwing errors, ignores build and dependency directories (`node_modules`, `.git`, `dist`, `build`, `.zapwebp`), caps scans at 500 files, and ensures sources are never overwritten.
+  - **Actionable Summary & Output Log**: Toast notification summarizes converted files, total bytes saved, and skipped files, featuring a "Show Details" action opening itemized logs in the Zapwebp output channel.
+
+- **Strict Dependency & Lockfile Governance (`scripts/`, `.github/workflows/ci.yml`)**:
+  - **Lockfile Verification**: Added `scripts/verify-lockfile.js` to ensure lockfile integrity and prevent lockfile changes without corresponding `package.json` updates in CI.
+  - **Build Hook Hardening**: Audited all dependencies for lifecycle scripts (`preinstall`, `install`, `postinstall`); strictly restricted builds to vetted packages (`sharp`, `esbuild`) in `pnpm-workspace.yaml`.
+  - **Zero-Telemetry CI Verification**: Added `scripts/check-zero-telemetry.js` scanning core engines, shared modules, features, and public web bundles for tracking beacons (`sendBeacon`, `fetch`, `XMLHttpRequest`) and analytics domains.
+  - **Lint Rule Enforcement**: Added ESLint `no-restricted-imports` forbidding `node:net`, `node:http`, `node:https`, and `node:dgram` in the core engine.
+
+- **Capability Sandboxing & Plugin Runtime Security (`@zapwebp/plugin-sdk`)**:
+  - **In-Process Capability Interceptor (`runInSandbox`)**: Blocks unauthorized imports of `node:fs`, `node:fs/promises`, `node:child_process`, and unconsented network modules, throwing structured `E_PLUGIN_SANDBOX_VIOLATION` with clear remediation advice.
+  - **Worker Thread Isolation (`executeInWorker`)**: Executes plugins inside isolated `node:worker_threads` with sanitized `process.env` and memory boundaries.
+  - **Browser Web Worker Sandboxing (`browser-sandbox.js`)**: Implemented blob-based Web Worker wrappers isolating browser plugins from the main DOM, cookies, and `localStorage`.
+  - **Permission Declaration & Consent (`validatePluginPermissions`)**: Storage adapters requiring remote access must declare `"zapwebp": { "permissions": ["network"] }` in `package.json` and prompt for explicit user consent.
+  - **Sandboxed Wrappers**: Exported `sandboxedTransform` and `sandboxedFormatHandler` enforcing strict typed byte contracts (bytes in, bytes out).
+
+- **Agent-Native Starter & Scaffolder Redesign (`create-zapwebp`, `content/scaffolding.md`)**:
+  - **Context-First Scaffolding**: Redesigned `create-zapwebp` to generate working project context rather than opinionated stub code. Produces empty-but-structured `AGENTS.md`, `SKILLS.md`, and `agent.json` files alongside strict TypeScript (`tsup`), test runner (`vitest`), and GitHub Actions CI.
+  - **Six Plugin Archetypes**: Supports `format`, `storage`, `transform`, `metadata`, `build`, and `custom` plugin templates with tailored interface stubs (`FormatHandler`, `StorageAdapter`, `TransformStep`, `MetadataHandler`, `ZapPlugin`).
+  - **First-Run Agent Guidance**: Terminal prompts guide developers to provide their intent to their AI assistant before coding, ensuring projects are documented and maintainable.
+  - **Upgrade Metadata (`.zapwebp-scaffold.json`)**: Emits scaffold metadata tracking template versions, author, and archetype for non-destructive future migrations.
+  - **Scaffolding Documentation (`/scaffolding.md`)**: Added documentation page and Tagalog translation (`locales/tl/docs/scaffolding.md`) for plugin creators and AI agents.
+  - **Sandbox Capability Declarations**: Pre-configures sandbox permissions (`zapwebp.permissions: []` for in-memory plugins, `['network']` for storage adapters).
+
+- **Core Engine Remediation & Architectural Hardening (`@zapwebp/core`, `scripts/check-dts-parity.js`)**:
+  - **Format Registry Dynamic Dispatch**: Connected `convertImage` and `normalizeOptions` directly to `formats.registry`. Third-party format handlers registered via `registerFormat` now seamlessly decode and encode through the primary `convert` pipeline.
+  - **TypeScript Parity & CI Parity Checker**: Aligned `index.d.ts` declarations for `checkPolicyInput` and `evaluateQuality` with runtime object parameter shapes. Added automated `scripts/check-dts-parity.js` CI guard.
+  - **Worker Leak Prevention & AbortSignal**: Added `aborted` flag and native `AbortSignal` support to `parallelMap`, immediately halting queued workers on failure and throwing structured `E_ABORTED`.
+  - **Single-Pass Metadata Stripping**: Consolidated raster metadata stripping into a single Sharp pass, preventing multi-generational image quality degradation.
+  - **ReDoS Elimination**: Replaced backtracking regex with a linear, zero-backtracking `stripCssComments` parser.
+  - **Format Iteration Capping**: Implemented format-aware iteration caps (AVIF: 3, WebP: 4, JPEG: 4) for iterative compression.
+
+- **Zapwebp Smart Layer — AI Integration Primitives (`@zapwebp/core`, `@zapwebp/mcp`, `content/ai-integration.md`)**:
+  - **Mathematical Content Signals (`inspect`)**: `inspect(input)` now calculates dependency-free, model-friendly content signals including `edgeDensity`, `colorCount`, `sharpness` (normalized Laplacian variance), `luminanceMean`, `luminanceVariance`, `transparencyCoverage`, and deterministic classification (`estimatedType`, `estimatedTypeConfidence`).
+  - **Dominant Palette Detection (`inspect`)**: Extracts dominant hex color and frequency-sorted palette percentages across 15-bit quantized color space.
+  - **Contextual Suggestions (`suggest`)**: Exported canonical `suggest(info, useCase)` function providing deterministic format and quality recommendations tailored for `'icon'`, `'photo'`, `'hero'`, `'thumbnail'`, `'logo'`, and `'banner'` placements.
+  - **Arbitrary Custom Metadata (`customMetadata`)**: Added `customMetadata` option to `ConvertOptions` and `convertImage`, embedding arbitrary model data (IDs, confidence, alt text, bounding boxes) into WebP (`ZAPM` RIFF chunk), PNG (`tEXt` chunk), JPEG (`COM` marker), and SVG (`<metadata>`) containers, with automated extraction in `inspect`.
+  - **MCP Tool Alignment**: Updated `suggest_conversion` in `@zapwebp/mcp` to delegate directly to `@zapwebp/core`'s canonical `suggest()` heuristic engine.
+  - **AI Integration Guide (`/ai-integration.md`)**: Comprehensive documentation covering OpenAI Vision (GPT-4o), Anthropic Claude, decision caching by SHA-256, and batch streaming pipelines.
+
+- **Lossless Truth, Pixel Verification, and UX Alignment (`@zapwebp/core`, `@zapwebp/cli`, `@zapwebp/mcp`, `public/`, `content/lossless.md`)**:
+  - **Pixel Identity Verification Engine (`losslessVerified`)**: Added `verifyLosslessPixels` decoding output back to uncompressed RGBA to compare against source pixels byte-for-byte; verified lossless conversions attach `losslessVerified: true` or throw `E_LOSSLESS_MISMATCH`.
+  - **Source Quality Evaluation (`sourceQuality`)**: Evaluates source formats and asset characteristics (`'high'`, `'medium'`, `'low'`) explaining generational quality truth.
+  - **Size Impact Analysis (`sizeImpact`)**: Computes mathematical byte ratio comparing actual lossless payload against estimated lossy equivalent, providing actionable advisory notes.
+  - **Degraded Source Warning**: Detects JPEG source inputs in lossless mode and emits advisory warnings explaining that lossless preserves existing compression artifacts and bloats file sizes without improving visual quality.
+  - **Web App Cockpit Guidance**: Added inline lossless explanation note below toggle switch and reactive warning banner (`#lossless-degraded-banner`) when degraded JPEG sources are uploaded.
+  - **CLI Advisory Warnings**: CLI emits warning flags in stderr when `--lossless` is used on JPEG files.
+  - **MCP System Instructions & Fields**: Updated hidden agent system instructions with rules against using lossless on JPEG inputs, returning `losslessVerified`, `sourceQuality`, and `sizeImpact` in tool responses.
+  - **Canonical Documentation (`/lossless.md`)**: Added dedicated documentation page and Tagalog translation (`locales/tl/docs/lossless.md`) dispelling the misconception that lossless equals high visual quality.
+
+- **Zapwebp Integration Ecosystem — Production Reliability Masterplan (`@zapwebp/shared`, `test/reliability.test.js`, `.github/workflows/reliability.yml`, `content/reliability.md`)**:
+  - **Shared Reliability Infrastructure (`@zapwebp/shared/reliability`)**:
+    - **50-Case Golden Corpus (`GOLDEN_CASES`, `verifyGoldenCase`)**: Established 50 comprehensive test cases covering SVG, PNG, JPEG, and WebP format permutations with bit-for-bit determinism and SHA-256 output verification.
+    - **Adversarial Security Fixtures (`ADVERSARIAL_FIXTURES`, `verifyAdversarialRejection`)**: Hardened rejection suite verifying defensive protection against XML Entity Expansion (`billion-laughs.svg`), active script injection (`script-injection.svg`), external SSRF references (`external-ref.svg`), and corrupt container headers (`corrupt-header.webp`).
+    - **Automated Soak Testing Harness (`runSoakTest`)**: Implemented high-iteration soak testing utility monitoring RSS memory growth (ceiling < 60MB), garbage collection behavior, and file descriptor leaks.
+    - **Public Reliability Dashboard (`RELIABILITY_METRICS`, `formatReliabilityTable`)**: Exported structured reliability metrics and an ASCII dashboard formatter for all 7 integrations.
+  - **Seven-Integration Hardening Across Six Core Dimensions**:
+    - **Vite Plugin (`@zapwebp/vite`)**: Verified stability, security against active SVG injection in asset workers, and predictable multi-scale builds.
+    - **Next.js Plugin (`@zapwebp/next`)**: Verified webpack asset compilation, adversarial vector rejection, and clean fallback modes.
+    - **GitHub Action (`@zapwebp/github-action`)**: Enforced fork safety gates against malicious pull request token exfiltration and strict path traversal validation.
+    - **Storage Adapters (`@zapwebp/storage`)**: Enforced boundary sandboxing with ISO 27001/27017 compliance, directory traversal rejection (`..`), and SSRF prevention against link-local and loopback cloud metadata addresses.
+    - **Laravel Package (`@zapwebp/laravel`)**: Verified sanitized command invocation, zero memory leaks, and PSR-standard exception boundaries.
+    - **Lens CLI (`@zapwebp/lens`)**: Implemented `safeRead` boundary sandboxing preventing unauthorized path traversal outside workspace scopes.
+    - **Crop Plugin (`@zapwebp/crop`)**: Enforced strict coordinate clamping, automated bounds calculation, and platform preset exports (`avatar`, `thumbnail`, `banner`, `product`, `story`).
+  - **Unified Reliability Workflow (`.github/workflows/reliability.yml`)**: Added scheduled nightly soak loops (100 iterations) and multi-platform CI matrix across Ubuntu, macOS, and Windows on Node 20 and 22.
+  - **Documentation & Localization (`/reliability.md`)**: Added comprehensive documentation in English and Tagalog (`locales/tl/docs/reliability.md`) detailing the six dimensions and integration health dashboard.
+
+### Changed
+
+- **Standardized Error Architecture (`@zapwebp/core`, `@zapwebp/shared`)**: Replaced all raw `new Error()` throws across `packages/core/src/` with structured `ZapwebpError` containing machine-readable `code`, actionable `fix`, documentation URL, and retryability flags.
+- **Fail-Loud Metadata Verification (`@zapwebp/core`)**: Removed empty `.catch()` blocks in `MetadataRegistry` verification pass. Inspector failures or surviving metadata now fail loudly with `E_CLEAN_FAILED`.
+- **In-Memory Lifecycle Truthfulness**: Fixed `convertImage` to return `originalDeleted: false` and `action: 'in_memory_only'` when running strictly in memory without filesystem deletion handlers.
+- **Format Handler Error Discipline**: Added `failOn: 'error'` uniformly to all Sharp format decoders (`avif`, `gif`, `jpeg`, `png`, `svg`, `tiff`, `webp`), catching truncated or corrupt streams early.
+
+### Fixed
+
+- **SVG Javascript Scheme Injection**: Added explicit rejection for `javascript:` schemes in `validateSvg`, throwing structured `E_UNSAFE_SVG`.
+- **SVG Extreme Aspect Ratio Guard**: Added pre-rasterization checks rejecting aspect ratios `< 0.01` or `> 100` and sub-pixel dimensions with `E_EXTREME_ASPECT_RATIO`.
+- **Scale Multiplier Parsing**: Fixed `parseScales` to strip trailing `x` and `X` suffixes (`'1, 2x, 3'` -> `[1, 2, 3]`).
+- **Agent Manifest & Documentation Parity**: Exported `cleanMetadata` alias for `metadata.cleanBytes`, aligning runtime exports with `agent.json`, and corrected `inspectImage` and `encodeFromRgba` signatures in `packages/core/README.md`.
+
+### Security
+
+- **Strict Core Isolation**: Core image conversion engine now verifies runtime isolation (`assertRuntimeIsolation`) to prevent accidental imports of unauthorized networking stacks into memory-only conversion loops.
+- **Fail-Safe Sandbox Violations**: Malicious filesystem or child process access attempts by third-party plugins are trapped and rejected with `E_PLUGIN_SANDBOX_VIOLATION` rather than compromising the host system.
+
 ## [2.17.0] - 2026-11-14
 
 ### Added

@@ -438,6 +438,40 @@
           </div>
         </div>
 
+        <!-- Lossless Degraded Source (JPEG) Warning Banner -->
+        <div
+          class="lossless-conflict-banner lossless-degraded-banner"
+          id="lossless-degraded-banner"
+          hidden
+          role="alert"
+        >
+          <div class="conflict-content">
+            <span class="conflict-icon" aria-hidden="true">⚠️</span>
+            <div class="conflict-text">
+              <strong>Degraded Source Warning (JPEG)</strong>
+              <p id="lossless-degraded-msg">
+                JPEG source images already contain lossy compression artifacts. Lossless encoding preserves those artifacts byte-for-byte and yields significantly larger files without improving visual quality.
+              </p>
+            </div>
+          </div>
+          <div class="conflict-actions">
+            <button
+              type="button"
+              class="btn-conflict-action btn-conflict-lossy"
+              id="degraded-switch-lossy"
+            >
+              Switch to Lossy (Recommended)
+            </button>
+            <button
+              type="button"
+              class="btn-conflict-action btn-conflict-remove-limit"
+              id="degraded-dismiss-warning"
+            >
+              Keep Lossless
+            </button>
+          </div>
+        </div>
+
         <!-- The Interactive Converter -->
         <div class="converter-card" id="converter-container" toolname="convert_image" tooldescription="Convert images into WebP, AVIF, PNG, or JPEG with guaranteed transparency preservation in local browser memory">
           <input
@@ -895,6 +929,14 @@
                       >Clean Mode</span
                     >
                   </label>
+                </div>
+                <div
+                  class="lossless-inline-guidance"
+                  id="lossless-inline-guidance"
+                  hidden
+                  style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 4px; line-height: 1.3;"
+                >
+                  ℹ️ Mathematical pixel preservation (0 dB loss). Does not repair blurry or degraded sources.
                 </div>
               </div>
             </div>

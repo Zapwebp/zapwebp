@@ -16,7 +16,11 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
   let mode = qualityConfig.mode || (optionsFallback.lossless ? 'lossless' : undefined);
   if (!mode) mode = DEFAULT_CONVERSION_POLICY.quality.mode;
   if (!['lossy', 'lossless', 'auto'].includes(mode)) {
-    throw new Error(`Policy quality.mode must be 'lossy', 'lossless', or 'auto' (received "${mode}").`);
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: `Policy quality.mode must be 'lossy', 'lossless', or 'auto' (received "${mode}").`,
+      fix: 'Set policy.quality.mode to "lossy", "lossless", or "auto".',
+    });
   }
 
   const defaultQuality = qualityConfig.default !== undefined
@@ -24,7 +28,11 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     : (optionsFallback.quality !== undefined ? Number(optionsFallback.quality) : DEFAULT_CONVERSION_POLICY.quality.default);
 
   if (!Number.isInteger(defaultQuality) || defaultQuality < 1 || defaultQuality > 100) {
-    throw new Error('Policy quality.default must be an integer between 1 and 100.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Policy quality.default must be an integer between 1 and 100.',
+      fix: 'Set policy.quality.default to an integer between 1 and 100.',
+    });
   }
 
   const perFormat = {};
@@ -45,7 +53,11 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     : (optionsFallback.minInputBytes !== undefined ? Number(optionsFallback.minInputBytes) : undefined);
 
   if (minInputBytes !== undefined && (!Number.isFinite(minInputBytes) || minInputBytes < 0)) {
-    throw new Error('Policy limits.minInputBytes must be a non-negative number.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Policy limits.minInputBytes must be a non-negative number.',
+      fix: 'Set limits.minInputBytes to 0 or a positive integer.',
+    });
   }
 
   const maxInputBytes = limitsConfig.maxInputBytes !== undefined
@@ -53,11 +65,19 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     : (optionsFallback.maxBytes !== undefined ? Number(optionsFallback.maxBytes) : DEFAULT_CONVERSION_POLICY.limits.maxInputBytes);
 
   if (!Number.isFinite(maxInputBytes) || maxInputBytes <= 0) {
-    throw new Error('Policy limits.maxInputBytes must be a positive number.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Policy limits.maxInputBytes must be a positive number.',
+      fix: 'Set limits.maxInputBytes to a positive byte limit.',
+    });
   }
 
   if (minInputBytes !== undefined && minInputBytes > maxInputBytes) {
-    throw new Error(`Policy limits.minInputBytes (${minInputBytes}) cannot exceed maxInputBytes (${maxInputBytes}).`);
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: `Policy limits.minInputBytes (${minInputBytes}) cannot exceed maxInputBytes (${maxInputBytes}).`,
+      fix: 'Ensure minInputBytes is less than or equal to maxInputBytes.',
+    });
   }
 
   const minOutputBytes = limitsConfig.minOutputBytes !== undefined
@@ -65,7 +85,11 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     : (optionsFallback.minOutputBytes !== undefined ? Number(optionsFallback.minOutputBytes) : undefined);
 
   if (minOutputBytes !== undefined && (!Number.isFinite(minOutputBytes) || minOutputBytes < 0)) {
-    throw new Error('Policy limits.minOutputBytes must be a non-negative number.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Policy limits.minOutputBytes must be a non-negative number.',
+      fix: 'Set limits.minOutputBytes to 0 or a positive integer.',
+    });
   }
 
   const maxOutputBytes = limitsConfig.maxOutputBytes !== undefined
@@ -73,11 +97,19 @@ function resolvePolicy(customPolicy = {}, optionsFallback = {}) {
     : (optionsFallback.maxOutputBytes !== undefined ? Number(optionsFallback.maxOutputBytes) : undefined);
 
   if (maxOutputBytes !== undefined && (!Number.isFinite(maxOutputBytes) || maxOutputBytes <= 0)) {
-    throw new Error('Policy limits.maxOutputBytes must be a positive number.');
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: 'Policy limits.maxOutputBytes must be a positive number.',
+      fix: 'Set limits.maxOutputBytes to a positive byte limit.',
+    });
   }
 
   if (minOutputBytes !== undefined && maxOutputBytes !== undefined && minOutputBytes > maxOutputBytes) {
-    throw new Error(`Policy limits.minOutputBytes (${minOutputBytes}) cannot exceed maxOutputBytes (${maxOutputBytes}).`);
+    throw new ZapwebpError({
+      code: 'E_INVALID_CONFIG',
+      message: `Policy limits.minOutputBytes (${minOutputBytes}) cannot exceed maxOutputBytes (${maxOutputBytes}).`,
+      fix: 'Ensure minOutputBytes is less than or equal to maxOutputBytes.',
+    });
   }
 
   const targetOutputBytes = limitsConfig.targetOutputBytes !== undefined

@@ -115,7 +115,42 @@ class MetadataRegistry {
 
     // 2. Strip pass
     let current = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
-    for (const handler of activeHandlers) {
+
+    // Single-pass optimization for standard raster metadata (EXIF, XMP, ICC, C2PA, PNG-text)
+    const standardNames = ['exif', 'xmp', 'c2pa', 'icc', 'png-text'];
+    const activeStandard = activeHandlers.filter((h) => standardNames.includes(h.name.toLowerCase()));
+    const activeCustom = activeHandlers.filter((h) => !standardNames.includes(h.name.toLowerCase()));
+
+    if (activeStandard.length > 0) {
+      let singlePassSuccessful = false;
+      try {
+        const sharp = require('sharp');
+        const meta = await sharp(current, { failOn: 'none' }).metadata();
+        if (meta && meta.format) {
+          // Sharp re-encodes once and strips EXIF, XMP, ICC, IPTC, and text chunks in a single pass
+          current = await sharp(current, { failOn: 'error' }).toBuffer();
+          singlePassSuccessful = true;
+        }
+      } catch {
+        // Fall back to individual handlers if sharp cannot parse container (e.g. SVG)
+      }
+
+      if (!singlePassSuccessful) {
+        for (const handler of activeStandard) {
+          try {
+            const stripped = await handler.strip(current, options);
+            current = Buffer.isBuffer(stripped) ? stripped : Buffer.from(stripped);
+          } catch (err) {
+            throw new ZapwebpError({
+              code: 'E_CLEAN_FAILED',
+              message: `Metadata handler "${handler.name}" failed: ${err.message}`,
+            });
+          }
+        }
+      }
+    }
+
+    for (const handler of activeCustom) {
       try {
         const stripped = await handler.strip(current, options);
         current = Buffer.isBuffer(stripped) ? stripped : Buffer.from(stripped);
@@ -147,7 +182,17 @@ class MetadataRegistry {
 
     // 4. Zero-Trust Verification Pass: Re-inspect to assert metadata is gone
     for (const handler of activeHandlers) {
-      const remaining = await handler.inspect(current).catch(() => []);
+      let remaining;
+      try {
+        remaining = await handler.inspect(current);
+      } catch (err) {
+        throw new ZapwebpError({
+          code: 'E_CLEAN_FAILED',
+          message: `Zero-Trust verification failed: Handler "${handler.name}" crashed during post-clean inspection: ${err.message}`,
+          fix: 'Report this bug to the metadata handler author.',
+          cause: err,
+        });
+      }
       if (Array.isArray(remaining) && remaining.length > 0) {
         throw new ZapwebpError({
           code: 'E_CLEAN_FAILED',

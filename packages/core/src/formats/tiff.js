@@ -1,5 +1,7 @@
 'use strict';
 
+const { ZapwebpError } = require('@zapwebp/shared');
+
 /** @type {import('./registry').FormatHandler} */
 const tiffHandler = {
   name: 'tiff',
@@ -22,7 +24,7 @@ const tiffHandler = {
 
   async decode(bytes) {
     const sharp = require('sharp');
-    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false })
+    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false, failOn: 'error' })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -35,7 +37,11 @@ const tiffHandler = {
   },
 
   async encode() {
-    throw new Error('TIFF output encoding is not supported. Zap converts TIFF to modern web formats (WebP, PNG, AVIF).');
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: 'TIFF output encoding is not supported. Zapwebp converts TIFF to modern web formats (WebP, PNG, AVIF).',
+      fix: 'Choose one of: webp, png, avif, or jpeg.',
+    });
   },
 };
 

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/format-ico",
+  "version": "1.0.0",
+  "type": "format-plugin",
+  "description": "High-resolution multi-size ICO/CUR format plugin and favicon generator for Zapwebp.",
+  "install": "npm install @zapwebp/format-ico",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/format-ico",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/format-ico.md",
+  "repository": "https://github.com/Zapwebp/format-ico",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "src/index.js",
+  "exports": [
+    "icoHandler",
+    "plugin",
+    "parseIco",
+    "decodeIco",
+    "decodeBmpDib",
+    "encodeIco",
+    "buildIcoContainer",
+    "generateFaviconSuite",
+    "DEFAULT_ICO_SIZES"
+  ],
+  "tools": [
+    {
+      "name": "generate_favicon_suite",
+      "description": "Generates a complete favicon suite (favicon.ico, apple-touch-icon, icon-192, icon-512, site.webmanifest, HTML tags) from a high-resolution source image.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "source": { "type": "string", "description": "Path to input SVG or high-resolution PNG image." },
+          "outDir": { "type": "string", "description": "Target output directory (default: ./favicon-dist)." },
+          "name": { "type": "string", "description": "Application name for webmanifest." },
+          "themeColor": { "type": "string", "description": "Hex theme color for browser navigation bar." }
+        },
+        "required": ["source"]
+      }
+    },
+    {
+      "name": "encode_ico",
+      "description": "Encodes an image into a multi-resolution ICO file embedding standard sizes 16, 32, 48, 64, 128, and 256.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "source": { "type": "string", "description": "Input image buffer or filepath." },
+          "sizes": { "type": "array", "items": { "type": "integer" }, "description": "List of sizes to embed." }
+        },
+        "required": ["source"]
+      }
+    }
+  ]
+}

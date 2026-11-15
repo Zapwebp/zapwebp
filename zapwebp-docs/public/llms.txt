@@ -8,6 +8,10 @@
 - [Docs](https://zapwebp-docs.vercel.app/docs): Full documentation.
 - [CLI](https://zapwebp-docs.vercel.app/cli): Terminal tool.
 - [MCP](https://zapwebp-docs.vercel.app/mcp): AI agent integration.
+- [AI Integration](https://zapwebp-docs.vercel.app/ai-integration): Developer primitives and vision model integration guide.
+- [Lossless](https://zapwebp-docs.vercel.app/lossless): Lossless truth, pixel verification, and size impact.
+- [Scaffolding](https://zapwebp-docs.vercel.app/scaffolding): Agent-native plugin starter and CLI generator.
+- [Reliability](https://zapwebp-docs.vercel.app/reliability): Production reliability masterplan across six core dimensions.
 - [API](https://zapwebp-docs.vercel.app/api): REST API reference.
 
 ## SDKs
@@ -33,6 +37,7 @@
 - [Laravel](https://zapwebp-docs.vercel.app/plugins/laravel): Laravel service provider.
 - [Lens](https://zapwebp-docs.vercel.app/plugins/lens): Image inspection and visual diffing.
 - [Crop](https://zapwebp-docs.vercel.app/plugins/crop): Pure transform crop plugin with auto/manual modes and face detection.
+- [ICO / Favicon](https://zapwebp-docs.vercel.app/plugins/format-ico): High-resolution multi-size ICO plugin and favicon suite generator.
 
 ## Community & Governance
 
@@ -49,6 +54,10 @@
 - [Convert Raw](/convert.md): Convert images in the browser.
 - [CLI Raw](/cli.md): Terminal tool command reference.
 - [MCP Raw](/mcp.md): AI agent MCP server protocol.
+- [Lossless Raw](/lossless.md): Lossless truth, pixel verification, and size impact analysis.
+- [Scaffolding Raw](/scaffolding.md): Agent-native plugin starter and CLI scaffolding guide.
+- [Reliability Raw](/reliability.md): Production reliability masterplan across six core dimensions.
+- [AI Integration Raw](/ai-integration.md): AI integration support and developer pipeline primitives.
 - [Clean Raw](/clean.md): Strip metadata (EXIF, XMP, C2PA) from images.
 - [Formats Raw](/formats.md): Supported input and output formats.
 - [Safety Raw](/safety.md): What Zapwebp refuses to touch.

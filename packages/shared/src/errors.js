@@ -219,6 +219,11 @@ const ERROR_CATALOG = Object.freeze({
     message: 'Image conversion exceeded the maximum timeout threshold.',
     fix: 'Downscale the asset or increase conversion timeout configuration.',
   },
+  E_LOSSLESS_MISMATCH: {
+    code: 'E_LOSSLESS_MISMATCH',
+    message: 'Lossless verification failed: decoded output does not match input pixels.',
+    fix: 'Verify the target format supports full lossless encoding and no color-space shifting was applied.',
+  },
   E_WASM_FAILED: {
     code: 'E_WASM_FAILED',
     message: 'WASM conversion engine failed to initialize.',
@@ -274,6 +279,26 @@ const ERROR_CATALOG = Object.freeze({
     code: 'E_UNSUPPORTED_LOCALE',
     message: 'Requested locale is not supported.',
     fix: 'Choose a supported locale (e.g. en, tl).',
+  },
+  E_PLUGIN_SANDBOX_VIOLATION: {
+    code: 'E_PLUGIN_SANDBOX_VIOLATION',
+    message: 'Plugin attempted to perform an unauthorized action or access a restricted host capability.',
+    fix: 'Community plugins receive and return bytes only. Do not access the host filesystem directly. If your plugin requires network access (e.g. storage adapters), declare it in package.json under "zapwebp.permissions: [\\"network\\"]".',
+  },
+  E_UNSAFE_RUNTIME: {
+    code: 'E_UNSAFE_RUNTIME',
+    message: 'Prohibited networking module was loaded into the offline core conversion runtime.',
+    fix: 'The core conversion engine runs 100% offline in-memory. Remove network imports from the conversion path.',
+  },
+  E_ABORTED: {
+    code: 'E_ABORTED',
+    message: 'Operation was aborted before completion.',
+    fix: 'Retry the operation when ready.',
+  },
+  E_EXTREME_ASPECT_RATIO: {
+    code: 'E_EXTREME_ASPECT_RATIO',
+    message: 'SVG aspect ratio is extreme and exceeds allowable bounds.',
+    fix: 'Check the SVG dimensions. Aspect ratio must be between 0.01:1 and 100:1.',
   },
 });
 

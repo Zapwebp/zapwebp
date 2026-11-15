@@ -1,7 +1,7 @@
 {
   "name": "create-zapwebp",
-  "version": "1.0.1",
-  "description": "Scaffold working Zapwebp format plugins, storage adapters, build plugins, and custom CLIs.",
+  "version": "1.1.0",
+  "description": "Scaffold agent-native Zapwebp plugins with structured AGENTS.md, SKILLS.md, and TypeScript tooling.",
   "bin": {
     "create-zapwebp": "bin/create-zapwebp.js"
   },

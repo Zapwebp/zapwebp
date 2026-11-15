@@ -29,6 +29,10 @@ module.exports = {
             group: ['@zapwebp/ui', '@zapwebp/features', '../../apps/*'],
             message: 'Dependencies point down only: Core cannot import UI or Features.',
           },
+          {
+            group: ['node:net', 'net', 'node:http', 'http', 'node:https', 'https', 'node:dgram', 'dgram'],
+            message: 'Direct network module imports are forbidden in the core engine. Conversion must remain 100% offline and in-memory.',
+          },
         ],
       },
     ],

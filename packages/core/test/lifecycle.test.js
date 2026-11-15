@@ -24,7 +24,8 @@ test('Core Lifecycle: explicit keepOriginal: false and metadata propagates throu
   });
   assert.ok(result.lifecycle);
   assert.equal(result.lifecycle.keepOriginal, false);
-  assert.equal(result.lifecycle.originalDeleted, true);
+  assert.equal(result.lifecycle.originalDeleted, false);
+  assert.equal(result.lifecycle.action, 'in_memory_only');
   assert.equal(result.lifecycle.originalPath, 'src/assets/icon.svg');
   assert.equal(result.lifecycle.backupPath, '.zapwebp/backups/tx1/icon.svg');
   assert.equal(result.lifecycle.cleanupDelay, 'session');

@@ -367,6 +367,7 @@ if (conflictSwitchLossy) {
     syncUiWithSettings();
     syncSettingsSlideoverUI();
     checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
   });
 }
@@ -378,7 +379,53 @@ if (conflictRemoveLimit) {
     syncUiWithSettings();
     syncSettingsSlideoverUI();
     checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
+  });
+}
+
+const losslessDegradedBanner = document.querySelector('#lossless-degraded-banner');
+const degradedSwitchLossy = document.querySelector('#degraded-switch-lossy');
+const degradedDismissWarning = document.querySelector('#degraded-dismiss-warning');
+
+function checkDegradedLosslessSource(filesToCheck) {
+  if (!losslessDegradedBanner) return false;
+  const isLossless = settings.lossless || settings.format === 'png';
+  if (!isLossless) {
+    losslessDegradedBanner.hidden = true;
+    return false;
+  }
+  const files = filesToCheck || Array.from(convertedItems.values()).map((it) => it.file).filter(Boolean);
+  const hasJpeg = files.some((f) => {
+    const ext = getFileExtension(f.name);
+    return ext === 'jpg' || ext === 'jpeg' || f.type === 'image/jpeg';
+  });
+  if (hasJpeg) {
+    losslessDegradedBanner.hidden = false;
+    return true;
+  }
+  losslessDegradedBanner.hidden = true;
+  return false;
+}
+
+if (degradedSwitchLossy) {
+  degradedSwitchLossy.addEventListener('click', () => {
+    settings.lossless = false;
+    if (settings.format === 'png') {
+      settings.format = 'webp';
+    }
+    persistSettings();
+    syncUiWithSettings();
+    syncSettingsSlideoverUI();
+    checkLosslessConflict();
+    if (losslessDegradedBanner) losslessDegradedBanner.hidden = true;
+    reconvertAllItems();
+  });
+}
+
+if (degradedDismissWarning) {
+  degradedDismissWarning.addEventListener('click', () => {
+    if (losslessDegradedBanner) losslessDegradedBanner.hidden = true;
   });
 }
 
@@ -539,6 +586,7 @@ document.querySelectorAll('input[name="setting-default-format"]').forEach((radio
     persistSettings();
     syncUiWithSettings();
     checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
   });
 });
@@ -566,6 +614,7 @@ document.querySelectorAll('input[name="setting-output-size-mode"]').forEach((rad
     }
     persistSettings();
     checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
   });
 });
@@ -630,6 +679,7 @@ if (settingLosslessToggle) {
     persistSettings();
     syncUiWithSettings();
     checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
   });
 }
@@ -1085,6 +1135,12 @@ function updateToggleCards() {
   if (losslessCard && losslessToggle) {
     losslessCard.classList.toggle('is-active', losslessToggle.checked);
   }
+  const losslessGuidance = document.querySelector('#lossless-inline-guidance');
+  if (losslessGuidance) {
+    const isLossless = Boolean(losslessToggle?.checked || settings.lossless);
+    losslessGuidance.hidden = !isLossless;
+    losslessGuidance.style.display = isLossless ? 'block' : 'none';
+  }
 }
 
 function updateQualitySliderState() {
@@ -1178,6 +1234,8 @@ if (losslessToggle) {
     persistSettings();
     updateQualitySliderState();
     updateToggleCards();
+    checkLosslessConflict();
+    checkDegradedLosslessSource();
     reconvertAllItems();
   });
 }
@@ -2595,6 +2653,7 @@ async function handleFiles(files) {
 
   // Check lossless conflict before starting conversion
   checkLosslessConflict();
+  checkDegradedLosslessSource(validFiles);
 
   // If first time, hide idle glyph
   if (convertedItems.size === 0) {

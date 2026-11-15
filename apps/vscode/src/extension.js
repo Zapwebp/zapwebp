@@ -4,6 +4,8 @@ const vscode = require('vscode');
 const { init } = require('./core');
 const { registerConvertCommand } = require('./commands/convert');
 const { registerConvertScalesCommand } = require('./commands/convert-scales');
+const { registerFolderCommands } = require('./commands/folder');
+const { registerZapCommand } = require('./commands/zap');
 const { registerHoverProvider } = require('./hover/provider');
 const { registerOnSaveWatcher } = require('./watcher/on-save');
 const { statusBar } = require('./ui/status-bar');
@@ -20,8 +22,10 @@ function activate(context) {
     statusBar.log(`Engine initialization error: ${err.message}`);
   });
 
+  registerZapCommand(context);
   registerConvertCommand(context);
   registerConvertScalesCommand(context);
+  registerFolderCommands(context);
   registerHoverProvider(context);
   registerOnSaveWatcher(context);
 

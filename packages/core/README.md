@@ -70,18 +70,24 @@ const webpBuffer = await convertImage(svgString, {
 ---
 
 ### 2. `inspectImage(input)`
-Analyzes image dimensions, format, color space, alpha transparency, and AI provenance hints.
+Analyzes image dimensions, format, alpha transparency, and embedded metadata.
 
 ```typescript
 function inspectImage(input: Buffer | Uint8Array | string): Promise<{
   format: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   hasAlpha: boolean;
-  channels: number;
-  space: string;
   bytes: number;
-  aiProvenanceHints: string[];
+  metadata: {
+    hasMetadata: boolean;
+    exif: boolean;
+    xmp: boolean;
+    c2pa: boolean;
+    comments: boolean;
+    chunks: string[];
+    summary: string[];
+  };
 }>
 ```
 
@@ -90,8 +96,8 @@ function inspectImage(input: Buffer | Uint8Array | string): Promise<{
 const { inspectImage } = require('@zapwebp/core');
 
 const info = await inspectImage(imageBuffer);
-console.log(info.format, info.width, info.hasAlpha, info.aiProvenanceHints);
-// => 'png', 1024, true, ['C2PA Manifest detected']
+console.log(info.format, info.width, info.hasAlpha, info.metadata.summary);
+// => 'png', 1024, true, ['PNG C2PA']
 ```
 
 ---
@@ -114,12 +120,12 @@ Provides direct access to raw RGBA pixel buffers for custom transforms.
 const { decodeToRgba, encodeFromRgba } = require('@zapwebp/core');
 
 // Decode image to raw 8-bit RGBA buffer
-const { data, width, height, channels } = await decodeToRgba(inputBuffer);
+const raw = await decodeToRgba(inputBuffer);
 
 // Process raw pixel buffer...
 
 // Encode raw RGBA back to modern format
-const outputBuffer = await encodeFromRgba(data, { width, height }, {
+const outputBuffer = await encodeFromRgba(raw, {
   to: 'webp',
   quality: 85,
 });

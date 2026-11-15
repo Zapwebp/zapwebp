@@ -1,34 +1,91 @@
 'use strict';
 
 const os = require('node:os');
+const { ZapwebpError } = require('@zapwebp/shared');
 
 const DEFAULT_CONCURRENCY = Math.max(1, Math.min(os.cpus()?.length || 4, 8));
 
 /**
  * Concurrently processes an array of items with a fixed concurrency worker pool.
  * Prevents memory thrashing while maximizing multi-core throughput.
+ * Stops all workers immediately on first error or abort signal to prevent resource leaks.
  *
  * @template T, R
  * @param {T[]} items - Array of input items to process
- * @param {number} concurrency - Max simultaneous active promises
+ * @param {number} [concurrency] - Max simultaneous active promises
  * @param {(item: T, index: number) => Promise<R>} workerFn - Async function processing each item
+ * @param {object} [options]
+ * @param {AbortSignal} [options.signal] - Optional AbortSignal for external cancellation
  * @returns {Promise<R[]>}
  */
-async function parallelMap(items, concurrency = DEFAULT_CONCURRENCY, workerFn) {
+async function parallelMap(items, concurrency = DEFAULT_CONCURRENCY, workerFn, options = {}) {
+  let actualConcurrency = concurrency;
+  let actualWorkerFn = workerFn;
+  let actualOptions = options;
+
+  if (typeof concurrency === 'function') {
+    actualWorkerFn = concurrency;
+    actualConcurrency = DEFAULT_CONCURRENCY;
+    actualOptions = typeof workerFn === 'object' && workerFn !== null ? workerFn : {};
+  }
+
   if (!Array.isArray(items) || items.length === 0) return [];
-  const limit = Math.max(1, Math.min(concurrency, items.length));
+  if (typeof actualWorkerFn !== 'function') {
+    throw new TypeError('parallelMap workerFn must be a function.');
+  }
+
+  const signal = actualOptions?.signal;
+  if (signal?.aborted) {
+    throw new ZapwebpError({
+      code: 'E_ABORTED',
+      message: 'Operation aborted.',
+      fix: 'Retry the operation when ready.',
+    });
+  }
+
+  const limit = Math.max(1, Math.min(actualConcurrency, items.length));
   const results = new Array(items.length);
   let currentIndex = 0;
+  let aborted = false;
+  let firstError = null;
+
+  const onAbort = () => {
+    aborted = true;
+  };
+  if (signal) {
+    signal.addEventListener('abort', onAbort, { once: true });
+  }
 
   async function worker() {
-    while (currentIndex < items.length) {
+    while (!aborted && !signal?.aborted && currentIndex < items.length) {
       const index = currentIndex++;
-      results[index] = await workerFn(items[index], index);
+      try {
+        results[index] = await actualWorkerFn(items[index], index);
+      } catch (err) {
+        if (!firstError) firstError = err;
+        aborted = true;
+        throw err;
+      }
     }
   }
 
-  const workers = Array.from({ length: limit }, () => worker());
-  await Promise.all(workers);
+  try {
+    const workers = Array.from({ length: limit }, () => worker().catch(() => {}));
+    await Promise.all(workers);
+  } finally {
+    if (signal) {
+      signal.removeEventListener('abort', onAbort);
+    }
+  }
+
+  if (firstError) throw firstError;
+  if (signal?.aborted) {
+    throw new ZapwebpError({
+      code: 'E_ABORTED',
+      message: 'Operation aborted.',
+      fix: 'Retry the operation when ready.',
+    });
+  }
   return results;
 }
 

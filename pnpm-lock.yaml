@@ -120,6 +120,18 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/format-ico:
+    dependencies:
+      '@zapwebp/plugin-sdk':
+        specifier: workspace:*
+        version: link:../plugin-sdk
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      sharp:
+        specifier: ^0.35.5
+        version: 0.35.5(@types/node@26.6.6)
+
   packages/github-action:
     dependencies:
       '@zapwebp/core':
@@ -172,6 +184,9 @@ importers:
 
   packages/plugin-sdk:
     dependencies:
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@zapwebp/storage':
         specifier: workspace:*
         version: link:../storage

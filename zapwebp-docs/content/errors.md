@@ -45,6 +45,9 @@ Catalogs every structured error condition produced across the Zapwebp engine, CL
 | `E_AUTH` | Invalid or expired storage adapter credentials | Verify API keys, service tokens, or secrets |
 | `E_STORAGE` | Storage provider returned an unhandled error | Check remote storage bucket permissions and connection status |
 | `E_UNKNOWN_FORMAT` | Magic bytes do not match any recognized image format | Check file extension or install an expansion format plugin |
+| `E_PLUGIN_SANDBOX_VIOLATION` | Plugin attempted unauthorized filesystem access or undeclared network calls | Receive and return byte buffers only; declare zapwebp.permissions if network required |
+| `E_UNSAFE_RUNTIME` | Core conversion executed in an environment with unisolated network bindings | Ensure core runs without importing unauthorized network transport libraries |
+| `E_LOSSLESS_MISMATCH` | Decoded output pixels differ from transformed input in lossless mode | Ensure the target format supports full lossless encoding and no flattening background was applied |
 
 ## Examples
 
@@ -95,7 +98,10 @@ $ npx zapwebp badge.png --to jpeg --background "#ffffff"
     "E_RATE_LIMIT": { "exitCode": 1, "status": 429 },
     "E_AUTH": { "exitCode": 1, "status": 401 },
     "E_STORAGE": { "exitCode": 1, "status": 502 },
-    "E_UNKNOWN_FORMAT": { "exitCode": 1, "status": 400 }
+    "E_UNKNOWN_FORMAT": { "exitCode": 1, "status": 400 },
+    "E_PLUGIN_SANDBOX_VIOLATION": { "exitCode": 1, "status": 403 },
+    "E_UNSAFE_RUNTIME": { "exitCode": 1, "status": 500 },
+    "E_LOSSLESS_MISMATCH": { "exitCode": 1, "status": 400 }
   }
 }
 ```

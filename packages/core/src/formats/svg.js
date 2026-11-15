@@ -1,5 +1,7 @@
 'use strict';
 
+const { ZapwebpError } = require('@zapwebp/shared');
+
 /**
  * Validates an SVG input buffer or string.
  * @param {Buffer | Uint8Array | string} input
@@ -8,16 +10,32 @@
 function validateSvgString(input) {
   const svg = Buffer.isBuffer(input) ? input.toString('utf8') : String(input);
   if (Buffer.byteLength(svg) === 0 || !/<svg(?:\s|\/?>)/i.test(svg)) {
-    throw new Error('This file does not contain a valid SVG document.');
+    throw new ZapwebpError({
+      code: 'E_CORRUPT_HEADER',
+      message: 'This file does not contain a valid SVG document.',
+      fix: 'Verify the file begins with an <svg> tag and is well-formed XML.',
+    });
   }
-  if (/<(?:script|foreignObject)\b/i.test(svg) || /\bon\w+\s*=/i.test(svg)) {
-    throw new Error('This SVG contains active content and cannot be converted.');
+  if (/<(?:script|foreignObject)\b/i.test(svg) || /\bon\w+\s*=/i.test(svg) || /javascript:/i.test(svg)) {
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'This SVG contains active content and cannot be converted.',
+      fix: 'Remove <script>, inline on* handlers, or javascript: URI schemes before converting.',
+    });
   }
   if (/<!ENTITY\b/i.test(svg)) {
-    throw new Error('Custom XML entities are not supported.');
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'Custom XML entities are not supported.',
+      fix: 'Remove <!ENTITY> declarations from the SVG markup.',
+    });
   }
   if (/<!DOCTYPE\b/i.test(svg)) {
-    throw new Error('DOCTYPE declarations are not supported.');
+    throw new ZapwebpError({
+      code: 'E_UNSAFE_SVG',
+      message: 'DOCTYPE declarations are not supported.',
+      fix: 'Remove <!DOCTYPE> declarations from the SVG markup.',
+    });
   }
   return svg;
 }
@@ -44,7 +62,11 @@ function getResvg() {
     _cachedResvg = mod.Resvg || mod;
     return _cachedResvg;
   } catch (err) {
-    throw new Error('Native resvg engine is not available: ' + err.message);
+    throw new ZapwebpError({
+      code: 'E_ENGINE_UNAVAILABLE',
+      message: 'Native resvg engine is not available: ' + (err && err.message ? err.message : String(err)),
+      fix: 'Install @resvg/resvg-js or ensure native prebuilts are compiled for this architecture.',
+    });
   }
 }
 
@@ -55,7 +77,11 @@ function getSharp() {
     _cachedSharp = require('sharp');
     return _cachedSharp;
   } catch (err) {
-    throw new Error('Native sharp engine is not available: ' + err.message);
+    throw new ZapwebpError({
+      code: 'E_ENGINE_UNAVAILABLE',
+      message: 'Native sharp engine is not available: ' + (err && err.message ? err.message : String(err)),
+      fix: 'Install sharp via "npm install sharp" or ensure native prebuilts are compiled for this architecture.',
+    });
   }
 }
 
@@ -95,7 +121,7 @@ const svgHandler = {
       background: options.background || 'rgba(0, 0, 0, 0)',
     });
     const pngBuffer = resvg.render().asPng();
-    const { data: raw, info } = await sharp(pngBuffer, { limitInputPixels: 4096 * 4096 })
+    const { data: raw, info } = await sharp(pngBuffer, { limitInputPixels: 4096 * 4096, failOn: 'error' })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -108,7 +134,11 @@ const svgHandler = {
   },
 
   async encode() {
-    throw new Error('SVG output encoding from raster is not supported. Zap converts SVG to modern raster formats (WebP, PNG, AVIF).');
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: 'SVG output encoding from raster is not supported. Zapwebp converts SVG to modern raster formats (WebP, PNG, AVIF).',
+      fix: 'Choose webp, png, avif, or jpeg as output target.',
+    });
   },
 };
 

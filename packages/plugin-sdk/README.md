@@ -98,6 +98,34 @@ const memoryAdapter = manager.getStorageAdapter('memory');
 
 ---
 
+## Security, Capability Sandboxing & Permissions
+
+Zapwebp enforces a zero-trust execution model for all third-party and community plugins:
+
+> **Core Rule for Plugin Authors:**
+> "Your plugin receives bytes, and returns bytes. It does not need file system access. If it requires network access, declare it in `zapwebp.permissions`."
+
+### Execution Boundaries
+1. **No Filesystem Access:** Plugins receive in-memory `Uint8Array` / `Buffer` data or uncompressed RGBA pixel buffers (`RawImage`). Direct imports of `node:fs` or `node:child_process` are blocked and immediately reject with `E_PLUGIN_SANDBOX_VIOLATION`.
+2. **Offline by Default:** Format handlers, metadata handlers, and pixel transforms operate completely offline. Global `fetch()` and `node:net` / `node:http` are blocked.
+3. **Storage Adapters & Network Permissions:** If your plugin is a remote storage adapter (e.g., uploading to S3 or a custom API), declare network permissions in your `package.json`:
+   ```json
+   {
+     "name": "zapwebp-storage-custom",
+     "version": "1.0.0",
+     "zapwebp": {
+       "permissions": ["network"]
+     }
+   }
+   ```
+   The runner will prompt the user for consent before loading the plugin.
+4. **Actionable Errors:** When a sandbox boundary is violated, Zapwebp throws `E_PLUGIN_SANDBOX_VIOLATION` with actionable guidance:
+   - What restricted resource was requested
+   - How to refactor to pure byte buffers
+   - Direct link to the troubleshooting documentation: [https://zapwebp-docs.vercel.app/errors#e_plugin_sandbox_violation](https://zapwebp-docs.vercel.app/errors#e_plugin_sandbox_violation)
+
+---
+
 ## Plugin Contract Specification
 
 ```typescript

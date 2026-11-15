@@ -1,5 +1,7 @@
 'use strict';
 
+const { ZapwebpError } = require('@zapwebp/shared');
+
 /** @type {import('./registry').FormatHandler} */
 const jpegHandler = {
   name: 'jpeg',
@@ -16,7 +18,7 @@ const jpegHandler = {
 
   async decode(bytes) {
     const sharp = require('sharp');
-    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false })
+    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false, failOn: 'error' })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -30,7 +32,11 @@ const jpegHandler = {
 
   async encode(image, options = {}) {
     if (options.lossless) {
-      throw new Error('JPEG output does not support lossless encoding.');
+      throw new ZapwebpError({
+        code: 'E_INVALID_CONFIG',
+        message: 'JPEG output does not support lossless encoding.',
+        fix: 'Choose WebP, PNG, or AVIF for lossless output, or set lossless: false.',
+      });
     }
 
     const sharp = require('sharp');
@@ -48,7 +54,12 @@ const jpegHandler = {
     }
 
     if (hasAlpha && !options.background) {
-      throw new Error('JPEG cannot store transparency. Pass a background color to flatten the image, or choose WebP, PNG, or AVIF.');
+      throw new ZapwebpError({
+        code: 'E_ALPHA_NOT_REPRESENTABLE',
+        message: 'JPEG cannot store transparency. Pass a background color to flatten the image, or choose WebP, PNG, or AVIF.',
+        fix: 'Pass background: "#ffffff" or choose WebP/PNG/AVIF.',
+        suggestedFix: { background: '#ffffff' },
+      });
     }
 
     let pipeline = sharp(raw, {

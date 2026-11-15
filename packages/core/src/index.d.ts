@@ -114,6 +114,7 @@ export interface ConvertOptions {
   inputPath?: string;
   backupPath?: string;
   originalDeleted?: boolean;
+  customMetadata?: Record<string, string | number | boolean>;
 }
 
 export interface LifecycleMetadata {
@@ -133,6 +134,18 @@ export interface CleanCertificate {
   tool: string;
 }
 
+export interface SourceQuality {
+  estimated: 'high' | 'medium' | 'low';
+  reason: string;
+}
+
+export interface SizeImpact {
+  lossyEstimate: number;
+  losslessActual: number;
+  ratio: number;
+  note: string;
+}
+
 export interface ConvertResult {
   data: Buffer;
   format: OutputFormat;
@@ -142,6 +155,10 @@ export interface ConvertResult {
   alphaPreserved: boolean;
   alphaVerified: boolean;
   clean: boolean;
+  lossless?: boolean;
+  losslessVerified?: boolean;
+  sourceQuality?: SourceQuality;
+  sizeImpact?: SizeImpact;
   removedMetadata: string[];
   certificate?: CleanCertificate;
   transforms?: Array<Record<string, any>>;
@@ -175,13 +192,43 @@ export interface MetadataReport {
   summary: string[];
 }
 
+export interface ContentSignals {
+  edgeDensity: number;
+  colorCount: number;
+  sharpness: number;
+  luminanceMean: number;
+  luminanceVariance: number;
+  transparencyCoverage: number;
+  estimatedType: 'photo' | 'icon' | 'screenshot' | 'logo' | 'diagram' | 'text';
+  estimatedTypeConfidence: number;
+}
+
+export interface PaletteInfo {
+  dominant: string;
+  colors: Array<{ hex: string; percentage: number }>;
+}
+
+export type UseCase = 'icon' | 'photo' | 'hero' | 'thumbnail' | 'logo' | 'banner' | 'general';
+
+export interface Suggestion {
+  to: OutputFormat | string;
+  quality: number;
+  lossless: boolean;
+  reason: string;
+  expectedBytes: number;
+  expectedSavings: number;
+}
+
 export interface InspectResult {
   format: InputFormat | string;
   width?: number;
   height?: number;
   hasAlpha: boolean;
   bytes: number;
-  metadata?: MetadataReport;
+  metadata?: MetadataReport & { custom?: Record<string, any> };
+  content?: ContentSignals;
+  palette?: PaletteInfo;
+  suggestions?: Suggestion[];
 }
 
 export type ImageInspection = InspectResult;
@@ -209,17 +256,21 @@ export function registerMetadataHandler(handler: MetadataHandler): void;
 export function registerTransform(transform: TransformStep): void;
 export function getVersion(): string;
 export function getFormats(): string[];
+export function suggest(info: InspectResult, useCase?: UseCase): Suggestion[];
 
 // ==========================================
 // Compatibility and Auxiliary Functions
 // ==========================================
 export function detectFormat(input: Buffer | Uint8Array | string): InputFormat;
 export function detectMetadata(input: Buffer | Uint8Array | string): MetadataReport;
+export function cleanBytes(input: Buffer | Uint8Array, options?: object): Promise<{ output: Buffer; removed: Array<{ type: string; key: string; value: string }>; kept: Array<{ type: string; key: string; value: string }> }>;
+export function cleanMetadata(input: Buffer | Uint8Array, options?: object): Promise<Buffer>;
 export function generateCleanCertificate(output: Buffer | Uint8Array): CleanCertificate;
 export function verifyAlpha(input: Buffer | Uint8Array | string): Promise<{ hasAlpha: boolean; alphaPreserved: boolean; cornerAlpha: number[] }>;
 export function auditConversionCommand(command: string): AuditReport;
 export function explainBlackBackground(context?: object): BlackBackgroundExplanation;
 export function validateSvg(input: Buffer | Uint8Array | string): string;
+export function validateImageBytes(input: Buffer | Uint8Array): void;
 export function checkSvgSafety(input: Buffer | Uint8Array | string, options?: object): { safe: boolean; reason?: string; detail?: string };
 export function inspectImage(input: Buffer | Uint8Array | string): Promise<ImageInspection>;
 export function convertImage(input: Buffer | Uint8Array | string, options?: ConvertOptions): Promise<ConvertResult>;
@@ -232,9 +283,30 @@ export function scaleSuffix(scale: number): string;
 export function outputName(inputPath: string, format?: OutputFormat, scale?: number): string;
 export function generateSrcset(baseFile: string, scales?: number[], format?: OutputFormat, alt?: string): string;
 export function resolvePolicy(customPolicy?: Partial<ConversionPolicy> | null): ConversionPolicy;
-export function checkPolicyInput(inputBytes: number, format: InputFormat, policy: ConversionPolicy): void;
-export function evaluateQuality(format: OutputFormat, inputFormat: InputFormat, policy: ConversionPolicy): { quality: number; lossless: boolean; mode: string };
+export function checkPolicyInput(params: {
+  policy: ConversionPolicy;
+  data: Buffer;
+  detectedFormat: string;
+}): void;
+export function evaluateQuality(params: {
+  policy: ConversionPolicy;
+  inputFormat: string;
+  inputBytes?: number;
+  hasAlpha?: boolean;
+  targetFormat?: string;
+}): {
+  quality: number;
+  lossless: boolean;
+  mode: string;
+  targetQuality: number;
+};
 export function getTransforms(): TransformStep[];
+export function parallelMap<T, R>(
+  items: T[],
+  concurrency?: number | ((item: T, index: number) => Promise<R>),
+  workerFn?: (item: T, index: number) => Promise<R>,
+  options?: { signal?: AbortSignal }
+): Promise<R[]>;
 
 export * from './formats/index';
 

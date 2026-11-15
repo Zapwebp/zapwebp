@@ -24,6 +24,8 @@ const myPlugin = definePlugin({
 
 `@zapwebp/plugin-sdk` provides an extensible, immutable plugin runtime. It allows bundlers, storage providers, CMS platforms, and custom workflow scripts to hook into pre-conversion analysis, post-conversion optimization, and manifest generation without modifying the core engine.
 
+All plugins execute inside capability-restricted sandboxes. Your plugin receives bytes, and returns bytes. It does not need file system access. If it requires network access (such as for remote storage adapters), declare it in `package.json` under `zapwebp.permissions: ["network"]`.
+
 ## Options
 
 | Option | Type | Default | Description |
@@ -40,6 +42,7 @@ const myPlugin = definePlugin({
 | `E_INVALID_PLUGIN` | Plugin definition fails shape validation | Ensure required fields `name` and `version` are provided |
 | `E_HOOK_FAILED` | Lifecycle hook threw an uncaught error | Inspect hook execution logs and catch asynchronous rejections |
 | `E_ADAPTER_CONFLICT` | Multiple plugins register the same adapter identifier | Namespace adapter IDs or disable conflicting plugin |
+| `E_PLUGIN_SANDBOX_VIOLATION` | Plugin accessed restricted filesystem modules or undeclared network | Process bytes in memory only; declare network permissions in package.json if required |
 
 ## For agents
 

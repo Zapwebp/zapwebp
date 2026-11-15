@@ -119,4 +119,5 @@ module.exports = {
   getCanonicalUrl,
   isPrivateIp,
   validateSafeUrl,
+  reliability: require('./reliability'),
 };

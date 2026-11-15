@@ -696,6 +696,11 @@ async function main() {
     const format = detectFormat(inputBuffer);
     const targetFormat = args.targets?.[0] || options.to || 'webp';
     const converted = await convertImage(inputBuffer, { ...options, to: targetFormat });
+    if (converted.warnings && converted.warnings.length) {
+      for (const w of converted.warnings) {
+        process.stderr.write(`⚠️  Warning: ${w}\n`);
+      }
+    }
     if (args.output) {
       await writeAtomic(path.resolve(args.output), converted.data);
     } else {
@@ -1000,6 +1005,11 @@ async function main() {
           certificate: converted.certificate,
           removedMetadata: converted.removedMetadata,
           status: 'converted',
+          warnings: converted.warnings || [],
+          lossless: converted.lossless,
+          losslessVerified: converted.losslessVerified,
+          sourceQuality: converted.sourceQuality,
+          sizeImpact: converted.sizeImpact,
         });
       }
     }
@@ -1170,6 +1180,11 @@ async function main() {
             const converted = await convertImage(currentBytes, targetOptions);
             await writeAtomic(dest, converted.data);
             process.stdout.write(`✓ ${path.relative(rootDir, fullPath)} → ${path.relative(rootDir, dest)} (${converted.size} bytes)\n`);
+            if (converted.warnings && converted.warnings.length) {
+              for (const w of converted.warnings) {
+                process.stderr.write(`  ⚠️  Warning: ${w}\n`);
+              }
+            }
           } catch (err) {
             process.stderr.write(`zap watch error on ${filename}: ${err.message}\n`);
           }

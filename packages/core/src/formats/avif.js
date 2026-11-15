@@ -21,7 +21,7 @@ const avifHandler = {
 
   async decode(bytes) {
     const sharp = require('sharp');
-    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false })
+    const { data: raw, info } = await sharp(bytes, { limitInputPixels: 4096 * 4096, pages: 1, animated: false, failOn: 'error' })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });

@@ -39,6 +39,7 @@ const pages = [
   'plugins/laravel',
   'plugins/lens',
   'plugins/crop',
+  'plugins/format-ico',
   'sdk/core',
   'sdk/plugin',
   'ui',
@@ -46,6 +47,10 @@ const pages = [
   'sdk/cli',
   'sdk/storage',
   'sdk/edge',
+  'ai-integration',
+  'lossless',
+  'scaffolding',
+  'reliability',
 ];
 
 test('Agentic docs validation: all content pages follow the strict template', () => {

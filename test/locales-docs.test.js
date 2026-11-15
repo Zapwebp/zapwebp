@@ -40,12 +40,17 @@ const pages = [
   'plugins/laravel',
   'plugins/lens',
   'plugins/crop',
+  'plugins/format-ico',
   'sdk/core',
   'sdk/plugin',
   'sdk/ui',
   'sdk/cli',
   'sdk/storage',
   'sdk/edge',
+  'ai-integration',
+  'lossless',
+  'scaffolding',
+  'reliability',
 ];
 
 test('Tagalog documentation validation: all translated pages exist and adhere to standards', () => {
