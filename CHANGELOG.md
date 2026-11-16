@@ -2,6 +2,54 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.21.0] - 2026-11-16
+
+### Added
+
+- **AI-Ready Image Infrastructure Positioning & Public Proofs**:
+  - **The Five Guarantees**: Executed brand positioning pivot from marketing features to proving deterministic guarantees across Correctness, Reproducibility, Privacy, Extensibility, and Universality.
+  - **Proof 1 — Transparency Preservation (`test/proof-transparency.test.js`)**: Continuous integration test asserting that pixel `(0,0)` alpha is preserved across alpha-capable formats and transparent-to-JPEG conversions without explicit `--background` fail loudly with `E_ALPHA_NOT_REPRESENTABLE`.
+  - **Proof 2 — Cryptographic Verification Enforcement (`--verify <hash>`, `E_VERIFICATION_FAILED`)**: Implemented strict CLI verification flag. Compares output SHA-256 to expected hash before writing; on mismatch, throws `E_VERIFICATION_FAILED`, terminates with exit code 1, and writes zero bytes.
+  - **Proof 3 — Reproducibility & Public MANIFEST (`MANIFEST.json`, `test/proof-reproducibility.test.js`)**: Published bit-for-bit SHA-256 checksums and byte lengths for all 50 Golden Corpus test fixtures in root `MANIFEST.json`, validated via multi-OS GitHub Actions workflow (`.github/workflows/proofs.yml`) across Ubuntu, macOS, and Windows.
+  - **Public Guarantees Section (`public/index.html`)**: Added visible, accessible 5-card technical guarantees section to the web application.
+
+- **Vercel Serverless Function Architecture (`api/index.js`, `vercel.json`)**:
+  - **Serverless API Entrypoint**: Created dedicated `api/index.js` module exporting the Express application, enabling Vercel to compile and run the backend as a Serverless Function rather than a static fallback.
+  - **Endpoint Resolution**: Configured `vercel.json` rewrites for `/api`, `/api/(.*)`, `/health`, `/mcp`, `/feed.xml`, and docs markdown endpoints pointing to `/api/index.js` with `includeFiles` preservation.
+  - **Eliminated 404 on `/api/v1/convert`**: Resolves endpoint availability on `https://zapwebp.vercel.app/api/v1/convert`, routing browser visitors to docs via 303 redirect and serving binary conversion pipelines to HTTP clients.
+  - **Automated Verification Test (`test/vercel-api.test.js`)**: Validates serverless function exports, `__zap_url` rewrites, JSON descriptor responses, browser redirects, and multipart image conversions.
+
+- **SEO & Google Search Entity Disambiguation**:
+  - **Brand Entity Alignment**: Bound "Zapwebp Converter" and "Zap Webp Converter" variations across page headings, visible body text, meta tags, and JSON-LD schema (`WebApplication`, `Organization`, `WebSite`) to eliminate Google spellcheck splitting.
+  - **Documentation Site Verification**: Added Google site verification meta tag to `zapwebp-docs/index.html`.
+  - **Plugin Scaffolding Aliases**: Registered `/plugins/building` and `/scaffolding` aliases in `zapwebp-docs/src/routes.ts`.
+
+
+## [2.20.0] - 2026-11-16
+
+### Added
+
+- **Intelligent Size Reduction Plugin (`@zapwebp/compressor`, `packages/compressor`)**:
+  - **Deterministic Binary Search**: Implements an 8-iteration binary search over quality settings (`minQuality` to `maxQuality`) to locate the optimal visual quality that strictly satisfies target byte budgets without manual trial and error.
+  - **Adaptive Lanczos3 Downscaling**: Automatically engages an outer downscaling loop (default 0.9 step factor, max 3 attempts) using sharp Lanczos3 resampling when quality reduction alone cannot satisfy the target size constraint.
+  - **Flexible Byte Size Parsing**: `parseTargetBytes` supports numeric bytes (e.g. `500000`, `1024`) and human-readable size strings (`"500kb"`, `"1.5mb"`, `"250b"`, `"1gb"`).
+  - **Structured Diagnostic Error (`E_TARGET_UNREACHABLE`)**: Emits structured errors containing `actualBytes`, `targetBytes`, `suggestedFix`, and `bestAttempt` telemetry when byte targets are mathematically unreachable.
+  - **Non-Throwing Execution Mode**: Supports `throwOnUnreachable: false` returning detailed execution payloads with `achieved: false` and the closest valid attempt.
+  - **Plugin Contract Integration (`@zapwebp/plugin-sdk`)**: Extends Plugin SDK with `defineCompressor`, `CompressionHandler`, `CompressOptions`, and `CompressionResult` type contracts.
+
+- **Ecosystem & Core Engine Integrations**:
+  - **Core Engine (`@zapwebp/core`)**: Added `registerCompressor`, `getCompressor`, and `getCompressors` to core registry. Wired `targetBytes` and `opts.compressor` into `convertImage`, generating detailed `compression` metadata reports.
+  - **CLI Flags (`zapwebp`, `packages/cli`)**: Added `--target <size>`, `--min-quality <int>`, and `--no-downscale` flags with live terminal feedback indicating achieved byte size, iterations, and downscaling passes.
+  - **Model Context Protocol (`@zapwebp/mcp`)**: Extended `convert_image` schema with `targetBytes`, `minQuality`, and `allowDownscale`, returning compression diagnostics in MCP responses.
+  - **Storage Adapters (`@zapwebp/storage`)**: Integrated target size options into storage pre-upload conversion pipelines for Supabase, Firebase, and Neocities.
+  - **Web Application UI (`public/index.html`, `public/app.js`)**: Linked custom size limit controls and API fallback endpoints to compressor target byte pipelines.
+
+- **Documentation & Bilingual Translations**:
+  - Added `/plugins/compressor.md` and `zapwebp-docs/content/plugins/compressor.md` adhering strictly to agentic documentation guidelines.
+  - Added complete Tagalog translation in `locales/tl/docs/plugins/compressor.md`.
+  - Updated route maps, i18n dictionaries, `test/docs.test.js`, and `test/locales-docs.test.js`.
+  - Updated `public/llms.txt` and `zapwebp-docs/public/llms.txt`.
+
 ## [2.19.0] - 2026-11-16
 
 ### Added

@@ -1,0 +1,38 @@
+{
+  "name": "@zapwebp/compressor",
+  "version": "1.0.0",
+  "description": "Intelligent size reduction plugin for Zapwebp with deterministic binary search quality optimization and adaptive downscaling.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "agent.json"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/plugin-sdk": "workspace:*",
+    "@zapwebp/shared": "workspace:*",
+    "sharp": "^0.35.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/compressor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/compressor/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

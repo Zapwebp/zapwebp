@@ -673,6 +673,30 @@ function normalizeOptions(options = {}) {
       });
     }
   }
+
+  const parseTargetBytesHelper = (val) => {
+    if (typeof val === 'number') return val > 0 ? Math.round(val) : undefined;
+    if (typeof val === 'string') {
+      const match = val.trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]*)$/);
+      if (!match) return undefined;
+      const num = Number.parseFloat(match[1]);
+      const unit = match[2].toLowerCase();
+      let mult = 1;
+      if (unit === 'k' || unit === 'kb' || unit === 'kib') mult = 1024;
+      else if (unit === 'm' || unit === 'mb' || unit === 'mib') mult = 1024 * 1024;
+      else if (unit === 'g' || unit === 'gb' || unit === 'gib') mult = 1024 * 1024 * 1024;
+      const res = Math.round(num * mult);
+      return res > 0 ? res : undefined;
+    }
+    return undefined;
+  };
+
+  const targetBytes = options.targetBytes !== undefined
+    ? parseTargetBytesHelper(options.targetBytes)
+    : (options.targetOutputBytes !== undefined
+      ? parseTargetBytesHelper(options.targetOutputBytes)
+      : (options.target !== undefined ? parseTargetBytesHelper(options.target) : undefined));
+
   return {
     to,
     width,
@@ -689,6 +713,12 @@ function normalizeOptions(options = {}) {
     assertAlpha,
     report,
     transforms,
+    targetBytes,
+    minQuality: options.minQuality !== undefined ? Number(options.minQuality) : undefined,
+    allowDownscale: options.allowDownscale !== undefined ? Boolean(options.allowDownscale) : undefined,
+    downscaleStep: options.downscaleStep !== undefined ? Number(options.downscaleStep) : undefined,
+    maxDownscaleAttempts: options.maxDownscaleAttempts !== undefined ? Number(options.maxDownscaleAttempts) : undefined,
+    compressor: options.compressor,
     lockTarget,
     strict,
     overrideLock,
@@ -698,7 +728,7 @@ function normalizeOptions(options = {}) {
     minInputBytes: options.minInputBytes !== undefined ? Number(options.minInputBytes) : (options.policy?.limits?.minInputBytes),
     minOutputBytes: options.minOutputBytes !== undefined ? Number(options.minOutputBytes) : (options.policy?.limits?.minOutputBytes),
     maxOutputBytes: options.maxOutputBytes !== undefined ? Number(options.maxOutputBytes) : (options.policy?.limits?.maxOutputBytes),
-    targetOutputBytes: options.targetOutputBytes,
+    targetOutputBytes: targetBytes || options.targetOutputBytes,
     accept: options.accept,
     reject: options.reject,
     smart: Boolean(options.smart),
@@ -896,7 +926,7 @@ async function convertImage(input, options = {}) {
     });
   }
 
-  const limitMaxOutput = policy.limits?.maxOutputBytes || policy.limits?.targetOutputBytes;
+  const limitMaxOutput = policy.limits?.maxOutputBytes || policy.limits?.targetOutputBytes || opts.targetBytes;
   const limitMinOutput = policy.limits?.minOutputBytes;
   const sizeMode = policy.size?.mode || opts.sizeMode || 'compress';
   const warnings = [];
@@ -1190,6 +1220,9 @@ async function convertImage(input, options = {}) {
   let qualityReducedBy = 0;
   let maxOutputHit = false;
   let compressionIterations = 0;
+  let compressionReport = undefined;
+
+  const activeCompressor = opts.compressor || getCompressor('compressor');
 
   if (limitMaxOutput && output.length > limitMaxOutput) {
     if (sizeMode === 'strict') {
@@ -1202,50 +1235,106 @@ async function convertImage(input, options = {}) {
       });
     }
 
-    // Binary search over quality [10, effectiveQuality] with format-specific iteration caps (Finding 4.1)
-    const getMaxIterationsForFormat = (fmt) => {
-      const f = String(fmt || '').toLowerCase();
-      if (f === 'avif') return 3;
-      if (f === 'webp' || f === 'jpeg') return 4;
-      return 3;
-    };
-    const maxIterations = getMaxIterationsForFormat(opts.to);
-    let low = 10;
-    let high = effectiveQuality;
-    let bestResult = null;
-
-    while (low <= high && compressionIterations < maxIterations) {
-      compressionIterations++;
-      const mid = Math.floor((low + high) / 2);
-      const res = await encodeWithQuality(mid, false);
-      if (res.data.length <= limitMaxOutput) {
-        bestResult = { ...res, quality: mid };
-        low = mid + 1; // Try higher quality
+    if (activeCompressor) {
+      let rawForCompress;
+      if (rawBufferInfo) {
+        rawForCompress = {
+          data: rawBufferInfo.buffer,
+          width: rawBufferInfo.rawOptions.width,
+          height: rawBufferInfo.rawOptions.height,
+          channels: rawBufferInfo.rawOptions.channels || 4,
+        };
       } else {
-        high = mid - 1; // Needs stronger compression
+        rawForCompress = await decodeToRgba(source, format === 'svg' ? 'png' : format);
       }
-    }
 
-    if (bestResult) {
-      qualityReducedBy = effectiveQuality - bestResult.quality;
-      effectiveQuality = bestResult.quality;
-      effectiveLossless = false;
-      maxOutputHit = true;
-      output = bestResult.data;
-      info = bestResult.info;
-    } else {
-      compressionIterations++;
-      const minRes = await encodeWithQuality(10, false);
-      if (minRes.data.length <= limitMaxOutput) {
-        qualityReducedBy = effectiveQuality - 10;
-        effectiveQuality = 10;
+      const compResult = await activeCompressor.compress(rawForCompress, {
+        targetBytes: limitMaxOutput,
+        minQuality: opts.minQuality ?? 10,
+        maxQuality: effectiveQuality,
+        allowDownscale: opts.allowDownscale,
+        downscaleStep: opts.downscaleStep,
+        maxDownscaleAttempts: opts.maxDownscaleAttempts,
+        format: opts.to,
+        background: opts.background,
+        encodeFn: async (img, o) => {
+          const r = await encodeWithQuality(o.quality, false);
+          return r.data;
+        },
+        throwOnUnreachable: sizeMode !== 'flexible',
+      });
+
+      if (compResult.achieved) {
+        output = Buffer.isBuffer(compResult.output) ? compResult.output : Buffer.from(compResult.output);
+        qualityReducedBy = effectiveQuality - compResult.quality;
+        effectiveQuality = compResult.quality;
         effectiveLossless = false;
         maxOutputHit = true;
-        output = minRes.data;
-        info = minRes.info;
+        compressionIterations = compResult.iterations;
+        info.width = compResult.width;
+        info.height = compResult.height;
+        info.size = output.length;
       } else {
-        if (sizeMode === 'flexible') {
-          warnings.push(`Output size (${minRes.data.length} bytes) exceeds target limit (${limitMaxOutput} bytes) despite compression down to quality 10.`);
+        warnings.push(`Output size (${compResult.bytes} bytes) exceeds target limit (${limitMaxOutput} bytes) despite compression.`);
+        output = Buffer.isBuffer(compResult.output) ? compResult.output : Buffer.from(compResult.output);
+        qualityReducedBy = effectiveQuality - compResult.quality;
+        effectiveQuality = compResult.quality;
+        effectiveLossless = false;
+        maxOutputHit = true;
+        compressionIterations = compResult.iterations;
+        info.width = compResult.width;
+        info.height = compResult.height;
+        info.size = output.length;
+      }
+
+      compressionReport = {
+        target: limitMaxOutput,
+        achieved: compResult.achieved,
+        quality: compResult.quality,
+        iterations: compResult.iterations,
+        downscaled: compResult.downscaled,
+        downscaleCount: compResult.downscaleCount,
+        width: compResult.width,
+        height: compResult.height,
+        reason: compResult.reason,
+        bestAttempt: compResult.bestAttempt,
+      };
+    } else {
+      // Binary search over quality [10, effectiveQuality] with format-specific iteration caps (Finding 4.1)
+      const getMaxIterationsForFormat = (fmt) => {
+        const f = String(fmt || '').toLowerCase();
+        if (f === 'avif') return 3;
+        if (f === 'webp' || f === 'jpeg') return 4;
+        return 3;
+      };
+      const maxIterations = getMaxIterationsForFormat(opts.to);
+      let low = 10;
+      let high = effectiveQuality;
+      let bestResult = null;
+
+      while (low <= high && compressionIterations < maxIterations) {
+        compressionIterations++;
+        const mid = Math.floor((low + high) / 2);
+        const res = await encodeWithQuality(mid, false);
+        if (res.data.length <= limitMaxOutput) {
+          bestResult = { ...res, quality: mid };
+          low = mid + 1; // Try higher quality
+        } else {
+          high = mid - 1; // Needs stronger compression
+        }
+      }
+
+      if (bestResult) {
+        qualityReducedBy = effectiveQuality - bestResult.quality;
+        effectiveQuality = bestResult.quality;
+        effectiveLossless = false;
+        maxOutputHit = true;
+        output = bestResult.data;
+        info = bestResult.info;
+      } else {
+        compressionIterations++;
+        const minRes = await encodeWithQuality(10, false);
+        if (minRes.data.length <= limitMaxOutput) {
           qualityReducedBy = effectiveQuality - 10;
           effectiveQuality = 10;
           effectiveLossless = false;
@@ -1253,17 +1342,27 @@ async function convertImage(input, options = {}) {
           output = minRes.data;
           info = minRes.info;
         } else {
-          throw new ZapwebpError({
-            code: 'E_OUTPUT_TOO_LARGE',
-            message: `Cannot fit output in ${limitMaxOutput} bytes (reached ${minRes.data.length} bytes at quality 10).`,
-            fix: 'Increase maxOutputBytes, downscale the image, or switch to flexible sizeMode.',
-            actualBytes: minRes.data.length,
-            maxBytes: limitMaxOutput,
-            suggestedFix: {
-              quality: 10,
-              reason: 'Image exceeds maxOutputBytes even after reducing quality to 10.',
-            },
-          });
+          if (sizeMode === 'flexible') {
+            warnings.push(`Output size (${minRes.data.length} bytes) exceeds target limit (${limitMaxOutput} bytes) despite compression down to quality 10.`);
+            qualityReducedBy = effectiveQuality - 10;
+            effectiveQuality = 10;
+            effectiveLossless = false;
+            maxOutputHit = true;
+            output = minRes.data;
+            info = minRes.info;
+          } else {
+            throw new ZapwebpError({
+              code: 'E_OUTPUT_TOO_LARGE',
+              message: `Cannot fit output in ${limitMaxOutput} bytes (reached ${minRes.data.length} bytes at quality 10).`,
+              fix: 'Increase maxOutputBytes, downscale the image, or switch to flexible sizeMode.',
+              actualBytes: minRes.data.length,
+              maxBytes: limitMaxOutput,
+              suggestedFix: {
+                quality: 10,
+                reason: 'Image exceeds maxOutputBytes even after reducing quality to 10.',
+              },
+            });
+          }
         }
       }
     }
@@ -1376,6 +1475,17 @@ async function convertImage(input, options = {}) {
     removedMetadata: inputMetadata.summary,
     certificate,
     transforms: transformReports.length > 0 ? transformReports : undefined,
+    compression: compressionReport || (compressionIterations > 0 ? {
+      target: limitMaxOutput,
+      achieved: output.length <= limitMaxOutput,
+      quality: effectiveQuality,
+      iterations: compressionIterations,
+      downscaled: false,
+      downscaleCount: 0,
+      width: info.width,
+      height: info.height,
+      reason: maxOutputHit ? 'Quality optimized to fit target limit.' : undefined,
+    } : undefined),
     targetLockEnforced: Boolean(opts.lockTarget && !opts.overrideLock),
     targetLockBypassed: Boolean(opts.lockTarget && opts.overrideLock),
     smart: smartResult ? { detectedType: smartResult.detectedType, recommendation: smartResult.recommendation } : undefined,
@@ -1648,6 +1758,7 @@ function generateSrcset(baseFile, scales = [1], format = 'webp', alt = '') {
 
 const pkg = require('../package.json');
 const { registerTransform, getTransforms } = require('./registry/transforms');
+const { registerCompressor, getCompressor, getCompressors } = require('./registry/compression');
 
 /**
  * Returns the frozen engine version.
@@ -1672,6 +1783,9 @@ module.exports = {
   registerFormat: formats.registerFormat,
   registerMetadataHandler: metadata.registerMetadataHandler,
   registerTransform,
+  registerCompressor,
+  getCompressor,
+  getCompressors,
   getVersion,
   getFormats,
 

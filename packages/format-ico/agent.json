@@ -1,4 +1,5 @@
 {
+  "": "https://zapwebp.vercel.app/schemas/agent.schema.json",
   "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/format-ico",
   "version": "1.0.0",
@@ -29,12 +30,26 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "source": { "type": "string", "description": "Path to input SVG or high-resolution PNG image." },
-          "outDir": { "type": "string", "description": "Target output directory (default: ./favicon-dist)." },
-          "name": { "type": "string", "description": "Application name for webmanifest." },
-          "themeColor": { "type": "string", "description": "Hex theme color for browser navigation bar." }
+          "source": {
+            "type": "string",
+            "description": "Path to input SVG or high-resolution PNG image."
+          },
+          "outDir": {
+            "type": "string",
+            "description": "Target output directory (default: ./favicon-dist)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Application name for webmanifest."
+          },
+          "themeColor": {
+            "type": "string",
+            "description": "Hex theme color for browser navigation bar."
+          }
         },
-        "required": ["source"]
+        "required": [
+          "source"
+        ]
       }
     },
     {
@@ -43,10 +58,21 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "source": { "type": "string", "description": "Input image buffer or filepath." },
-          "sizes": { "type": "array", "items": { "type": "integer" }, "description": "List of sizes to embed." }
+          "source": {
+            "type": "string",
+            "description": "Input image buffer or filepath."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "List of sizes to embed."
+          }
         },
-        "required": ["source"]
+        "required": [
+          "source"
+        ]
       }
     }
   ]

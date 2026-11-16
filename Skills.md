@@ -35,6 +35,7 @@
 - `zapwebp-github-action` — First-party GitHub Action for automated CI SVG-to-WebP conversion, verification (`check` mode), and PR commenting.
 - `@zapwebp/storage` — First-party cloud storage adapters (Supabase, Firebase, Neocities) providing pre-upload conversion, alpha safety, delete cascades, and multi-scale generation.
 - `@zapwebp/crop` — Pure transform crop plugin providing auto-crop (aspect ratios, gravity anchors, face detection), manual coordinate slicing, cover/contain fits, and named platform presets.
+- `@zapwebp/compressor` — Intelligent size reduction plugin providing deterministic binary search quality optimization, adaptive Lanczos3 downscaling, human size parsing, and CompressionHandler contracts.
 - `@zapwebp/edge` — High-performance edge runtime and fetch handler for serverless and edge networks (Cloudflare Workers, Vercel Edge) enforcing target lock ingestion contracts.
 - `@zapwebp/lens` — Read-only image inspection suite with chunk analysis, alpha mask inspection, and browser-based checkerboard viewer.
 - `fflate` (^0.8.3) — Ultra-fast, lightweight streaming ZIP compression and decompression for in-browser client-side downloads and CLI export archives.

@@ -18,20 +18,24 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // 2. Check headers passed by proxies / Vercel (excluding literal /server.js)
+  // 2. Check headers passed by proxies / Vercel (excluding literal /server.js and /api/index.js)
   const forwarded = req.headers['x-forwarded-uri'] || req.headers['x-original-url'] || req.headers['x-rewrite-url'];
-  if (forwarded && forwarded !== '/server.js') {
+  if (forwarded && forwarded !== '/server.js' && forwarded !== '/api/index.js') {
     req.url = forwarded;
     return next();
   }
 
-  // 3. If req.url starts with /server.js, strip the script name
-  if (req.url === '/server.js') {
+  // 3. If req.url starts with /server.js or /api/index.js, strip the script name
+  if (req.url === '/server.js' || req.url === '/api/index.js') {
     req.url = '/';
   } else if (req.url.startsWith('/server.js/')) {
     req.url = req.url.slice(10);
+  } else if (req.url.startsWith('/api/index.js/')) {
+    req.url = req.url.slice(13);
   } else if (req.url.startsWith('/server.js?')) {
     req.url = '/' + req.url.slice(10);
+  } else if (req.url.startsWith('/api/index.js?')) {
+    req.url = '/' + req.url.slice(13);
   }
 
   next();
@@ -201,6 +205,7 @@ const DOCS_ROUTES = [
   '/plugins/lens',
   '/plugins/crop',
   '/plugins/format-ico',
+  '/plugins/compressor',
   '/sdk/core',
   '/sdk/plugin',
   '/ui',

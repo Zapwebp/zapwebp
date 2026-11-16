@@ -107,6 +107,12 @@ export interface ConvertOptions {
   minOutputBytes?: number;
   sameFormat?: 'passthrough' | 'reencode' | 'reject';
   sizeMode?: 'strict' | 'compress' | 'flexible';
+  targetBytes?: number | string;
+  minQuality?: number;
+  allowDownscale?: boolean;
+  downscaleStep?: number;
+  maxDownscaleAttempts?: number;
+  compressor?: any;
   transforms?: TransformStep[];
   policy?: Partial<ConversionPolicy>;
   keepOriginal?: boolean;
@@ -254,6 +260,9 @@ export function inspect(input: Buffer | Uint8Array | string): Promise<InspectRes
 export function registerFormat(handler: FormatHandler): void;
 export function registerMetadataHandler(handler: MetadataHandler): void;
 export function registerTransform(transform: TransformStep): void;
+export function registerCompressor(compressor: any): void;
+export function getCompressor(name?: string): any;
+export function getCompressors(): any[];
 export function getVersion(): string;
 export function getFormats(): string[];
 export function suggest(info: InspectResult, useCase?: UseCase): Suggestion[];

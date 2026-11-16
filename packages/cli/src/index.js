@@ -104,6 +104,7 @@ OPTIONS
       --background <col>  Flatten color for JPEG output
       --clean             Strip AI provenance and metadata (default: true)
       --no-clean          Preserve container metadata
+      --verify <hash>     Verify output SHA-256 matches expected hash before writing
       --verify-clean      Enforce 0 metadata chunks and Clean Certificate
       --assert-alpha      Strictly fail if transparent input loses alpha
       --lock-target <fmt> Enforce many-to-one conversion to specified format
@@ -116,6 +117,9 @@ OPTIONS
       --max-input <bytes> Reject inputs larger than maximum byte limit (e.g. 15MB)
       --min-output <byte> Validate output meets minimum byte size
       --max-output <byte> Compress or validate output under maximum byte size
+      --target <size>     Target maximum output size with adaptive compression (e.g. 500kb, 1mb)
+      --min-quality <q>   Minimum quality floor before downscaling (default: 10)
+      --no-downscale      Disallow downscaling to meet target size
       --override-lock     Explicit opt-in to bypass configured target lock
       --zip               Bundle outputs into a single ZIP archive
       --srcset            Print responsive <img srcset> HTML tags
@@ -239,6 +243,17 @@ function parseArgs(argv) {
       const value = argv[++i];
       if (!value) throw new Error(`${arg} requires a byte size (e.g. 15KB, 1MB).`);
       parsed.options.maxOutputBytes = parseByteSize(value);
+    } else if (arg === '--target') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a target size (e.g. 500kb, 1mb, 500000).`);
+      parsed.target = value;
+      parsed.options.targetBytes = parseByteSize(value);
+    } else if (arg === '--min-quality') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires an integer quality (1-100).`);
+      parsed.options.minQuality = Number(value);
+    } else if (arg === '--no-downscale') {
+      parsed.options.allowDownscale = false;
     } else if (arg === '--override-lock') {
       parsed.overrideLock = true;
       parsed.options.overrideLock = true;
@@ -266,6 +281,17 @@ function parseArgs(argv) {
       parsed.deleteAfter = value.toLowerCase();
       parsed.cleanup = 'manual';
       parsed.options.cleanupDelay = 'manual';
+    }
+    else if (arg === '--verify') {
+      const value = argv[i + 1];
+      if (value && !value.startsWith('-')) {
+        i++;
+        parsed.verifyHash = value.toLowerCase();
+        parsed.options.verifyHash = value.toLowerCase();
+      } else {
+        parsed.verifyHash = 'true';
+        parsed.options.verifyHash = 'true';
+      }
     }
     else if (arg === '--verify-clean') parsed.options.verifyClean = true;
     else if (arg === '--assert-alpha') parsed.options.assertAlpha = true;
@@ -791,6 +817,16 @@ async function main() {
     const format = detectFormat(inputBuffer);
     const targetFormat = args.targets?.[0] || options.to || 'webp';
     const converted = await convertImage(inputBuffer, { ...options, to: targetFormat });
+    if (args.verifyHash && args.verifyHash !== 'true') {
+      const actualHash = sha256(converted.data);
+      if (actualHash.toLowerCase() !== args.verifyHash.toLowerCase()) {
+        throw new ZapwebpError({
+          code: 'E_VERIFICATION_FAILED',
+          message: `E_VERIFICATION_FAILED: Converted output SHA-256 (${actualHash}) does not match expected hash (${args.verifyHash})`,
+          fix: 'Verify the expected hash or check engine version determinism.',
+        });
+      }
+    }
     if (converted.warnings && converted.warnings.length) {
       for (const w of converted.warnings) {
         process.stderr.write(`⚠️  Warning: ${w}\n`);
@@ -1107,6 +1143,17 @@ async function main() {
           throw err;
         }
 
+        if (args.verifyHash && args.verifyHash !== 'true') {
+          const actualHash = sha256(converted.data);
+          if (actualHash.toLowerCase() !== args.verifyHash.toLowerCase()) {
+            throw new ZapwebpError({
+              code: 'E_VERIFICATION_FAILED',
+              message: `E_VERIFICATION_FAILED: Converted output SHA-256 (${actualHash}) does not match expected hash (${args.verifyHash})`,
+              fix: 'Verify the expected hash or check engine version determinism.',
+            });
+          }
+        }
+
         if (converted.passedThrough) {
           await writeAtomic(dest, converted.data);
           operations.push({
@@ -1169,6 +1216,7 @@ async function main() {
           losslessVerified: converted.losslessVerified,
           sourceQuality: converted.sourceQuality,
           sizeImpact: converted.sizeImpact,
+          compression: converted.compression,
         });
       }
     }
@@ -1279,7 +1327,10 @@ async function main() {
     for (const r of records) {
       const prefix = r.passedThrough ? '⚡' : (r.status === 'converted' ? '✓' : '=');
       const passTag = r.passedThrough ? ' [same-format passthrough]' : '';
-      process.stdout.write(`${prefix} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}${passTag}\n`);
+      const compTag = r.compression
+        ? ` [target: ${r.compression.target} B | achieved: ${r.size} B${r.compression.downscaled ? ` (downscaled ${r.compression.downscaleCount}x)` : ''}]`
+        : '';
+      process.stdout.write(`${prefix} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}${passTag}${compTag}\n`);
       if (r.warnings && r.warnings.length) {
         for (const w of r.warnings) {
           process.stderr.write(`  ⚠️  Warning: ${w}\n`);

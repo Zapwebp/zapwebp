@@ -48,6 +48,7 @@ Catalogs every structured error condition produced across the Zapwebp engine, CL
 | `E_PLUGIN_SANDBOX_VIOLATION` | Plugin attempted unauthorized filesystem access or undeclared network calls | Receive and return byte buffers only; declare zapwebp.permissions if network required |
 | `E_UNSAFE_RUNTIME` | Core conversion executed in an environment with unisolated network bindings | Ensure core runs without importing unauthorized network transport libraries |
 | `E_LOSSLESS_MISMATCH` | Decoded output pixels differ from transformed input in lossless mode | Ensure the target format supports full lossless encoding and no flattening background was applied |
+| `E_VERIFICATION_FAILED` | Output byte verification failed: generated SHA-256 does not match expected hash | Verify the expected hash or check engine version determinism |
 
 ## Examples
 

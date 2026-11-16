@@ -142,6 +142,9 @@ function resolveOptions(userOptions = {}) {
     targetFormat,
     strict,
     concurrency,
+    targetBytes: raw.targetBytes !== undefined ? raw.targetBytes : undefined,
+    minQuality: raw.minQuality !== undefined ? raw.minQuality : undefined,
+    allowDownscale: raw.allowDownscale !== undefined ? raw.allowDownscale : undefined,
     transforms: transforms.length > 0 ? transforms : undefined,
     policy: raw.policy || undefined,
   };

@@ -46,6 +46,7 @@ const pages = [
   'plugins/lens',
   'plugins/crop',
   'plugins/format-ico',
+  'plugins/compressor',
   'sdk/core',
   'sdk/plugin',
   'sdk/ui',

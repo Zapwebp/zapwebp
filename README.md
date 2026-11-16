@@ -1,8 +1,8 @@
 <div align="center">
   <img src="public/assets/zapwebp.svg" width="96" height="96" alt="Zapwebp logo" />
   <h1>Zapwebp</h1>
-  <p><strong>Convert correctly.</strong></p>
-  <p>Transparency-safe, high-performance image conversion across web, CLI, MCP agents, and cloud storage.</p>
+  <p><strong>AI-Ready Image Infrastructure</strong></p>
+  <p>Built for developers who need reliable, reproducible, privacy-conscious image processing.</p>
   <p>
     <a href="https://zapwebp.vercel.app/">Web App</a> ·
     <a href="https://zapwebp-docs.vercel.app/">Documentation</a> ·
@@ -11,9 +11,51 @@
     <a href="https://zapwebp-docs.vercel.app/formats">Format Matrix</a> ·
     <a href="https://zapwebp.vercel.app/llms.txt">llms.txt</a>
   </p>
+  <p>
+    <img src="https://github.com/Zapwebp/zapwebp/actions/workflows/proofs.yml/badge.svg" alt="Public Guarantees" />
+    <img src="https://img.shields.io/badge/Alpha%20Preservation-Verified%20Pixel%20(0,0)-22c55e" alt="Alpha Verified" />
+    <img src="https://img.shields.io/badge/Golden%20Corpus-50%20Cases%20Deterministic-blue" alt="Golden Corpus" />
+    <img src="https://img.shields.io/badge/Telemetry-0%25%20Local--First-brightgreen" alt="Zero Telemetry" />
+  </p>
 </div>
 
-Zapwebp converts SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF images to WebP, PNG, JPEG, or AVIF. It guarantees alpha channel preservation where supported, strictly prevents accidental transparent-to-opaque loss, and enforces zero-tracking, memory-only execution across all surfaces.
+> **Stop marketing features. Start proving guarantees.**
+>
+> Zapwebp is not just an image converter. It is a deterministic, privacy-first image infrastructure bridge designed for human developers and autonomous AI agents.
+
+---
+
+## The Five Promises (The Manifesto)
+
+1. **Correctness:** *Conversion is not enough. Verify the result.*
+   Transparent pixels stay transparent. Flattening transparent inputs to JPEG strictly requires an explicit background color—silent black-box alpha dropping is forbidden (`E_ALPHA_NOT_REPRESENTABLE`).
+2. **Reproducibility:** *Same input, same configuration, same engine version.*
+   Conversions produce identical bit-for-bit SHA-256 hashes on Ubuntu, macOS, and Windows, verified nightly against a public [`MANIFEST.json`](MANIFEST.json).
+3. **Privacy:** *Local-first processing. No mandatory cloud uploads.*
+   Zero telemetry, zero analytics tracking beacons, zero cloud storage of user media. 100% memory execution.
+4. **Extensibility:** *Plugins, not a closed ecosystem.*
+   A frozen, deterministic core engine surrounded by open plugins (`FormatHandler`, `StorageAdapter`, `TransformStep`) scaffolded via `npx create-zapwebp`.
+5. **Universality:** *One engine. Multiple developer environments.*
+   Identical behavior across Browser (WASM), Terminal (`zap`), Code Editor (VS Code), AI Agents (`@zapwebp/mcp`), and CI/CD pipelines.
+
+---
+
+## Publicly Proving the Guarantees
+
+Don't trust our claims. Inspect our continuous public proofs:
+
+### 1. Transparency Preservation (Proof 1)
+- **The Guarantee:** Every transparent vector or raster asset preserves alpha transparency at pixel coordinate `(0,0)`.
+- **The Proof:** Our public test [`test/proof-transparency.test.js`](test/proof-transparency.test.js) converts transparent SVGs to WebP, PNG, and AVIF and verifies that channel 3 (alpha) at origin `(0,0)` is strictly `0`.
+- **Failing Loudly:** Converting transparent inputs to JPEG without an explicit background rejects with non-zero exit code and `E_ALPHA_NOT_REPRESENTABLE`.
+
+### 2. Verification Enforcement (Proof 2)
+- **The Guarantee:** The CLI `--verify <sha256>` flag enforces cryptographic verification before writing to disk.
+- **The Proof:** If the converted output SHA-256 does not match the expected hash, Zapwebp aborts with `E_VERIFICATION_FAILED`, writes **zero** output bytes, and exits with code `1` ([`packages/cli/test/verify.test.js`](packages/cli/test/verify.test.js)).
+
+### 3. Reproducible Outputs (Proof 3)
+- **The Guarantee:** The same 50 golden test cases produce identical SHA-256 hashes across Ubuntu, macOS, and Windows.
+- **The Proof:** Multi-OS CI converts all 50 cases and compares hashes against our public [`MANIFEST.json`](MANIFEST.json) on every commit ([`test/proof-reproducibility.test.js`](test/proof-reproducibility.test.js)).
 
 ---
 

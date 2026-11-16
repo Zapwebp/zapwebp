@@ -30,5 +30,6 @@
   "E_NETWORK_ERROR": "Could not communicate with the conversion service.",
   "E_UNKNOWN": "An unexpected conversion error occurred: {{message}}",
   "E_FILE_CONFLICT": "Target output file '{{path}}' already exists.",
-  "E_INVALID_SCALE": "Multiplier scale {{scale}} is invalid. Must be between 0.1 and 10."
+  "E_INVALID_SCALE": "Multiplier scale {{scale}} is invalid. Must be between 0.1 and 10.",
+  "E_VERIFICATION_FAILED": "Output byte verification failed: generated SHA-256 does not match expected hash."
 }

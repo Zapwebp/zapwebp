@@ -401,11 +401,15 @@
       <!-- Hero & Converter Section -->
       <section class="hero-section tool-workspace">
         <div class="hero-brand-header" style="margin-bottom: 1.5rem; text-align: center;">
+          <div class="hero-guarantee-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#22c55e;margin-bottom:12px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            AI-Ready Image Infrastructure · Deterministic Guarantees
+          </div>
           <h1 class="hero-title" style="font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 0.5rem 0; color: var(--text-primary, #ffffff);">
             Zapwebp Converter
           </h1>
-          <p class="hero-tagline" style="font-size: 1rem; color: var(--text-secondary, #94a3b8); margin: 0 auto; max-width: 580px; line-height: 1.5;">
-            Fast, free, privacy-first online WebP &amp; image converter with guaranteed transparency preservation. Runs 100% locally in your browser.
+          <p class="hero-tagline" style="font-size: 1rem; color: var(--text-secondary, #94a3b8); margin: 0 auto; max-width: 620px; line-height: 1.5;">
+            Reliable, reproducible, privacy-conscious image processing. Guaranteed alpha preservation, 100% in-browser memory execution, zero tracking.
           </p>
         </div>
 
@@ -946,6 +950,90 @@
                   ℹ️ Mathematical pixel preservation (0 dB loss). Does not repair blurry or degraded sources.
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Five Guarantees: AI-Ready Image Infrastructure -->
+      <section class="guarantees-section" id="guarantees" aria-labelledby="guarantees-title" style="max-width: 1040px; margin: 3rem auto; padding: 0 1.25rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 id="guarantees-title" style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-primary);">
+            AI-Ready Image Infrastructure · The Five Guarantees
+          </h2>
+          <p style="font-size: 0.95rem; color: var(--text-secondary, #94a3b8); max-width: 680px; margin: 0 auto; line-height: 1.5;">
+            Zapwebp Converter (also known as Zap Webp Converter) eliminates guesswork. We stop marketing features and start proving technical guarantees.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <!-- 1. Correctness -->
+          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.25rem;">🎯</span>
+              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">1. Correctness</h3>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
+              Output pixel (0,0) transparency preservation is verified in continuous integration. If transparent input is targeted to JPEG without an explicit background, it fails loudly instead of creating corrupted black boxes.
+            </p>
+            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
+              Status: Verified in CI (test/proof-transparency.test.js)
+            </div>
+          </div>
+
+          <!-- 2. Reproducibility -->
+          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.25rem;">🔒</span>
+              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">2. Reproducibility</h3>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
+              Same input, same configuration, same engine version produces identical bit-for-bit outputs. All 50 Golden Corpus test fixtures are published with SHA-256 hashes in public MANIFEST.json.
+            </p>
+            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
+              Status: 50/50 Bit-for-bit parity guaranteed
+            </div>
+          </div>
+
+          <!-- 3. Privacy -->
+          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.25rem;">🛡️</span>
+              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">3. Privacy</h3>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
+              100% in-browser client memory execution using WebAssembly and Web Workers. Zero telemetry, zero analytics beacons, zero remote server uploads. Your visual data never leaves your machine.
+            </p>
+            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
+              Status: Zero Network Leaks Verified
+            </div>
+          </div>
+
+          <!-- 4. Extensibility -->
+          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.25rem;">🔌</span>
+              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">4. Extensibility</h3>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
+              Standardized Plugin SDK with lifecycle hooks (beforeConvert, afterConvert, transform). Community and first-party plugins for multi-size ICO/CUR, smart face-crop, storage adapters, and build tools.
+            </p>
+            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
+              Status: Open Plugin SDK & Registry
+            </div>
+          </div>
+
+          <!-- 5. Universality -->
+          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.25rem;">🌐</span>
+              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">5. Universality</h3>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
+              One shared conversion engine running uniformly across Web, CLI (zap/zapwebp), VS Code extension, HTTP REST API, and AI agent Model Context Protocol (MCP) servers.
+            </p>
+            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
+              Status: 5 Execution Surfaces
             </div>
           </div>
         </div>

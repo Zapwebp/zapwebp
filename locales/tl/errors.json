@@ -30,5 +30,6 @@
   "E_NETWORK_ERROR": "Hindi makipag-ugnayan sa serbisyo ng pag-convert.",
   "E_UNKNOWN": "May hindi inaasahang error sa pag-convert na naganap: {{message}}",
   "E_FILE_CONFLICT": "Umiiral na ang target na output file na '{{path}}'.",
-  "E_INVALID_SCALE": "Hindi wasto ang multiplier scale na {{scale}}. Dapat itong nasa pagitan ng 0.1 at 10."
+  "E_INVALID_SCALE": "Hindi wasto ang multiplier scale na {{scale}}. Dapat itong nasa pagitan ng 0.1 at 10.",
+  "E_VERIFICATION_FAILED": "Nabigo ang beripikasyon ng byte: ang nabuong SHA-256 ay hindi tugma sa inaasahang hash."
 }

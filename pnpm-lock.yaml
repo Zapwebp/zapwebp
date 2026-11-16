@@ -77,6 +77,18 @@ importers:
         specifier: ^7.0.14
         version: 7.0.14
 
+  packages/compressor:
+    dependencies:
+      '@zapwebp/plugin-sdk':
+        specifier: workspace:*
+        version: link:../plugin-sdk
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      sharp:
+        specifier: ^0.35.5
+        version: 0.35.5(@types/node@26.6.6)
+
   packages/config: {}
 
   packages/core:

@@ -226,6 +226,14 @@ const ERROR_MAP = {
     severity: 'error',
     retryable: false,
   },
+  E_VERIFICATION_FAILED: {
+    title: 'Output verification failed',
+    message: (ctx) => `Output SHA-256 hash does not match expected hash: ${ctx?.actual || ''}`,
+    fix: 'Verify the expected hash or check engine version determinism.',
+    component: 'toast',
+    severity: 'error',
+    retryable: false,
+  },
   E_RATE_LIMIT: {
     title: 'Too many requests',
     message: 'Rate limit exceeded. Please wait a few moments before trying again.',

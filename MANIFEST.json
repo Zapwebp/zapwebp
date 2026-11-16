@@ -1,0 +1,459 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Deterministic Golden Corpus Output Hashes for Zapwebp",
+  "engineVersion": "2.19.0",
+  "generatedAt": "2026-11-16T06:20:12.702Z",
+  "casesCount": 50,
+  "cases": [
+    {
+      "id": "golden-01",
+      "name": "SVG to WEBP (q=85, clean=true)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "9ab36fb3f03cc26100b9e826dee5c0700fc0b242f48634dd1895efbd4e65000e",
+      "byteLength": 784,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-02",
+      "name": "SVG to WEBP (q=85, clean=false)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "0f43d5d494d512c1b12a2c72eb6752420c1180f0d63c877d8e006de2224fc3e8",
+      "byteLength": 1466,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-03",
+      "name": "SVG to WEBP (q=95, clean=true)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "5f675322618aa107aeb91aaed12da22cadf937758890fafee1cd7488b6223b25",
+      "byteLength": 884,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-04",
+      "name": "SVG to WEBP (q=95, clean=false)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "61ae1e7b3630192cd1905f0b66ef29c936d739212dfb26eea3cc55ed32dab578",
+      "byteLength": 1566,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-05",
+      "name": "SVG to PNG (q=85, clean=true)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "7b056fd6e8879599810bac7ade08ddc6507164b0bde42127a0d4bda32f7b1dbf",
+      "byteLength": 1231,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-06",
+      "name": "SVG to PNG (q=85, clean=false)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "5c341a3a42de6bfe52df41926edd44be3d01b885e2281934bafb8e7770bdf790",
+      "byteLength": 1754,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-07",
+      "name": "SVG to PNG (q=95, clean=true)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "7b056fd6e8879599810bac7ade08ddc6507164b0bde42127a0d4bda32f7b1dbf",
+      "byteLength": 1231,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-08",
+      "name": "SVG to PNG (q=95, clean=false)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "5c341a3a42de6bfe52df41926edd44be3d01b885e2281934bafb8e7770bdf790",
+      "byteLength": 1754,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-09",
+      "name": "SVG to AVIF (q=85, clean=true)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "39a1e998b382f8f5408bd268f2c2cdc78dd338d418292a9dde55887b1eb45696",
+      "byteLength": 893,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-10",
+      "name": "SVG to AVIF (q=85, clean=false)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "733a39d3226077b6827d9c1e6c0e1eaf2052720dee4805a1335ba8588c87783b",
+      "byteLength": 1629,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-11",
+      "name": "SVG to AVIF (q=95, clean=true)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "26785a7f3c96e7c5a358bf0cc4728695475986ef8f75a462b5f5a859d4a0236e",
+      "byteLength": 1001,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-12",
+      "name": "SVG to AVIF (q=95, clean=false)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "20295d817c0c19aa002591a678c46fa6bd341f6d2b891e0549a18ce319d9e44c",
+      "byteLength": 1737,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-13",
+      "name": "SVG to JPEG (q=85, clean=true)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "f578f14e053fcc0dbcdb95197825aea783e752630ed7ac82ddcb09c9764e8f40",
+      "byteLength": 867,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-14",
+      "name": "SVG to JPEG (q=85, clean=false)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "9b2cc3e8774acac8db1d8964f78be759c83e958f750658d636204ccaa5465371",
+      "byteLength": 1555,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-15",
+      "name": "SVG to JPEG (q=95, clean=true)",
+      "to": "jpeg",
+      "quality": 95,
+      "sha256": "4091edd88cb47bbec7b28a9a3d6e1386f5b41f44d9b02c85ee4af693590ae093",
+      "byteLength": 1205,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-16",
+      "name": "SVG to JPEG (q=95, clean=false)",
+      "to": "jpeg",
+      "quality": 95,
+      "sha256": "d67c613084f0da3ab93b7ae14d6449770ab56b8c822ca9d1562e5772d46583fa",
+      "byteLength": 1893,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-17",
+      "name": "PNG to WEBP (q=85, clean=true)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "a401bf42b76acb849a8a0852f293b536d7b0fc6433aa5bf3c74afe1576203878",
+      "byteLength": 72,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-18",
+      "name": "PNG to WEBP (q=85, clean=false)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "f871941c97106f70da875738543d7c83919938bd58e815e86f727f9d31c95445",
+      "byteLength": 754,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-19",
+      "name": "PNG to WEBP (q=95, clean=true)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "8eff5dbd301d81116702ee81963694a24410eb2b94dc59db4142f8707cbe6d7a",
+      "byteLength": 74,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-20",
+      "name": "PNG to WEBP (q=95, clean=false)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "881b93962c88e4bd53c68125009d8feb9dc621cc1f28bbf8afac17bb962a873c",
+      "byteLength": 756,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-21",
+      "name": "PNG to AVIF (q=85, clean=true)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "00cf91a9e600538db3549105a9b5d9e09d32b0c6e1c4b55bf26a0f6b3496a8c5",
+      "byteLength": 456,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-22",
+      "name": "PNG to AVIF (q=85, clean=false)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "c72a79acd51b6950ff598695cec9ae2cf88107aa17ad8a50a3c9f3bff873db27",
+      "byteLength": 1192,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-23",
+      "name": "PNG to AVIF (q=95, clean=true)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "55832f4bee53030203b49f4c8bd2e92ffaf2d4a9ce1329ce1eaeee4cc657f798",
+      "byteLength": 459,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-24",
+      "name": "PNG to AVIF (q=95, clean=false)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "1fa05b40a7660fb90684d0fbe87efe778c87eadeed73c37d4c286212342d15e7",
+      "byteLength": 1195,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-25",
+      "name": "PNG to JPEG (q=85, clean=true)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "12f07f1f3ccdca0fecdfc0a966465fd225e8e61ffd5da9e39f0f33e54a0c07b8",
+      "byteLength": 321,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-26",
+      "name": "PNG to JPEG (q=85, clean=false)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "4ec3cd2e93cdeb604dd60a56ed04321d71de31d451364bed6099bec8a43ffe80",
+      "byteLength": 1009,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-27",
+      "name": "PNG to JPEG (q=95, clean=true)",
+      "to": "jpeg",
+      "quality": 95,
+      "sha256": "79f42965ed359bc87d510d09718742509e8c5f9b5f16d2079a94c07e7fea8827",
+      "byteLength": 321,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-28",
+      "name": "PNG to JPEG (q=95, clean=false)",
+      "to": "jpeg",
+      "quality": 95,
+      "sha256": "dd2627745b8f22964833cfb3efc12b081e29fc5abb595e14a6c4538cd09da2e5",
+      "byteLength": 1009,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-29",
+      "name": "JPEG to WEBP (q=85, clean=true)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "e68bb6828d842a6c845223b2966aef7c28134491c003f940020e17ee8b06391d",
+      "byteLength": 44,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-30",
+      "name": "JPEG to WEBP (q=85, clean=false)",
+      "to": "webp",
+      "quality": 85,
+      "sha256": "22429f3e3d4e7523cf4aab6dcc8ed60009836b1a810aedcf443809d2d50b38d3",
+      "byteLength": 744,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-31",
+      "name": "JPEG to WEBP (q=95, clean=true)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "b9226123ee2a6177631508e07b6fa18a0d59af1b48a6cf5a594e30dec3f8ac20",
+      "byteLength": 46,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-32",
+      "name": "JPEG to WEBP (q=95, clean=false)",
+      "to": "webp",
+      "quality": 95,
+      "sha256": "b0ee08da6e1f3832fb79f58c73dd768d9f32b163b7cf147d0c0d2ab79b6ca83b",
+      "byteLength": 746,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-33",
+      "name": "JPEG to AVIF (q=85, clean=true)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "057566e3ca5e70c61e3d9dac532ab1155df69836bcc7afc1e7c9498dcaab6805",
+      "byteLength": 282,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-34",
+      "name": "JPEG to AVIF (q=85, clean=false)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "13f0950363a589fdea2b996064570be0c57573bffbf18a72dea7751f20fe1e10",
+      "byteLength": 1030,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-35",
+      "name": "JPEG to AVIF (q=95, clean=true)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "3852e88c3b1207e07a23148f1dea0da5edd8987a57506d673d7c4df22471807d",
+      "byteLength": 284,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-36",
+      "name": "JPEG to AVIF (q=95, clean=false)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "fc008a6814bc8f84b1ac612ae8362e5d1ce39cb1207acffa4ad9b83c39f164c5",
+      "byteLength": 1032,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-37",
+      "name": "JPEG to PNG (q=85, clean=true)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "e5dba0f79195efe390a5bcab57b234c4df0cc3a3b5e8e9d8dfb523d83e524c10",
+      "byteLength": 90,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-38",
+      "name": "JPEG to PNG (q=85, clean=false)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "c938323ad2156ea464a0d9b61c357f197ab8e94dd93df8485f79916d1ded946a",
+      "byteLength": 613,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-39",
+      "name": "JPEG to PNG (q=95, clean=true)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "e5dba0f79195efe390a5bcab57b234c4df0cc3a3b5e8e9d8dfb523d83e524c10",
+      "byteLength": 90,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-40",
+      "name": "JPEG to PNG (q=95, clean=false)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "c938323ad2156ea464a0d9b61c357f197ab8e94dd93df8485f79916d1ded946a",
+      "byteLength": 613,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-41",
+      "name": "WebP to AVIF (q=85, clean=true)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "1cf91c41fe8009f6a3d35aec4242faf15d2232ac5f83d844ccd12fbdfad4fe3e",
+      "byteLength": 287,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-42",
+      "name": "WebP to AVIF (q=85, clean=false)",
+      "to": "avif",
+      "quality": 85,
+      "sha256": "20622cab57fb0b15dd04c7ade10f24760ed7f594e84fa4a5bd42cb69893de151",
+      "byteLength": 1035,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-43",
+      "name": "WebP to AVIF (q=95, clean=true)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "8f386e574124cbf71f10c4db9fa28f918a9eb4f9475b091b41b6dae1d69c16de",
+      "byteLength": 294,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-44",
+      "name": "WebP to AVIF (q=95, clean=false)",
+      "to": "avif",
+      "quality": 95,
+      "sha256": "36949f0150699b5dc13e6e8a2273fb9a6393651e346eb39ee370fa02afc29603",
+      "byteLength": 1042,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-45",
+      "name": "WebP to PNG (q=85, clean=true)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "b33c488d5c27f327c9e6961b012209dedfa4529921708554b6e2adb4954285bc",
+      "byteLength": 96,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-46",
+      "name": "WebP to PNG (q=85, clean=false)",
+      "to": "png",
+      "quality": 85,
+      "sha256": "5ed0d2f44a808e5518b89893f2eecd8103fd2769bcc4a9f6bfb3112702fed4a5",
+      "byteLength": 619,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-47",
+      "name": "WebP to PNG (q=95, clean=true)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "b33c488d5c27f327c9e6961b012209dedfa4529921708554b6e2adb4954285bc",
+      "byteLength": 96,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-48",
+      "name": "WebP to PNG (q=95, clean=false)",
+      "to": "png",
+      "quality": 95,
+      "sha256": "5ed0d2f44a808e5518b89893f2eecd8103fd2769bcc4a9f6bfb3112702fed4a5",
+      "byteLength": 619,
+      "expectAlpha": true
+    },
+    {
+      "id": "golden-49",
+      "name": "WebP to JPEG (q=85, clean=true)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "629d3a9c664eb766eab52ebedbec38d6e32394de90e753525f55d65b5162ec16",
+      "byteLength": 324,
+      "expectAlpha": false
+    },
+    {
+      "id": "golden-50",
+      "name": "WebP to JPEG (q=85, clean=false)",
+      "to": "jpeg",
+      "quality": 85,
+      "sha256": "e8ccffd35d1523ed21be08a8a014f2897b5be39f51a28158f7774a23e748d063",
+      "byteLength": 1012,
+      "expectAlpha": false
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 {
+  "": "https://zapwebp.vercel.app/schemas/agent.schema.json",
   "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/sdk",
   "version": "1.1.2",
@@ -24,23 +25,56 @@
       "description": "Convert an image to WebP, AVIF, PNG, or JPEG. Preserves transparency and strips metadata by default. Returns nextAction hint.",
       "example": "import { Zapwebp } from '@zapwebp/sdk';\nconst zap = new Zapwebp();\nconst res = await zap.convert({ input: 'icon.svg', to: 'webp' });",
       "options": {
-        "input": { "type": "ImageInput", "description": "Buffer, Uint8Array, Blob, URL string, or file path" },
-        "to": { "type": "string", "enum": ["webp", "avif", "png", "jpeg"], "default": "webp" },
-        "quality": { "type": "number", "default": 85 },
-        "width": { "type": "number" },
-        "height": { "type": "number" },
-        "clean": { "type": "boolean", "default": true },
-        "lossless": { "type": "boolean", "default": false },
-        "background": { "type": "string" }
+        "input": {
+          "type": "ImageInput",
+          "description": "Buffer, Uint8Array, Blob, URL string, or file path"
+        },
+        "to": {
+          "type": "string",
+          "enum": [
+            "webp",
+            "avif",
+            "png",
+            "jpeg"
+          ],
+          "default": "webp"
+        },
+        "quality": {
+          "type": "number",
+          "default": 85
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "clean": {
+          "type": "boolean",
+          "default": true
+        },
+        "lossless": {
+          "type": "boolean",
+          "default": false
+        },
+        "background": {
+          "type": "string"
+        }
       },
-      "throws": ["E_ALPHA_NOT_REPRESENTABLE", "E_UNSAFE_SVG", "E_UNSUPPORTED_FORMAT"]
+      "throws": [
+        "E_ALPHA_NOT_REPRESENTABLE",
+        "E_UNSAFE_SVG",
+        "E_UNSUPPORTED_FORMAT"
+      ]
     },
     {
       "name": "convertBatch",
       "signature": "convertBatch(opts: BatchOptions): Promise<BatchConvertResult>",
       "description": "Convert multiple images concurrently with shared or per-item target formats.",
       "example": "const batch = await zap.convertBatch({ inputs: ['a.png', 'b.svg'], to: 'webp' });",
-      "throws": ["E_UNSUPPORTED_FORMAT"]
+      "throws": [
+        "E_UNSUPPORTED_FORMAT"
+      ]
     },
     {
       "name": "convertUrl",
@@ -53,7 +87,10 @@
       "signature": "inspect(opts: InspectOptions | ImageInput): Promise<InspectResult>",
       "description": "Inspect image container chunks, format, dimensions, transparency, and receive recommended targets with nextAction hint.",
       "example": "const info = await zap.inspect('banner.png');\nconsole.log(info.format, info.hasAlpha, info.nextAction);",
-      "throws": ["E_CORRUPT_HEADER", "E_UNSUPPORTED_FORMAT"]
+      "throws": [
+        "E_CORRUPT_HEADER",
+        "E_UNSUPPORTED_FORMAT"
+      ]
     },
     {
       "name": "inspectUrl",
@@ -110,7 +147,9 @@
       "fix": "Pass background: '#ffffff' to flatten, or choose webp/png/avif.",
       "docs": "https://zapwebp-docs.vercel.app/backgrounds",
       "retryable": true,
-      "suggestedFix": { "background": "#ffffff" }
+      "suggestedFix": {
+        "background": "#ffffff"
+      }
     },
     "E_UNSAFE_SVG": {
       "message": "SVG contains scripts, inline event handlers, or external entities.",

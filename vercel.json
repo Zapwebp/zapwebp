@@ -1,18 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "server.js": {
-      "maxDuration": 120
+    "api/index.js": {
+      "maxDuration": 120,
+      "includeFiles": "content/**,locales/**,public/ai-catalog.json,public/404.html"
     }
   },
   "rewrites": [
-    { "source": "/api", "destination": "/server.js?__zap_url=/api" },
-    { "source": "/api/(.*)", "destination": "/server.js?__zap_url=/api/$1" },
-    { "source": "/health", "destination": "/server.js?__zap_url=/health" },
-    { "source": "/feed.xml", "destination": "/server.js?__zap_url=/feed.xml" },
-    { "source": "/(.*\\.md)", "destination": "/server.js?__zap_url=/$1" },
-    { "source": "/plugins/(.*\\.md)", "destination": "/server.js?__zap_url=/plugins/$1" },
-    { "source": "/sdk/(.*\\.md)", "destination": "/server.js?__zap_url=/sdk/$1" }
+    { "source": "/api", "destination": "/api/index.js?__zap_url=/api" },
+    { "source": "/api/(.*)", "destination": "/api/index.js?__zap_url=/api/$1" },
+    { "source": "/health", "destination": "/api/index.js?__zap_url=/health" },
+    { "source": "/mcp", "destination": "/api/index.js?__zap_url=/mcp" },
+    { "source": "/feed.xml", "destination": "/api/index.js?__zap_url=/feed.xml" },
+    { "source": "/(.*\\.md)", "destination": "/api/index.js?__zap_url=/$1" },
+    { "source": "/plugins/(.*\\.md)", "destination": "/api/index.js?__zap_url=/plugins/$1" },
+    { "source": "/sdk/(.*\\.md)", "destination": "/api/index.js?__zap_url=/sdk/$1" }
   ],
   "headers": [
     {

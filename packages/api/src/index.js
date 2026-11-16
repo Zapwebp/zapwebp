@@ -66,6 +66,9 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
       effort,
       background: body.background || undefined,
       stripMetadata: stripMetadata !== 'false',
+      targetBytes: body.targetBytes !== undefined && body.targetBytes !== '' ? body.targetBytes : undefined,
+      minQuality: body.minQuality !== undefined && body.minQuality !== '' ? Number(body.minQuality) : undefined,
+      allowDownscale: body.allowDownscale !== undefined ? body.allowDownscale !== 'false' : undefined,
     };
   }
 

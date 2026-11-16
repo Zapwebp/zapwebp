@@ -1,4 +1,5 @@
 {
+  "": "https://zapwebp.vercel.app/schemas/agent.schema.json",
   "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/plugin-sdk",
   "version": "1.1.1",
@@ -17,23 +18,52 @@
       "name": "ZapwebpPlugin",
       "description": "Standard plugin container declaring metadata, lifecycle hooks, storage adapters, and agent metadata.",
       "properties": {
-        "name": { "type": "string", "required": true },
-        "version": { "type": "string", "required": true },
-        "description": { "type": "string" },
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "version": {
+          "type": "string",
+          "required": true
+        },
+        "description": {
+          "type": "string"
+        },
         "hooks": {
           "type": "object",
           "properties": {
-            "beforeConvert": { "type": "function", "description": "Pre-conversion hook to mutate input, options, or inspect metadata." },
-            "afterConvert": { "type": "function", "description": "Post-conversion hook to inspect or mutate output artifacts." }
+            "beforeConvert": {
+              "type": "function",
+              "description": "Pre-conversion hook to mutate input, options, or inspect metadata."
+            },
+            "afterConvert": {
+              "type": "function",
+              "description": "Post-conversion hook to inspect or mutate output artifacts."
+            }
           }
         },
-        "adapters": { "type": "object", "description": "Named storage adapters (e.g., supabase, firebase, neocities)." },
+        "adapters": {
+          "type": "object",
+          "description": "Named storage adapters (e.g., supabase, firebase, neocities)."
+        },
         "agent": {
           "type": "object",
           "properties": {
-            "description": { "type": "string" },
-            "examples": { "type": "array", "items": { "type": "object" } },
-            "supportedFormats": { "type": "array", "items": { "type": "string" } }
+            "description": {
+              "type": "string"
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "supportedFormats": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
@@ -42,17 +72,32 @@
       "name": "FormatHandler",
       "description": "Contract for adding custom input or output image container formats (e.g. HEIC, WebP2, JXL).",
       "methods": [
-        { "name": "detect", "signature": "detect(bytes: Uint8Array): boolean" },
-        { "name": "decode", "signature": "decode(bytes: Uint8Array): Promise<RawImage>" },
-        { "name": "encode", "signature": "encode(image: RawImage, options?: object): Promise<Buffer>" }
+        {
+          "name": "detect",
+          "signature": "detect(bytes: Uint8Array): boolean"
+        },
+        {
+          "name": "decode",
+          "signature": "decode(bytes: Uint8Array): Promise<RawImage>"
+        },
+        {
+          "name": "encode",
+          "signature": "encode(image: RawImage, options?: object): Promise<Buffer>"
+        }
       ]
     },
     {
       "name": "StorageAdapter",
       "description": "Interface for cloud and filesystem persistence with cascading deletion support.",
       "methods": [
-        { "name": "read", "signature": "read(sourcePath: string): Promise<Buffer>" },
-        { "name": "write", "signature": "write(destinationPath: string, data: Buffer): Promise<void>" }
+        {
+          "name": "read",
+          "signature": "read(sourcePath: string): Promise<Buffer>"
+        },
+        {
+          "name": "write",
+          "signature": "write(destinationPath: string, data: Buffer): Promise<void>"
+        }
       ]
     }
   ],

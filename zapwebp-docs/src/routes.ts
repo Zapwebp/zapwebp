@@ -208,6 +208,15 @@ export const DOC_ROUTES: DocRoute[] = [
     description: 'High-resolution multi-size ICO/CUR container generation, embedded PNGs, BMP DIB decoding, and favicon suite generator.',
     keywords: ['ico', 'cur', 'favicon', 'format', 'multi-size', 'apple-touch-icon', 'manifest', 'plugin']
   },
+  {
+    path: '/plugins/compressor',
+    file: 'plugins/compressor',
+    title: 'Compressor Plugin',
+    category: 'Plugins',
+    badge: 'Compression',
+    description: 'Intelligent size reduction plugin with deterministic binary search quality optimization and adaptive downscaling.',
+    keywords: ['compressor', 'compression', 'targetBytes', 'downscaling', 'binary search', 'size', 'plugin']
+  },
 
   // Developers
   {
@@ -406,6 +415,8 @@ if (ROUTE_MAP['/sdk/core']) {
 }
 if (ROUTE_MAP['/sdk/plugin']) {
   ROUTE_MAP['/plugins/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
+  ROUTE_MAP['/plugins/building'] = ROUTE_MAP['/sdk/plugin'];
+  ROUTE_MAP['/scaffolding'] = ROUTE_MAP['/sdk/plugin'];
   ROUTE_MAP['/docs/plugins/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
   ROUTE_MAP['/docs/sdk/plugin'] = ROUTE_MAP['/sdk/plugin'];
   ROUTE_MAP['/plugin-sdk'] = ROUTE_MAP['/sdk/plugin'];
@@ -425,6 +436,7 @@ if (ROUTE_MAP['/plugins/github-action']) {
   ROUTE_MAP['/actions'] = ROUTE_MAP['/plugins/github-action'];
 }
 if (ROUTE_MAP['/plugins/crop']) ROUTE_MAP['/crop'] = ROUTE_MAP['/plugins/crop'];
+if (ROUTE_MAP['/plugins/compressor']) ROUTE_MAP['/compressor'] = ROUTE_MAP['/plugins/compressor'];
 if (ROUTE_MAP['/plugins/lens']) ROUTE_MAP['/lens'] = ROUTE_MAP['/plugins/lens'];
 if (ROUTE_MAP['/plugins/laravel']) ROUTE_MAP['/laravel'] = ROUTE_MAP['/plugins/laravel'];
 if (ROUTE_MAP['/lock-target']) {

@@ -48,6 +48,7 @@ Zapwebp provides transparency-safe, high-performance image conversion across dev
 - `/packages/storage` → `@zapwebp/storage` first-party adapters for Supabase, Firebase, and Neocities with pre-upload conversion and delete cascades.
 - `/packages/crop` → `@zapwebp/crop` pure transform auto-crop and coordinate slicing plugin with face detection.
 - `/packages/format-ico` → `@zapwebp/format-ico` high-resolution multi-size ICO/CUR format plugin, parser, builder, and favicon suite generator.
+- `/packages/compressor` → `@zapwebp/compressor` intelligent size reduction plugin with deterministic binary search quality optimization and adaptive downscaling.
 - `/packages/edge` → `@zapwebp/edge` edge runtime fetch handlers enforcing target lock ingestion contracts.
 - `/packages/lens` → `zapwebp-lens` image inspector CLI with container chunk analysis and checkerboard viewer.
 - `/packages/create-zapwebp` → CLI scaffolder for community format and metadata plugins.
@@ -132,6 +133,7 @@ When modifying this repository, AI agents must adhere to the following non-negot
 
 ### In Scope
 - Transparency-safe conversion across SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF, plus high-resolution multi-size ICO/CUR containers via `@zapwebp/format-ico`.
+- Intelligent size reduction plugin (@zapwebp/compressor) executing binary search quality optimization and adaptive Lanczos3 downscaling for target byte constraints.
 - Web app, CLI, MCP server, VS Code extension, REST API, storage adapters, edge handlers, crop engine, favicon suite generator, and lens inspector.
 - Multiplier generation (@1x/@2x/@3x), responsive srcset markup, and in-memory ZIP archives.
 - Clean Mode metadata stripping (EXIF, GPS, C2PA) with cryptographic verification certificates.

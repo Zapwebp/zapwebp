@@ -306,6 +306,11 @@ const ERROR_CATALOG = Object.freeze({
     message: 'SVG aspect ratio is extreme and exceeds allowable bounds.',
     fix: 'Check the SVG dimensions. Aspect ratio must be between 0.01:1 and 100:1.',
   },
+  E_VERIFICATION_FAILED: {
+    code: 'E_VERIFICATION_FAILED',
+    message: 'Output byte verification failed: generated SHA-256 does not match expected hash.',
+    fix: 'Check the expected SHA-256 hash or inspect engine version determinism.',
+  },
 });
 
 module.exports = {

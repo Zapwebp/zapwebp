@@ -1,0 +1,64 @@
+{
+  "": "https://zapwebp.vercel.app/schemas/agent.schema.json",
+  "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
+  "name": "@zapwebp/compressor",
+  "version": "1.0.0",
+  "type": "compression-plugin",
+  "description": "Intelligent size reduction plugin for Zapwebp with deterministic binary search quality optimization and adaptive downscaling.",
+  "install": "npm install @zapwebp/compressor",
+  "homepage": "https://zapwebp.vercel.app",
+  "docs": "https://zapwebp-docs.vercel.app/plugins/compressor",
+  "docsMarkdown": "https://zapwebp.vercel.app/plugins/compressor.md",
+  "repository": "https://github.com/Zapwebp/compressor",
+  "contact": "eldrexdelosreyesbula@gmail.com",
+  "entrypoint": "src/index.js",
+  "exports": [
+    "compressor",
+    "compress",
+    "binarySearchQuality",
+    "parseTargetBytes",
+    "downscaleRawImage",
+    "defaultEncodeFn",
+    "defineCompressor"
+  ],
+  "options": {
+    "targetBytes": {
+      "type": "number",
+      "description": "Target maximum file size in bytes (e.g. 500000 or '500kb')."
+    },
+    "minQuality": {
+      "type": "integer",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "maxQuality": {
+      "type": "integer",
+      "default": 95,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "allowDownscale": {
+      "type": "boolean",
+      "default": true
+    },
+    "downscaleStep": {
+      "type": "number",
+      "default": 0.9,
+      "minimum": 0.1,
+      "maximum": 0.99
+    },
+    "maxDownscaleAttempts": {
+      "type": "integer",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 10
+    },
+    "maxIterations": {
+      "type": "integer",
+      "default": 8,
+      "minimum": 1,
+      "maximum": 20
+    }
+  }
+}

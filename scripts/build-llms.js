@@ -9,7 +9,14 @@ const docsPublicDir = path.join(root, 'zapwebp-docs', 'public');
 
 const out = `# Zapwebp
 
-> Convert correctly. A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere (browser, terminal, build tools, CI, AI agents). Open source, MIT licensed.
+> AI-ready image infrastructure built for developers who need reliable, reproducible, privacy-conscious image processing.
+>
+> Stop marketing features. Start proving guarantees:
+> 1. Correctness: Conversion is not enough. Verify the result (alpha preserved at origin pixel 0,0).
+> 2. Reproducibility: Same input, same configuration, same engine version across OSes (verified via MANIFEST.json).
+> 3. Privacy: Local-first processing. No mandatory cloud uploads. Zero telemetry.
+> 4. Extensibility: Open plugin architecture, not a closed ecosystem (scaffold via create-zapwebp).
+> 5. Universality: One engine across Web (WASM), CLI, VS Code, and AI Agents (MCP).
 
 ## Core
 

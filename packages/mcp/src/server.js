@@ -305,6 +305,9 @@ export function createMcpServer(options = {}) {
       verify: z.boolean().default(true).describe('Assert alpha preserved and metadata removed; returns a clean certificate.'),
       assertAlpha: z.boolean().default(false),
       overwrite: z.boolean().default(false),
+      targetBytes: z.union([z.number().int().positive(), z.string()]).optional().describe('Target maximum file size (e.g. 500000 or "500kb") with adaptive compression and downscaling'),
+      minQuality: z.number().int().min(1).max(100).optional().describe('Minimum quality floor before downscaling (default: 10)'),
+      allowDownscale: z.boolean().default(true).describe('Whether downscaling is permitted to satisfy target size'),
       maxInputBytes: z.number().int().positive().optional().describe('Maximum allowed input bytes before decoding'),
       maxOutputBytes: z.number().int().positive().optional().describe('Maximum allowed output bytes after compression'),
       acceptFormats: z.array(z.string()).optional().describe('List of accepted input formats'),
@@ -423,6 +426,9 @@ export function createMcpServer(options = {}) {
     if (converted.lossless) {
       summaryText += `\n   Lossless: ${converted.losslessVerified ? 'verified pixel-identical' : 'enabled'} (source quality: ${converted.sourceQuality?.estimated || 'unknown'})`;
     }
+    if (converted.compression) {
+      summaryText += `\n   Compression: target ${converted.compression.target} bytes, achieved ${converted.compression.bytes || converted.size} bytes (quality ${converted.compression.quality}, ${converted.compression.iterations} iter${converted.compression.downscaled ? `, downscaled ${converted.compression.downscaleCount}x` : ''})`;
+    }
     if (converted.warnings && converted.warnings.length) {
       summaryText += `\n   ⚠️ Warning: ${converted.warnings.join(' ')}`;
     }
@@ -442,6 +448,7 @@ export function createMcpServer(options = {}) {
       losslessVerified: converted.losslessVerified,
       sourceQuality: converted.sourceQuality,
       sizeImpact: converted.sizeImpact,
+      compression: converted.compression,
       warnings: converted.warnings || [],
       clean: converted.clean,
       metadataRemoved: converted.removedMetadata,

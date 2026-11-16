@@ -1927,6 +1927,9 @@ async function convertViaApi(file, toFormat, quality, scales = [1], isClean = tr
   formData.append('lossless', String(isLossless));
   formData.append('clean', String(isClean));
   if (bgColor) formData.append('background', bgColor);
+  if (settings.outputSizeMode === 'custom' && settings.outputSizeLimitKb) {
+    formData.append('targetBytes', String(settings.outputSizeLimitKb * 1024));
+  }
 
   const res = await fetch('/api/convert', {
     method: 'POST',
