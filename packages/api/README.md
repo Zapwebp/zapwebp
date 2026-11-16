@@ -6,30 +6,22 @@
 
 High-performance, transparency-safe HTTP REST API for image conversion, metadata inspection, and asset optimization. Built with Express, fully documented via OpenAPI 3.1, and powered by the memory-only `@zapwebp/core` engine.
 
+Covers: HTTP REST API endpoints (/health, /api/v1/convert, /api/v1/inspect, /api/v1/batch), Express router factory, multipart memory uploads, and OpenAPI 3.1 definitions.
+
+Does not cover: Frontend UI rendering, database persistence, or long-term file hosting.
+
+Applies to: `@zapwebp/api` v1.0.0 and later, Node.js >=22.0.0, Express >=4.18.0.
+
 Production service: [https://zapwebp.vercel.app/api](https://zapwebp.vercel.app/api)  
 OpenAPI 3.1 Specification: `/openapi/openapi.json`
 
 ---
 
-## Features
-
-- **Transparency-Preserving Conversion:** Preserves alpha channels across SVG, PNG, WebP, and AVIF. Transparent inputs to JPEG without an explicit background throw structured `alpha_not_representable` errors.
-- **Zero Disk I/O & Memory-Only Execution:** All uploads are held in memory (`multer.memoryStorage()`) and processed with libvips (`sharp`) and Rust SVG (`@resvg/resvg-js`). Nothing is ever written to disk or logged remotely.
-- **Strict SVG Sandboxing:** SVGs containing active scripts (`<script>`, inline `on*` event handlers) or XXE entity declarations (`<!ENTITY>`) are rejected immediately with HTTP 400.
-- **Single & Batch Endpoints:** Convert individual assets or multipart file batches with concurrency limits.
-- **Dual MCP Transport:** Mounts `/mcp` providing Streamable HTTP / Server-Sent Events (SSE) for remote AI agents and chatbots.
-
----
-
-## Installation
+## Quick start
 
 ```bash
 pnpm add @zapwebp/api
 ```
-
----
-
-## Server Mounting & Usage
 
 ```javascript
 const express = require('express');
@@ -49,6 +41,17 @@ app.listen(3000, () => {
   console.log('Zapwebp API running on port 3000');
 });
 ```
+
+---
+
+## What it does
+
+`@zapwebp/api` provides a stateless, production-ready REST gateway for transparency-safe image conversion:
+- **Transparency-Preserving Conversion:** Preserves alpha channels across SVG, PNG, WebP, and AVIF. Transparent inputs to JPEG without an explicit background throw structured `alpha_not_representable` errors.
+- **Zero Disk I/O & Memory-Only Execution:** All uploads are held in memory (`multer.memoryStorage()`) and processed with libvips (`sharp`) and Rust SVG (`@resvg/resvg-js`). Nothing is ever written to disk or logged remotely.
+- **Strict SVG Sandboxing:** SVGs containing active scripts (`<script>`, inline `on*` event handlers) or XXE entity declarations (`<!ENTITY>`) are rejected immediately with HTTP 400.
+- **Single & Batch Endpoints:** Convert individual assets or multipart file batches with concurrency limits.
+- **Dual MCP Transport:** Mounts `/mcp` providing Streamable HTTP / Server-Sent Events (SSE) for remote AI agents and chatbots.
 
 ---
 
@@ -254,7 +257,7 @@ Strips all EXIF, XMP, C2PA Content Credentials, and software tags, generating a 
 
 ---
 
-## Error Handling & Status Codes
+## Errors
 
 All errors return structured JSON with actionable error codes:
 
@@ -277,6 +280,34 @@ All errors return structured JSON with actionable error codes:
   "docs": "https://zapwebp.vercel.app/docs#black-background"
 }
 ```
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/api",
+  "endpoints": [
+    "GET /health",
+    "POST /api/v1/convert",
+    "POST /api/v1/batch",
+    "POST /api/v1/inspect",
+    "POST /api/v1/validate-svg",
+    "POST /api/v1/clean"
+  ],
+  "transport": "HTTP/REST",
+  "openApi": "/openapi/openapi.json"
+}
+```
+
+---
+
+## Related
+
+- [REST API Documentation](https://zapwebp-docs.vercel.app/api): Live endpoint playground and parameter guide.
+- [Core SDK](https://zapwebp-docs.vercel.app/sdk/core): In-memory library powering the API.
+- [Errors Reference](https://zapwebp-docs.vercel.app/errors): System error codes and fixes.
 
 ---
 

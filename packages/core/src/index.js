@@ -18,7 +18,6 @@ const {
   evaluateQuality,
 } = require('./policy');
 const { listTools, getAgentManifest } = require('./tools');
-const { createMockSvg, createMockImage } = require('./testing');
 const { computeCacheKey, ConversionCache, defaultCache } = require('./cache');
 const { parallelMap, ConversionPool, defaultPool } = require('./parallel');
 const { assertRuntimeIsolation, detectEnvironment } = require('./safety/runtime');
@@ -1048,7 +1047,11 @@ async function convertImage(input, options = {}) {
     const fitByCover = opts.fit === 'cover' || opts.fit === 'outside';
     const renderMode = opts.width && opts.height
       ? (fitByCover === (aspect > opts.height / opts.width) ? 'width' : 'height')
-      : opts.height && !opts.width ? 'height' : 'width';
+      : opts.height && !opts.width
+        ? 'height'
+        : (!opts.width && !opts.height && aspect > 1)
+          ? 'height'
+          : 'width';
     const renderValue = renderMode === 'height' ? (opts.height ?? opts.width ?? 2048) : (opts.width ?? opts.height ?? 2048);
     const rasterWidth = renderMode === 'width' ? renderValue : Math.ceil(renderValue / aspect);
     const rasterHeight = renderMode === 'height' ? renderValue : Math.ceil(renderValue * aspect);
@@ -1793,12 +1796,6 @@ module.exports = {
   listTools,
   getAgentManifest,
   ZapwebpError,
-  createMockSvg,
-  createMockImage,
-  testing: {
-    createMockSvg,
-    createMockImage,
-  },
 
   // Performance Optimization Surfaces (Masterplan)
   computeCacheKey,

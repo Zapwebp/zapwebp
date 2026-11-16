@@ -21,7 +21,7 @@ test('API health, CORS preflight, conversion, validation, and batch routes', asy
   assert.equal(health.status, 200);
   const healthBody = await health.json();
   assert.equal(healthBody.ok, true);
-  assert.equal(healthBody.version, '1.1.0');
+  assert.equal(healthBody.version, require('../package.json').version);
 
   // GET descriptor & docs redirect
   const getConvertJson = await fetch(`${base}/convert`, { headers: { Accept: 'application/json' } });

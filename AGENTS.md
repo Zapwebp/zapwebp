@@ -10,7 +10,9 @@ Zapwebp provides transparency-safe, high-performance image conversion across dev
 - **Documentation:** [https://zapwebp-docs.vercel.app](https://zapwebp-docs.vercel.app)
 - **Source Code:** [https://github.com/Zapwebp](https://github.com/Zapwebp)
 - **npm Registry:** [https://www.npmjs.com/org/zapwebp](https://www.npmjs.com/org/zapwebp)
-- **Open VSX Publisher:** `zapwebp`
+- **Open VSX / VS Code Publisher:** `ebula`
+- **Open VSX Extension:** [https://open-vsx.org/extension/ebula/zapwebp-vscode](https://open-vsx.org/extension/ebula/zapwebp-vscode)
+- **VS Marketplace Extension:** [https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode](https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode)
 - **Contact:** `eldrexdelosreyesbula@gmail.com`
 - **Jurisdiction:** Republic of the Philippines
 - **License:** MIT ([LICENSE](LICENSE))
@@ -123,7 +125,8 @@ When modifying this repository, AI agents must adhere to the following non-negot
    - Main Web App: `https://zapwebp.vercel.app`
    - Docs Portal: `https://zapwebp-docs.vercel.app`
    - Maintainer Contact: `eldrexdelosreyesbula@gmail.com`
-   - Publisher: `zapwebp`
+   - npm Publisher: `@zapwebp`
+   - Open VSX / VS Code Publisher: `ebula` (`ebula.zapwebp-vscode`)
 5. **Test Verification Before Completion**:
    - Always run relevant package tests or `pnpm test` to verify zero regressions before reporting task completion.
 

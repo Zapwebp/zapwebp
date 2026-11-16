@@ -6,27 +6,41 @@
 
 The shared image conversion, format detection, SVG validation, and metadata cleaning engine behind the entire Zap ecosystem. Provides format-aware, memory-safe conversion across SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF with strict alpha preservation and zero telemetry.
 
+Covers: Image conversion across SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF, alpha preservation, format autodetection, SVG sanitization, clean mode metadata stripping, and retina multiplier calculations.
+
+Does not cover: CLI terminal arguments, MCP network transport, UI widgets, or cloud storage providers.
+
+Applies to: `@zapwebp/core` v1.0.0 and later, Node.js >=22.0.0.
+
 Documentation: [https://zapwebp.vercel.app/formats](https://zapwebp.vercel.app/formats)
 
----
-
-## Features
-
-- **Format Autodetection:** Sniffs image headers from raw magic bytes and XML patterns, never relying on file extensions alone.
-- **Rust-Powered SVG Engine:** Rasterizes SVG vectors via `@resvg/resvg-js` over transparent canvases with subpixel accuracy.
-- **Libvips Raster Pipeline:** High-throughput streaming image transform pipeline powered by `sharp`.
-- **Alpha Guarantees:** Transparency is preserved across WebP, PNG, and AVIF. Converting transparent inputs to JPEG without an explicit background color throws a structured `alpha_not_representable` error.
-- **Clean Mode & AI Provenance:** Detects AI-generated metadata (C2PA Content Credentials, Midjourney, Adobe Firefly, Stable Diffusion) and generates cryptographically signed Clean Certificates.
-- **Multiplier Tooling:** Utility functions for parsing scale arrays (`@1x`, `@2x`, `@3x`), generating filename suffixes, and building ready-to-paste `<img srcset>` HTML snippets.
-- **Security Sandboxing:** Rejects SVGs containing active scripts (`<script>`, inline handlers), external entity expansions (XXE), or remote network references.
-
----
-
-## Installation
+## Quick start
 
 ```bash
 pnpm add @zapwebp/core
 ```
+
+```javascript
+const { convertImage } = require('@zapwebp/core');
+
+// Convert SVG or raster image to WebP with target width
+const webpBuffer = await convertImage(inputBuffer, {
+  to: 'webp',
+  width: 512,
+  quality: 85,
+});
+```
+
+## What it does
+
+`@zapwebp/core` is the foundational conversion and validation engine for Zapwebp:
+- **Format Autodetection:** Sniffs image headers from raw magic bytes and XML patterns, never relying on file extensions alone.
+- **Rust-Powered SVG Engine:** Rasterizes SVG vectors via `@resvg/resvg-js` over transparent canvases with subpixel accuracy.
+- **Libvips Raster Pipeline:** High-throughput streaming image transform pipeline powered by `sharp`.
+- **Alpha Guarantees:** Transparency is preserved across WebP, PNG, and AVIF. Converting transparent inputs to JPEG without an explicit background color throws a structured `E_ALPHA_NOT_REPRESENTABLE` error.
+- **Clean Mode & AI Provenance:** Detects AI-generated metadata (C2PA Content Credentials, Midjourney, Adobe Firefly, Stable Diffusion) and generates cryptographically signed Clean Certificates.
+- **Multiplier Tooling:** Utility functions for parsing scale arrays (`@1x`, `@2x`, `@3x`), generating filename suffixes, and building ready-to-paste `<img srcset>` HTML snippets.
+- **Security Sandboxing:** Rejects SVGs containing active scripts (`<script>`, inline handlers), external entity expansions (XXE), or remote network references (`E_UNSAFE_SVG`).
 
 ---
 
@@ -55,18 +69,6 @@ function convertImage(
 | `background` | string | `null` | Hex color (e.g. `'#ffffff'`). Required when alpha input is converted to JPEG. |
 | `stripMetadata` | boolean | `true` | Strip EXIF, XMP, and ICC profiles |
 
-#### Example
-```javascript
-const { convertImage } = require('@zapwebp/core');
-
-// Convert SVG to WebP with target width
-const webpBuffer = await convertImage(svgString, {
-  to: 'webp',
-  width: 512,
-  quality: 90,
-});
-```
-
 ---
 
 ### 2. `inspectImage(input)`
@@ -91,15 +93,6 @@ function inspectImage(input: Buffer | Uint8Array | string): Promise<{
 }>
 ```
 
-#### Example
-```javascript
-const { inspectImage } = require('@zapwebp/core');
-
-const info = await inspectImage(imageBuffer);
-console.log(info.format, info.width, info.hasAlpha, info.metadata.summary);
-// => 'png', 1024, true, ['PNG C2PA']
-```
-
 ---
 
 ### 3. `detectFormat(input)`
@@ -122,8 +115,6 @@ const { decodeToRgba, encodeFromRgba } = require('@zapwebp/core');
 // Decode image to raw 8-bit RGBA buffer
 const raw = await decodeToRgba(inputBuffer);
 
-// Process raw pixel buffer...
-
 // Encode raw RGBA back to modern format
 const outputBuffer = await encodeFromRgba(raw, {
   to: 'webp',
@@ -140,7 +131,6 @@ Parses and validates multiplier scale numbers:
 ```javascript
 const { parseScales } = require('@zapwebp/core');
 parseScales([1, 2, 3]); // => [1, 2, 3]
-parseScales('1, 2x, 3'); // => [1, 2, 3]
 ```
 
 #### `outputName(inputPath, format, scale)`
@@ -155,7 +145,6 @@ Generates responsive `<img srcset>` HTML markup:
 ```javascript
 const { generateSrcset } = require('@zapwebp/core');
 const html = generateSrcset('hero.png', [1, 2, 3], 'webp', 'Hero Banner');
-// => <img src="hero.webp" srcset="hero.webp 1x, hero@2x.webp 2x, hero@3x.webp 3x" alt="Hero Banner">
 ```
 
 ---
@@ -190,11 +179,7 @@ Lints shell commands (e.g. `magick convert input.svg output.jpg`) for alpha loss
 ```javascript
 const { auditConversionCommand } = require('@zapwebp/core');
 const audit = auditConversionCommand('magick convert logo.svg logo.jpg');
-// => { safe: false, issues: ['JPEG drops transparency'], recommendedCommand: 'zap logo.svg --to webp' }
 ```
-
-#### `explainBlackBackground(context)`
-Returns technical root cause and fix for WebP black background defects.
 
 ---
 
@@ -209,9 +194,46 @@ Returns technical root cause and fix for WebP black background defects.
 
 ---
 
-## Extensibility & Custom Formats
+## Errors
 
-To add support for a new image format to `@zapwebp/core` (e.g. HEIC, JXL), see the [Adding a New Image Format Guide](ADDING_A_FORMAT.md).
+| Code | Cause | Fix |
+|---|---|---|
+| `E_UNSUPPORTED_FORMAT` | Source image format is not recognized or unsupported | Use a supported format (SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF) |
+| `E_CORRUPT_HEADER` | Image magic bytes or container header is truncated | Verify input file integrity |
+| `E_ALPHA_NOT_REPRESENTABLE` | Converting transparent image to JPEG without background | Provide background color (`background: '#ffffff'`) |
+| `E_INPUT_TOO_LARGE` | Input pixel dimensions exceed 4096×4096 limit | Downsample source image or resize prior to conversion |
+| `E_UNSAFE_SVG` | SVG contains scripts, event handlers, or XXE entities | Sanitize vector XML before processing |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/core",
+  "methods": [
+    "convertImage",
+    "inspectImage",
+    "detectFormat",
+    "decodeToRgba",
+    "encodeFromRgba",
+    "generateCleanCertificate",
+    "verifyAlpha"
+  ],
+  "inputFormats": ["svg", "png", "jpeg", "webp", "avif", "gif", "tiff"],
+  "outputFormats": ["webp", "png", "jpeg", "avif"],
+  "maxDimension": 4096
+}
+```
+
+---
+
+## Related
+
+- [Formats Documentation](https://zapwebp-docs.vercel.app/formats): Complete format matrix and alpha handling rules.
+- [Clean Mode](https://zapwebp-docs.vercel.app/clean): Metadata stripping and C2PA certificate verification.
+- [CLI Reference](https://zapwebp-docs.vercel.app/cli): Terminal usage powered by `@zapwebp/core`.
+- [Adding a New Image Format Guide](ADDING_A_FORMAT.md): Instructions for community format contributors.
 
 ---
 

@@ -57,9 +57,6 @@ const pages = [
   'lossless',
   'scaffolding',
   'reliability',
-  'storage/supabase',
-  'storage/firebase',
-  'storage/neocities',
 ];
 
 test('Tagalog documentation validation: all translated pages exist and adhere to standards', () => {

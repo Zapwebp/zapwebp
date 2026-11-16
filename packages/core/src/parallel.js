@@ -43,7 +43,10 @@ async function parallelMap(items, concurrency = DEFAULT_CONCURRENCY, workerFn, o
     });
   }
 
-  const limit = Math.max(1, Math.min(actualConcurrency, items.length));
+  const sanitizedConcurrency = Number.isFinite(actualConcurrency) && actualConcurrency > 0
+    ? Math.floor(actualConcurrency)
+    : DEFAULT_CONCURRENCY;
+  const limit = Math.max(1, Math.min(sanitizedConcurrency, items.length));
   const results = new Array(items.length);
   let currentIndex = 0;
   let aborted = false;

@@ -73,8 +73,9 @@ Converted files appear immediately adjacent to source assets with transparency p
 {
   "pkg": "zapwebp-vscode",
   "version": "1.3.0",
-  "publisher": "zapwebp",
-  "registry": "https://open-vsx.org/extension/zapwebp/zapwebp-vscode",
+  "publisher": "ebula",
+  "marketplace": "https://marketplace.visualstudio.com/items?itemName=ebula.zapwebp-vscode",
+  "registry": "https://open-vsx.org/extension/ebula/zapwebp-vscode",
   "canonicalUrl": "https://zapwebp.vercel.app/plugins/vscode",
   "docs": "https://zapwebp-docs.vercel.app/plugins/vscode",
   "features": [

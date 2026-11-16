@@ -59,14 +59,14 @@ class Runner
     }
 
     /**
-     * Executes process conversion synchronously returning the output file path.
+     * Executes process conversion synchronously returning the output conversion result.
      *
      * @param string $inputPath Path to source image
      * @param array $options Options overriding defaults
-     * @return string Output file path
+     * @return ConversionResult Conversion result object
      * @throws RuntimeException
      */
-    public function execute(string $inputPath, array $options = []): string
+    public function execute(string $inputPath, array $options = []): ConversionResult
     {
         if (!file_exists($inputPath)) {
             throw new RuntimeException("Zapwebp: Input file not found: {$inputPath}");

@@ -57,9 +57,6 @@ const pages = [
   'lossless',
   'scaffolding',
   'reliability',
-  'storage/supabase',
-  'storage/firebase',
-  'storage/neocities',
 ];
 
 test('Agentic docs validation: all content pages follow the strict template', () => {

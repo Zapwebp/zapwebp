@@ -50,6 +50,7 @@
 - [Lens](https://zapwebp-docs.vercel.app/plugins/lens): Image inspection and visual diffing.
 - [Crop](https://zapwebp-docs.vercel.app/plugins/crop): Pure transform crop plugin with auto/manual modes and face detection.
 - [ICO / Favicon](https://zapwebp-docs.vercel.app/plugins/format-ico): High-resolution multi-size ICO plugin and favicon suite generator.
+- [Compressor](https://zapwebp-docs.vercel.app/plugins/compressor): Intelligent size reduction plugin with binary search optimization and adaptive downscaling.
 
 ## Community & Governance
 
@@ -95,6 +96,8 @@
 - [Laravel Plugin Raw](/plugins/laravel.md): Laravel package documentation.
 - [Lens Plugin Raw](/plugins/lens.md): Image inspection and visual diffing CLI.
 - [Crop Plugin Raw](/plugins/crop.md): Crop transform plugin documentation.
+- [ICO Plugin Raw](/plugins/format-ico.md): High-resolution multi-size ICO plugin and favicon suite generator.
+- [Compressor Plugin Raw](/plugins/compressor.md): Intelligent size reduction plugin documentation.
 - [Security Raw](/security.md): Security policy and vulnerability reporting.
 - [Code of Conduct Raw](/code-of-conduct.md): Contributor Covenant standards.
 - [Contributing Raw](/contributing.md): Developer guide and PR checklist.

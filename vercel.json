@@ -7,6 +7,7 @@
     }
   },
   "rewrites": [
+    { "source": "/(svg-to-webp|png-to-webp|jpg-to-webp|webp-to-png|svg-to-png|png-to-avif|avif-to-webp|reports)", "destination": "/api/index.js?__zap_url=/$1" },
     { "source": "/api", "destination": "/api/index.js?__zap_url=/api" },
     { "source": "/api/(.*)", "destination": "/api/index.js?__zap_url=/api/$1" },
     { "source": "/health", "destination": "/api/index.js?__zap_url=/health" },

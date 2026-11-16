@@ -1,10 +1,14 @@
-# `create-zapwebp`
+# create-zapwebp
 
 Scaffold agent-native Zapwebp plugins, storage adapters, custom transforms, and metadata handlers in seconds.
 
-The new scaffolder generates **context, not boilerplate**. It provides a working project skeleton, empty-but-structured `AGENTS.md` and `SKILLS.md` files, and a first-run prompt that tells your AI coding agent (Antigravity, Cursor, Claude) to define your project intent before writing code.
+Covers: Scaffolding agent-native plugins, format handlers, storage adapters, transforms, and metadata plugins with `AGENTS.md`, `SKILLS.md`, and CI workflows.
 
-## Quick Start
+Does not cover: Runtime image conversions, build packaging, or publishing to npm.
+
+Applies to: `create-zapwebp` v1.0.0 and later, Node.js >=22.0.0.
+
+## Quick start
 
 ```bash
 pnpm create zapwebp
@@ -17,6 +21,13 @@ Or scaffold non-interactively:
 ```bash
 pnpm create zapwebp my-zapwebp-plugin --type format --author "Jane Doe" --github janedoe --pm pnpm
 ```
+
+## What it does
+
+`create-zapwebp` generates **context, not boilerplate**. It provides a working project skeleton, empty-but-structured `AGENTS.md` and `SKILLS.md` files, and a first-run prompt that tells your AI coding agent (Antigravity, Cursor, Claude) to define your project intent before writing code:
+- **6 Archetype Templates**: Formats, storage adapters, pixel transforms, metadata strippers, build plugins, and custom extensions.
+- **Agent Governance Ready**: Pre-scaffolds `AGENTS.md`, `SKILLS.md`, and `agent.json` discovery manifests.
+- **Zero Config CI**: Includes pre-wired GitHub Actions workflows for tests and automated npm releases.
 
 ## Available Archetype Templates
 
@@ -67,6 +78,30 @@ my-zapwebp-plugin/
 4. Prompt your AI assistant: *"Read AGENTS.md and SKILLS.md. Help me fill them in for my plugin, then write the implementation."*
 5. Run `pnpm test` and `pnpm run build`.
 
+## Errors
+
+| Code | Cause | Fix |
+|---|---|---|
+| `E_TARGET_EXISTS` | Destination directory already exists and is non-empty | Choose another directory name or empty the folder |
+| `E_INVALID_ARCHETYPE` | Requested archetype does not match supported templates | Use one of `format`, `storage`, `transform`, `metadata`, `build`, `custom` |
+| `E_MISSING_NAME` | Project name argument missing in non-interactive mode | Provide target folder name as positional argument |
+
+## For agents
+
+```json
+{
+  "tool": "create-zapwebp",
+  "archetypes": ["format", "storage", "transform", "metadata", "build", "custom"],
+  "flags": ["--type", "--author", "--github", "--pm"]
+}
+```
+
+## Related
+
+- [Scaffolding Guide](https://zapwebp-docs.vercel.app/scaffolding): Complete plugin developer tutorial.
+- [Plugin SDK](https://zapwebp-docs.vercel.app/sdk/plugin): Core interfaces implemented by scaffolded projects.
+- [Contributing](https://zapwebp-docs.vercel.app/contributing): Submitting plugins to the ecosystem directory.
+
 ## License
 
-MIT © Zapwebp
+MIT © [Zapwebp](https://zapwebp.vercel.app/)

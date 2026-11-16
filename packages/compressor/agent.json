@@ -1,5 +1,4 @@
 {
-  "": "https://zapwebp.vercel.app/schemas/agent.schema.json",
   "$schema": "https://zapwebp-docs.vercel.app/schemas/agent-manifest.json",
   "name": "@zapwebp/compressor",
   "version": "1.0.0",

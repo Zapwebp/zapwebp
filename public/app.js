@@ -7,6 +7,26 @@
 
 const SUPPORTED_EXTENSIONS = new Set(['.svg', '.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.tif', '.tiff']);
 
+/**
+ * Escapes unsafe characters for secure DOM innerHTML interpolation.
+ * Prevents DOM XSS from user-supplied image file names and payloads.
+ * @param {unknown} str - String or value to escape
+ * @returns {string} Sanitized HTML-safe string
+ */
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str ?? '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+if (typeof window !== 'undefined') {
+  window.escapeHtml = escapeHtml;
+}
+
 // DOM References
 const fileInput = document.querySelector('#file-input');
 const dropzone = document.querySelector('#dropzone');
@@ -855,7 +875,7 @@ async function renderReportsModal(period = activeReportPeriod) {
       topListEl.innerHTML = report.topSavings.map((item, idx) => `
         <div class="report-row">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;">
-            ${idx + 1}. ${item.name} (${item.format})
+            ${idx + 1}. ${escapeHtml(item.name)} (${escapeHtml(item.format)})
           </span>
           <span>${formatKb(item.sizeIn)} → ${formatKb(item.sizeOut)} (<strong>-${item.savedPercent}%</strong>)</span>
         </div>
@@ -2177,7 +2197,7 @@ function showToast(message, options = {}) {
   const item = document.createElement(isCustomElement ? 'zap-toast' : 'div');
   if (options.type) item.setAttribute('type', options.type);
   item.className = 'toast-item';
-  item.innerHTML = `<span>${message}</span>`;
+  item.innerHTML = `<span>${escapeHtml(message)}</span>`;
 
   if (options.restoreAction) {
     const btn = document.createElement('button');
@@ -2343,13 +2363,13 @@ function renderResultsView() {
       </div>
       <div class="single-card-main">
         <div class="single-thumb-wrap" title="Click to inspect & compare image" role="button" tabindex="0">
-          <img src="${out.url}" alt="${item.name}" />
+          <img src="${out.url}" alt="${escapeHtml(item.name)}" />
           <div class="single-thumb-overlay" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
         </div>
         <div class="single-details-col">
-          <div class="single-filename" title="${item.name}">${item.name}</div>
+          <div class="single-filename" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
           <div class="single-stats-row">
             <span class="single-size-from">${formatKb(item.originalSize)}</span>
             <svg class="single-arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -2501,8 +2521,8 @@ function renderResultsView() {
       errCard.innerHTML = `
         <button type="button" class="btn-single-delete" title="${t('single.delete', 'Remove')}" style="position:absolute;top:6px;right:6px;">✕</button>
         <div class="error-badge-icon">!</div>
-        <span class="result-name" title="${item.name}">${item.name}</span>
-        <span class="result-meta" style="color:var(--error);">${item.error || 'Failed'}</span>
+        <span class="result-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+        <span class="result-meta" style="color:var(--error);">${escapeHtml(item.error || 'Failed')}</span>
       `;
       errCard.querySelector('.btn-single-delete')?.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -2525,8 +2545,8 @@ function renderResultsView() {
       row.className = 'result-list-row';
       row.innerHTML = `
         <div class="list-row-left" title="Click to inspect & preview image">
-          <img class="list-row-thumb" src="${out.url}" alt="${item.name}" />
-          <span class="list-row-name" title="${item.name}">${item.name}</span>
+          <img class="list-row-thumb" src="${out.url}" alt="${escapeHtml(item.name)}" />
+          <span class="list-row-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
         </div>
         <div class="list-row-meta">
           <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
@@ -2584,10 +2604,10 @@ function renderResultsView() {
 
       card.innerHTML = `
         <div class="result-thumb-box" title="Click to inspect & preview image">
-          <img class="result-thumb" src="${out.url}" alt="${item.name}" loading="lazy" />
+          <img class="result-thumb" src="${out.url}" alt="${escapeHtml(item.name)}" loading="lazy" />
         </div>
         <div class="result-info-box">
-          <div class="result-name" title="${item.name}">${item.name}</div>
+          <div class="result-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
           <div class="result-meta">
             <span class="result-size-text">${formatKb(item.originalSize)} → ${formatKb(out.size)}</span>
             <span class="result-savings-pill">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
@@ -2782,12 +2802,12 @@ function renderPreviewStage() {
   if (activePreviewTab === 'converted') {
     const wrap = document.createElement('div');
     wrap.className = 'preview-stage-single';
-    wrap.innerHTML = `<img src="${primaryOut.url}" alt="${primaryOut.name}" />`;
+    wrap.innerHTML = `<img src="${primaryOut.url}" alt="${escapeHtml(primaryOut.name)}" />`;
     previewStage.appendChild(wrap);
   } else if (activePreviewTab === 'original') {
     const wrap = document.createElement('div');
     wrap.className = 'preview-stage-single';
-    wrap.innerHTML = `<img src="${item.originalUrl}" alt="${item.name}" />`;
+    wrap.innerHTML = `<img src="${item.originalUrl}" alt="${escapeHtml(item.name)}" />`;
     previewStage.appendChild(wrap);
   } else if (activePreviewTab === 'split') {
     const splitWrap = document.createElement('div');
@@ -2795,11 +2815,11 @@ function renderPreviewStage() {
     splitWrap.innerHTML = `
       <div class="split-pane">
         <span class="split-pane-label">Original (${formatKb(item.originalSize)})</span>
-        <img src="${item.originalUrl}" alt="Original: ${item.name}" />
+        <img src="${item.originalUrl}" alt="Original: ${escapeHtml(item.name)}" />
       </div>
       <div class="split-pane">
         <span class="split-pane-label">Converted (${formatKb(primaryOut.size)})</span>
-        <img src="${primaryOut.url}" alt="Converted: ${primaryOut.name}" />
+        <img src="${primaryOut.url}" alt="Converted: ${escapeHtml(primaryOut.name)}" />
       </div>
     `;
     previewStage.appendChild(splitWrap);
@@ -3814,4 +3834,9 @@ if (typeof navigator !== 'undefined' && 'modelContext' in navigator && typeof na
     // Non-blocking progressive enhancement
   }
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { escapeHtml };
+}
+
 

@@ -3,6 +3,8 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('node:path');
+const pkg = require('../package.json');
+const { getMimeType } = require('@zapwebp/shared');
 const {
   convertImage,
   detectFormat,
@@ -96,7 +98,7 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     res.json({
       ok: true,
       service: 'zapwebp',
-      version: '1.1.0',
+      version: pkg.version,
       endpoints: {
         health: 'GET /api/v1/health',
         convert: 'POST /api/v1/convert',
@@ -107,7 +109,7 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     });
   });
 
-  router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: '1.1.0' }));
+  router.get('/health', (_req, res) => res.json({ ok: true, service: 'zapwebp', version: pkg.version }));
 
   router.get('/convert', (req, res) => {
     if (isBrowserRequest(req)) {
@@ -189,7 +191,7 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
       const base = path.basename(file.originalname, path.extname(file.originalname)) || 'image';
       const filename = outputName(`${base}.input`, converted.format);
       res.set({
-        'Content-Type': `image/${converted.format === 'jpeg' ? 'jpeg' : converted.format}`,
+        'Content-Type': getMimeType(converted.format),
         'Content-Length': String(converted.size),
         'X-Zapwebp-Width': String(converted.width),
         'X-Zapwebp-Height': String(converted.height),

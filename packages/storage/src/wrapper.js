@@ -101,11 +101,39 @@ function withZapwebp(adapter, options) {
     let bytes = bytesOrUrl;
     if (typeof bytesOrUrl === 'string' && (bytesOrUrl.startsWith('http://') || bytesOrUrl.startsWith('https://'))) {
       validateSafeUrl(bytesOrUrl);
-      const res = await fetch(bytesOrUrl);
+      const res = await fetch(bytesOrUrl, { signal: AbortSignal.timeout(10000) });
       if (!res.ok) {
         throw new Error(`E_STORAGE: Failed to fetch remote source image "${bytesOrUrl}": HTTP ${res.status}`);
       }
-      bytes = new Uint8Array(await res.arrayBuffer());
+      const maxAllowed = resolved.maxBytes || 5 * 1024 * 1024;
+      if (!res.body) {
+        bytes = new Uint8Array(await res.arrayBuffer());
+      } else {
+        const reader = res.body.getReader();
+        const chunks = [];
+        let received = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.byteLength;
+          if (received > maxAllowed) {
+            await reader.cancel('Max bytes exceeded');
+            throw new ZapwebpError({
+              code: 'E_TOO_LARGE',
+              message: `Remote image at "${bytesOrUrl}" exceeds maximum allowed size of ${maxAllowed} bytes.`,
+              fix: 'Provide an image under the configured maxBytes limit.',
+            });
+          }
+          chunks.push(value);
+        }
+        const total = new Uint8Array(received);
+        let pos = 0;
+        for (const c of chunks) {
+          total.set(c, pos);
+          pos += c.byteLength;
+        }
+        bytes = total;
+      }
     }
 
     if (!bytes || (!Buffer.isBuffer(bytes) && !(bytes instanceof Uint8Array))) {
@@ -415,12 +443,13 @@ function withZapwebp(adapter, options) {
     }
 
     const targets = new Set();
+    const targetExt = resolved.targetFormat === 'jpeg' ? 'jpg' : (resolved.targetFormat || 'webp');
 
     // 1. Configured scales + standard @1x/@2x/@3x scales
     const allScales = new Set([...resolved.scale, 1, 2, 3]);
     for (const s of allScales) {
       const suffix = scaleSuffix(s);
-      targets.add(dir ? `${dir}/${baseName}${suffix}.webp` : `${baseName}${suffix}.webp`);
+      targets.add(dir ? `${dir}/${baseName}${suffix}.${targetExt}` : `${baseName}${suffix}.${targetExt}`);
     }
 
     // 2. Manifest file

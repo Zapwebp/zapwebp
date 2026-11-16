@@ -45,6 +45,7 @@ Ang bawat error sa Zapwebp ay may natatanging error code (hal. `E_UNSAFE_SVG`, `
 | `E_AUTH` | Maling credentials para sa storage | I-verify ang API keys o tokens |
 | `E_STORAGE` | Nagbalik ng error ang storage provider | Suriin ang bucket permissions at koneksyon |
 | `E_UNKNOWN_FORMAT` | Hindi tugma ang magic bytes sa anumang format | I-verify ang file extension |
+| `E_VERIFICATION_FAILED` | Nabigo ang beripikasyon ng byte: ang nabuong SHA-256 ay hindi tugma sa inaasahang hash | I-verify ang inaasahang hash o suriin ang determinismo ng bersyon |
 
 ## For agents
 

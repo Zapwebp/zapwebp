@@ -3,7 +3,7 @@
   "displayName": "Zapwebp",
   "description": "Convert images correctly in VS Code. Transparency preserved, metadata stripped, no uploads.",
   "version": "1.2.2",
-  "publisher": "ebula",
+  "publisher": "zapwebp",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"

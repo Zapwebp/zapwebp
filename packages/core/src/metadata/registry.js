@@ -1,6 +1,7 @@
 'use strict';
 
 const { ZapwebpError } = require('@zapwebp/shared');
+const { stripContainerMetadata } = require('./chunk-stripper');
 
 /**
  * @typedef {Object} MetadataField
@@ -122,32 +123,9 @@ class MetadataRegistry {
     const activeCustom = activeHandlers.filter((h) => !standardNames.includes(h.name.toLowerCase()));
 
     if (activeStandard.length > 0) {
-      let singlePassSuccessful = false;
-      try {
-        const sharp = require('sharp');
-        const meta = await sharp(current, { failOn: 'none' }).metadata();
-        if (meta && meta.format) {
-          // Sharp re-encodes once and strips EXIF, XMP, ICC, IPTC, and text chunks in a single pass
-          current = await sharp(current, { failOn: 'error' }).toBuffer();
-          singlePassSuccessful = true;
-        }
-      } catch {
-        // Fall back to individual handlers if sharp cannot parse container (e.g. SVG)
-      }
-
-      if (!singlePassSuccessful) {
-        for (const handler of activeStandard) {
-          try {
-            const stripped = await handler.strip(current, options);
-            current = Buffer.isBuffer(stripped) ? stripped : Buffer.from(stripped);
-          } catch (err) {
-            throw new ZapwebpError({
-              code: 'E_CLEAN_FAILED',
-              message: `Metadata handler "${handler.name}" failed: ${err.message}`,
-            });
-          }
-        }
-      }
+      // Non-destructive chunk stripping directly on the binary container
+      // Preserves original compressed pixel streams (zero generation loss, no sharp toBuffer)
+      current = stripContainerMetadata(current, options);
     }
 
     for (const handler of activeCustom) {

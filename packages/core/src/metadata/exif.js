@@ -28,17 +28,9 @@ const exifHandler = {
     return fields;
   },
 
-  async strip(bytes) {
-    const data = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
-    try {
-      const sharp = require('sharp');
-      // Re-encode via sharp without metadata to strip EXIF
-      const meta = await sharp(data).metadata();
-      if (!meta.format) return data;
-      return await sharp(data).toBuffer();
-    } catch {
-      return data;
-    }
+  async strip(bytes, options = {}) {
+    const { stripContainerMetadata } = require('./chunk-stripper');
+    return stripContainerMetadata(bytes, options);
   },
 };
 

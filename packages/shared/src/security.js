@@ -1,19 +1,16 @@
 'use strict';
 
 const net = require('node:net');
+const dns = require('node:dns');
 
 /**
- * Checks whether an IP address or hostname belongs to a private, loopback,
- * link-local, or cloud metadata network range (SSRF defense).
+ * Checks whether an IP address belongs to a private, loopback, link-local,
+ * or carrier-grade NAT network range.
  *
- * Enforces Zero Trust Principle:
- * Private subnets, loopback (127.0.0.0/8, ::1), link-local (169.254.0.0/16, fe80::/10),
- * and private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7) are rejected.
- *
- * @param {string} hostname - IP address or hostname to check
- * @returns {boolean} True if the address is private / restricted
+ * @param {string} hostname - IP address or hostname to evaluate
+ * @returns {boolean} True if the address is private or restricted
  */
-function isPrivateIp(hostname) {
+function isPrivateIpSync(hostname) {
   if (!hostname) return true;
   const host = String(hostname).toLowerCase().trim().replace(/^\[|\]$/g, '');
 
@@ -57,7 +54,7 @@ function isPrivateIp(hostname) {
     if (host.startsWith('::ffff:')) {
       const v4part = host.slice(7);
       if (net.isIPv4(v4part)) {
-        return isPrivateIp(v4part);
+        return isPrivateIpSync(v4part);
       }
     }
     return false;
@@ -67,9 +64,35 @@ function isPrivateIp(hostname) {
 }
 
 /**
+ * Checks whether an IP address or hostname belongs to a private network.
+ * Resolves domain names via dns.promises.lookup to defend against DNS rebinding SSRF.
+ *
+ * @param {string} hostname - Hostname or IP to inspect
+ * @returns {Promise<boolean>|boolean}
+ */
+async function isPrivateIp(hostname) {
+  if (isPrivateIpSync(hostname)) return true;
+  if (net.isIP(hostname)) return false;
+
+  try {
+    const lookup = await dns.promises.lookup(hostname);
+    if (lookup && lookup.address) {
+      return isPrivateIpSync(lookup.address);
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
+// Bind sync inspection to isPrivateIp.sync
+isPrivateIp.sync = isPrivateIpSync;
+
+/**
  * Validates a remote image URL to protect against SSRF and protocol smuggling.
  * @param {string} urlStr - Remote URL to inspect
- * @returns {URL} Parsed URL instance if valid and safe
+ * @returns {Promise<URL>|URL} Parsed URL instance if valid and safe
  * @throws {Error} Throws error with code 'E_UNSAFE_URL' if unsafe
  */
 function validateSafeUrl(urlStr) {
@@ -88,7 +111,7 @@ function validateSafeUrl(urlStr) {
     throw err;
   }
 
-  if (isPrivateIp(parsed.hostname)) {
+  if (isPrivateIpSync(parsed.hostname)) {
     const err = new Error(`Access to private, loopback, or link-local network address "${parsed.hostname}" is forbidden.`);
     err.code = 'E_UNSAFE_URL';
     throw err;
@@ -97,8 +120,44 @@ function validateSafeUrl(urlStr) {
   return parsed;
 }
 
+/**
+ * Validates a remote URL asynchronously with DNS rebinding resolution.
+ * @param {string} urlStr
+ * @returns {Promise<URL>}
+ */
+async function validateSafeUrlAsync(urlStr) {
+  const parsed = validateSafeUrl(urlStr);
+  const isPrivate = await isPrivateIp(parsed.hostname);
+  if (isPrivate) {
+    const err = new Error(`Access to private, loopback, or link-local network address "${parsed.hostname}" is forbidden.`);
+    err.code = 'E_UNSAFE_URL';
+    throw err;
+  }
+  return parsed;
+}
+
+/**
+ * Safe fetch wrapper that enforces SSRF defense, DNS rebinding validation,
+ * and passes redirect: 'error' to prevent redirect-based SSRF exfiltration.
+ *
+ * @param {string|URL} url - URL to fetch
+ * @param {RequestInit} [options={}] - Fetch options
+ * @returns {Promise<Response>}
+ */
+async function safeFetch(url, options = {}) {
+  const urlStr = typeof url === 'string' ? url : url.toString();
+  await validateSafeUrlAsync(urlStr);
+  return fetch(urlStr, {
+    ...options,
+    redirect: 'error',
+    signal: options.signal || AbortSignal.timeout(10000),
+  });
+}
+
 module.exports = {
   isPrivateIp,
+  isPrivateIpSync,
   validateSafeUrl,
+  validateSafeUrlAsync,
+  safeFetch,
 };
-

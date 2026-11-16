@@ -1,29 +1,16 @@
-# `zapwebp-github-action`
+# zapwebp-github-action
 
-> Official first-party GitHub Action for Zapwebp — transparency-safe image conversion, alpha channel verification, automated PR commenting, and CI pipeline hardening. Powered by `@zapwebp/core`.
+Official first-party GitHub Action for Zapwebp — transparency-safe image conversion, alpha channel verification, automated PR commenting, and CI pipeline hardening. Powered by `@zapwebp/core`.
 
----
+Covers: Automated image conversion in GitHub Actions workflows across three distinct modes: `commit` (converts and commits back to branch), `check` (verifies outputs and fails CI if out-of-date), and `comment` (posts markdown comparison table to pull requests). Supports Retina multipliers (@1x/@2x/@3x), alpha preservation verification, metadata stripping (Clean Mode), universal formats (SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF), hash-based idempotency caching (`.zapwebp/hashes.json`), and manifest generation (`zapwebp.manifest.json`).
 
-## 1. Scope & Capabilities
+Does not cover: Local developer watcher mode or Vite/Next.js bundler plugin integrations.
 
-- **Covers**: Automated image conversion in GitHub Actions workflows across three distinct modes: `commit` (converts and commits back to branch), `check` (verifies outputs and fails CI if out-of-date), and `comment` (posts markdown comparison table to pull requests). Supports Retina multipliers (@1x/@2x/@3x), alpha preservation verification, metadata stripping (Clean Mode), universal formats (SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF), hash-based idempotency caching (`.zapwebp/hashes.json`), and manifest generation (`zapwebp.manifest.json`).
-- **Security & Hardening**:
-  - **Immutable Releases**: SHA-pinned actions preventing supply chain tag mutation.
-  - **Pre-Built Docker Container**: Rapid startup via GitHub Container Registry (`ghcr.io/zapwebp/zapwebp-github-action`).
-  - **Least-Privilege Scoping**: Granular token permissions per mode (`contents: read`, `pull-requests: write`, or `contents: write`).
-  - **Fork Safety Gate**: Automatically blocks `commit` mode on fork pull requests (`E_FORK_COMMIT_FORBIDDEN`), preventing unauthorized commits and privilege escalation.
-  - **Input Validation**: Strict traversal and injection prevention (no parent directory `..` traversal, no absolute roots, max 500 characters).
-  - **Structured Workflow Annotations**: Emits `::error` and `::notice` lines with precise file paths, error codes, and runnable remediation commands.
-  - **Actionable PR Failure Comments**: Posts formatted failure summaries with exact local CLI fix commands (`npx zapwebp <files>`).
-  - **Transient Retry**: Automatic 3-attempt exponential backoff on network errors (`ETIMEDOUT`, `ECONNRESET`, 429, 502, 503, 504).
-  - **Log Sanitization**: Redacts runner workspace paths and masks authorization tokens from terminal logs.
-  - **Idempotency Hashing**: Re-conversion of identical images is skipped via input hash comparison, conserving CI runner minutes.
-- **Does not cover**: Local developer watcher mode or Vite/Next.js bundler plugin integrations.
-- **Applies to**: GitHub Actions on `ubuntu-latest`, `macos-latest`, `windows-latest`, and self-hosted runners.
+Applies to: GitHub Actions on `ubuntu-latest`, `macos-latest`, `windows-latest`, and self-hosted runners.
 
 ---
 
-## 2. Quickstart
+## Quick start
 
 ### Recommended: SHA-Pinned (Supply Chain Safe)
 
@@ -136,6 +123,20 @@ jobs:
 
 ---
 
+## What it does
+
+`zapwebp-github-action` automates repository image hygiene directly within GitHub Actions pipelines:
+- **Three Operational Modes**:
+  - `check`: Validates image optimization status and fails CI if assets are unoptimized or missing.
+  - `comment`: Posts a markdown visual comparison table on PRs detailing byte savings and alpha safety.
+  - `commit`: Automatically optimizes and pushes converted assets back to the source branch.
+- **Supply Chain Security**: SHA-pinned containerized execution (`ghcr.io/zapwebp/zapwebp-github-action`) with least-privilege token requirements.
+- **Fork Safety Gate**: Strictly blocks `commit` mode on PRs from fork repositories (`E_FORK_COMMIT_FORBIDDEN`).
+- **Transparency-Safe**: Verifies pixel-level alpha retention across SVG, PNG, and WebP assets.
+- **Idempotency Caching**: Compares image SHA hashes in `.zapwebp/hashes.json` to skip redundant processing.
+
+---
+
 ## 4. Fork Safety Gate
 
 When a pull request originates from a fork, the action automatically evaluates:
@@ -171,7 +172,7 @@ This prevents malicious pull requests from using workflow tokens to commit unaut
 
 ---
 
-## 6. Error Taxonomy & Annotations
+## Errors
 
 When a check fails, Zapwebp emits standard GitHub workflow annotations with structured metadata:
 
@@ -182,6 +183,37 @@ When a check fails, Zapwebp emits standard GitHub workflow annotations with stru
 | `E_FORK_COMMIT_FORBIDDEN` | PR from fork attempted to execute with `mode: commit` | `::error::commit mode forbidden on forks` | Switch workflow to `mode: check`. |
 | `E_INVALID_INPUT` | Input contains parent traversal `..`, leading `/`, or newlines | `::error::Input validation failed` | Correct workflow input parameter. |
 | `E_CONVERSION_FAILED` | Underlying raster/vector encoding failed | `::error file=...::Conversion failed` | Verify input image format and dimensions. |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "zapwebp-github-action",
+  "uses": "zapwebp/zapwebp-github-action@v1",
+  "modes": ["check", "comment", "commit"],
+  "inputs": [
+    "glob",
+    "format",
+    "scale",
+    "base-width",
+    "quality",
+    "lossless",
+    "clean",
+    "mode",
+    "token"
+  ]
+}
+```
+
+---
+
+## Related
+
+- [GitHub Action Documentation](https://zapwebp-docs.vercel.app/plugins/github-action): Workflow triggers and multi-mode setup.
+- [CLI Reference](https://zapwebp-docs.vercel.app/cli): Running `zap check` locally before pushing to CI.
+- [Vite Plugin](https://zapwebp-docs.vercel.app/plugins/vite): Build-time optimization equivalent.
 
 ---
 

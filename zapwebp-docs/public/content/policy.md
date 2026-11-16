@@ -1,37 +1,53 @@
-# Conversion Policy (Quality, Limits & Formats)
+# Conversion Policy & Team Governance
 
-Covers: Unified conversion policies, lossy and lossless modes, per-format quality overrides, input and output byte limits, magic-byte format filtering, iterative step-down compression, and developer governance.
+Covers: Unified conversion policies, team governance contracts (`zapwebp.policy.json`), exception lifecycles, CI/CD blocking rules, lossy and lossless modes, per-format quality overrides, byte boundaries, and magic-byte validation.
 
-Does not cover: manual byte editing or insecure memory-unbounded decoding.
+Does not cover: Manual byte manipulation or unbounded arbitrary memory allocations.
 
-Applies to: Zapwebp v2.0.0 and later.
+Applies to: Zapwebp v2.19.0 and later.
 
 ## Quick start
 
-Define your organization's image policy in `.zapwebp.config.json`:
+Scaffold a team governance policy contract in your repository:
+
+```bash
+# Initialize zapwebp.policy.json with corporate defaults
+zap init --team
+
+# Validate policy syntax and exception expiration dates
+zap policy validate
+
+# Inspect current status and active exceptions
+zap policy status
+```
+
+Define corporate image rules in `zapwebp.policy.json`:
 
 ```json
 {
-  "policy": {
-    "quality": {
-      "mode": "lossy",
-      "default": 85,
-      "perFormat": {
-        "svg": 100,
-        "png": 90,
-        "jpeg": 75,
-        "webp": 85,
-        "avif": 55
-      }
-    },
-    "limits": {
-      "maxInputBytes": 10485760,
-      "maxOutputBytes": 512000
-    },
-    "formats": {
-      "accept": ["svg", "png", "jpeg", "webp"],
-      "reject": ["gif", "tiff"]
+  "$schema": "https://zapwebp.dev/schemas/policy.json",
+  "version": "1.0.0",
+  "name": "corporate-media-policy",
+  "rules": {
+    "rejectedFormats": ["bmp", "tiff", "heic"],
+    "requireClean": true,
+    "quality": { "min": 60, "max": 90 },
+    "maxDimensions": { "width": 3840, "height": 2160 },
+    "maxOutputBytes": 1048576
+  },
+  "exceptions": [
+    {
+      "pattern": "assets/hero/*",
+      "allowedFormats": ["avif"],
+      "maxOutputBytes": 2097152,
+      "reason": "High-fidelity homepage hero banners",
+      "approvedBy": "eldrex@zapwebp.com",
+      "expires": "2027-12-31"
     }
+  ],
+  "enforcement": {
+    "onLocal": "warn",
+    "onCi": "block"
   }
 }
 ```
@@ -44,13 +60,13 @@ npx zapwebp ./photos/* --to webp --max-input 10485760 --max-output 512000 --acce
 
 ## What it does
 
-Zapwebp does not guess what "quality" means for your product. It provides a single **Conversion Policy** contract that governs quality, size boundaries, and accepted formats across every surface (CLI, Storage Adapters, API, MCP, and Build Plugins).
+Zapwebp provides a unified **Team Policy Contract** that standardizes image standards across engineering teams, design systems, and CI/CD pipelines.
 
-### 1. Quality & Format Modes
+### 1. Team Governance & CI Enforcement
 
-- **Lossless Mode (`mode: 'lossless'`):** Forces pixel-perfect lossless compression on WebP, PNG, and AVIF.
-- **Lossy Mode (`mode: 'lossy'`):** Applies explicit quality values (1-100) using format-specific defaults or `perFormat` overrides.
-- **Auto Mode (`mode: 'auto'`):** Intelligently routes vector and line art (SVG/PNG) to lossless and photos (JPEG) to lossy encoding.
+- **`zapwebp.policy.json`:** The root governance contract. Specifies rejected formats, mandatory Clean Mode (stripping EXIF/GPS), quality boundaries, and dimension limits.
+- **Exceptions Lifecycle:** Specific asset directories can define exceptions with pattern matching (e.g. `assets/hero/*`). Every exception requires an `approvedBy` author, a written `reason`, and a mandatory `expires` date. Expired exceptions are immediately rejected in CI.
+- **CI/CD Enforcement:** When `enforcement.onCi` is set to `"block"`, any unapproved format or expired exception fails the build with exit code 1.
 
 ### 2. Guardrails & Limits
 
@@ -64,47 +80,56 @@ Zapwebp does not guess what "quality" means for your product. It provides a sing
 |---|---|---|
 | `E_INPUT_TOO_LARGE` | Input file byte size exceeds `maxInputBytes` before decoding | Reduce image resolution or increase `policy.limits.maxInputBytes` |
 | `E_OUTPUT_TOO_LARGE` | Encoded output exceeds `maxOutputBytes` even at minimum quality (10) | Reduce dimensions with `--width`, switch to AVIF, or raise `maxOutputBytes` |
-| `E_FORMAT_REJECTED` | Input format is disallowed by `policy.formats.reject` or not in `accept` allowlist | Provide a permitted format or adjust policy configuration |
+| `E_FORMAT_REJECTED` | Input format is disallowed by `policy.formats.reject` or rejected by team policy | Provide a permitted format or adjust policy configuration |
+| `E_POLICY_VIOLATION` | File violates corporate policy or uses an expired exception | Convert to an allowed format, reduce dimensions, or renew the policy exception |
 
 ## For agents
 
 ```json
 {
   "capability": "conversion-policy",
+  "tools": [
+    "validate_policy",
+    "get_policy_status"
+  ],
   "schema": {
-    "quality": {
-      "mode": "lossy | lossless | auto",
-      "default": "number (1-100)",
-      "perFormat": "Record<string, number>"
+    "version": "1.0.0",
+    "rules": {
+      "rejectedFormats": "string[]",
+      "requireClean": "boolean",
+      "quality": { "min": "number", "max": "number" },
+      "maxDimensions": { "width": "number", "height": "number" },
+      "maxOutputBytes": "number"
     },
-    "limits": {
-      "maxInputBytes": "number (bytes)",
-      "maxOutputBytes": "number (bytes)",
-      "targetOutputBytes": "number (bytes, optional)"
-    },
-    "formats": {
-      "accept": "string[]",
-      "reject": "string[]"
-    },
-    "advanced": {
-      "effort": "number (0-9)",
-      "stripMetadata": "boolean",
-      "preserveColorProfile": "boolean"
+    "exceptions": [
+      {
+        "pattern": "string (glob)",
+        "allowedFormats": "string[]",
+        "maxOutputBytes": "number",
+        "reason": "string",
+        "approvedBy": "string",
+        "expires": "string (YYYY-MM-DD)"
+      }
+    ],
+    "enforcement": {
+      "onLocal": "warn | block",
+      "onCi": "warn | block"
     }
   },
   "errorCodes": [
     "E_INPUT_TOO_LARGE",
     "E_OUTPUT_TOO_LARGE",
-    "E_FORMAT_REJECTED"
+    "E_FORMAT_REJECTED",
+    "E_POLICY_VIOLATION"
   ]
 }
 ```
 
 ## Related
 
-- [Overview](/docs): Overview of Zapwebp image conversion.
-- [Target Lock](/lock-target): Universal many-to-one conversion gateway.
-- [Backgrounds](/backgrounds): Three deterministic background states.
-- [CLI](/cli): Command line execution and policy flags.
-- [Errors](/errors): Machine-readable error catalog with root cause explanations.
-
+- [Performance & Reports](/reports.md) — Aggregate corporate conversion savings and carbon accounting.
+- [Smart Optimization](/smart.md) — Automatic content profiling and quality tuning.
+- [Target Lock](/lock-target.md) — Universal many-to-one conversion gateway.
+- [Clean Mode](/clean.md) — Strip sensitive metadata and verify certificates.
+- [CLI Reference](/cli.md) — Command line policy subcommands and flags.
+- [Errors](/errors.md) — Machine-readable error catalog with root cause explanations.

@@ -1,18 +1,14 @@
-# `zapwebp-next`
+# zapwebp-next
 
-> Official first-party Next.js plugin for Zapwebp — zero-config SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), cryptographic metadata stripping, and seamless `next/image` integration.
+Official first-party Next.js plugin for Zapwebp — zero-config SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), cryptographic metadata stripping, and seamless `next/image` integration.
 
----
+Covers: Automated SVG-to-WebP conversion during `next build` and production asset bundling, multiplier generation (`scale: [1, 2, 3]`), transparency verification, metadata stripping (`clean: true`), manifest writing (`zapwebp.manifest.json`), webpack hook chaining, and `next/image` format registration.
 
-## 1. Scope & Capabilities
+Does not cover: Modifying or deleting source SVG vector assets (source SVGs are strictly immutable).
 
-- **Covers**: Automated SVG-to-WebP conversion during `next build` and production asset bundling, multiplier generation (`scale: [1, 2, 3]`), transparency verification, metadata stripping (`clean: true`), manifest writing (`zapwebp.manifest.json`), webpack hook chaining, and `next/image` format registration.
-- **Does not cover**: Modifying or deleting source SVG vector assets (source SVGs are strictly immutable).
-- **Applies to**: Next.js >=12.0.0 (including Next.js 13, 14, and 15), App Router (`app/`), and Pages Router (`pages/`).
+Applies to: `zapwebp-next` v1.0.0 and later, Next.js >=12.0.0 (including Next.js 13, 14, and 15), App Router (`app/`), and Pages Router (`pages/`).
 
----
-
-## 2. Installation
+## Quick start
 
 ```bash
 # npm
@@ -25,13 +21,7 @@ pnpm add -D zapwebp-next
 yarn add -D zapwebp-next
 ```
 
----
-
-## 3. Quickstart & Configuration
-
 Wrap your Next.js configuration in `next.config.js` or `next.config.ts`:
-
-### CommonJS (`next.config.js`)
 
 ```javascript
 const { withZapwebp } = require('zapwebp-next');
@@ -48,94 +38,42 @@ module.exports = withZapwebp({
   lossless: false,         // Set true for pixel-perfect compression
   clean: true,             // Strip EXIF, XMP, C2PA, and text comments
   sourceDirs: ['public', 'src/assets', 'app'], // Directories to scan
-  outDir: 'public/icons',  // Output destination folder
-  emitManifest: true,      // Writes zapwebp.manifest.json summary
-  respectNextImage: true,  // Registers image/webp with next/image
-  onConflict: 'overwrite', // 'overwrite' | 'skip' | 'error'
+  outDir: 'public/converted', // Output directory
+  emitManifest: true,      // Writes zapwebp.manifest.json
 })(nextConfig);
 ```
 
-### TypeScript (`next.config.ts`)
+## What it does
 
-```typescript
-import type { NextConfig } from 'next';
-import { withZapwebp } from 'zapwebp-next';
+`zapwebp-next` integrates directly into the Next.js compilation lifecycle via webpack plugins:
+- **Build Hook Integration**: During `next build`, all target SVGs are rasterized and optimized into modern formats before Next.js compiles page bundles.
+- **`next/image` Synergy**: Pre-converts heavy vector files to WebP so the Next.js Image Optimization API can serve optimized assets with zero cold-start latency.
+- **Transparency Preservation**: Guaranteed alpha preservation verified at the pixel level; transparent pixels are never flattened to black.
+- **Multipliers & Srcset**: Generates retina scale variants alongside pre-computed `zapwebp.manifest.json` metadata.
+- **Clean Mode**: Strips tracking metadata, EXIF, and AI provenance tags.
 
-const nextConfig: NextConfig = {
-  reactStrictMode: true,
-};
-
-export default withZapwebp({
-  scale: [1, 2],
-  baseWidth: 512,
-})(nextConfig);
-```
-
----
-
-## 4. Full Options Reference
+### Configuration Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `scale` | `number[]` | `[1]` | Scale multipliers to render. Deduplicated and sorted ascending. |
-| `baseWidth` | `number` | `512` | 1x width in pixels (16 to 16,384). Aspect ratio is strictly preserved. |
-| `quality` | `number` | `85` | Compression quality from `1` to `100`. |
-| `lossless` | `boolean` | `false` | Enables lossless WebP compression. |
-| `clean` | `boolean` | `true` | Strips all EXIF, XMP, C2PA provenance, and private metadata chunks. |
-| `sourceDirs` | `string[]` | `['public', 'src/assets', 'app']` | Directories relative to project root scanned for `.svg` assets. |
-| `outDir` | `string` | `'public/icons'` | Output folder relative to the Next.js project root. |
-| `emitManifest` | `boolean` | `true` | Generates a structured `zapwebp.manifest.json` report. |
-| `respectNextImage` | `boolean` | `true` | Ensures `image/webp` is registered in `nextConfig.images.formats`. |
-| `onConflict` | `'overwrite' \| 'skip' \| 'error'` | `'overwrite'` | Action when an output file already exists. |
+| `scale` | `number[]` | `[1]` | Array of scale multipliers (e.g. `[1, 2, 3]`) |
+| `baseWidth` | `number` | `512` | Pixel width corresponding to `@1x` scale |
+| `quality` | `number` | `85` | Compression quality rating (1–100) |
+| `lossless` | `boolean` | `false` | Lossless encoding where supported |
+| `clean` | `boolean` | `true` | Strip EXIF, XMP, and C2PA metadata |
+| `sourceDirs` | `string[]` | `['public']` | Directories to scan for source SVG assets |
+| `outDir` | `string` | `'public'` | Destination directory for converted assets |
+| `emitManifest` | `boolean` | `true` | Emit `zapwebp.manifest.json` |
 
----
-
-## 5. Usage with `next/image` & HTML
-
-Because outputs land in `public/icons/`, `next/image` serves them natively without external domain configuration:
-
-```tsx
-// app/page.tsx
-import Image from 'next/image';
-
-export default function Header() {
-  return (
-    <Image
-      src="/icons/logo.webp"
-      alt="Application Logo"
-      width={512}
-      height={512}
-      priority
-    />
-  );
-}
-```
-
-For responsive HTML `<picture>` elements with multipliers:
-
-```html
-<picture>
-  <source
-    type="image/webp"
-    srcSet="/icons/logo.webp 1x, /icons/logo@2x.webp 2x, /icons/logo@3x.webp 3x"
-  />
-  <img src="/icons/logo.webp" alt="Application Logo" width="512" height="512" />
-</picture>
-```
-
----
-
-## 6. Manifest Output (`zapwebp.manifest.json`)
-
-When `emitManifest: true` is enabled, a machine-readable summary is written alongside converted assets:
+### Manifest Output (`zapwebp.manifest.json`)
 
 ```json
 {
-  "generatedBy": "zapwebp-next@1.0.0",
-  "generatedAt": "2026-11-02T08:55:00.000Z",
-  "totals": {
-    "inputFiles": 3,
-    "outputFiles": 6,
+  "version": "1.0.0",
+  "generator": "zapwebp-next",
+  "generatedAt": "2026-11-01T22:00:00.000Z",
+  "stats": {
+    "totalFiles": 12,
     "inputBytes": 98400,
     "outputBytes": 22100,
     "bytesSaved": 76300,
@@ -163,32 +101,37 @@ When `emitManifest: true` is enabled, a machine-readable summary is written alon
 }
 ```
 
----
-
-## 7. Security & Error Diagnostics
+## Errors
 
 The plugin runs strict pre-flight checks on every SVG input using `@zapwebp/core`:
 
-- **Active Content Rejection**: Any SVG containing `<script>`, `<foreignObject>`, or `on*=` inline event attributes is rejected immediately, failing the build loudly before rasterization.
-- **Fail-Fast Error Codes**:
-  - `E_UNSAFE_SVG`: SVG contains active script content or inline handlers.
-  - `E_FILE_CONFLICT`: Output file exists and `onConflict: 'error'` was specified.
-  - `E_DIMENSION_LIMIT`: Requested width exceeds libvips memory bounds.
+| Code | Cause | Fix |
+|---|---|---|
+| `E_UNSAFE_SVG` | SVG contains `<script>`, `<foreignObject>`, or `on*` handlers | Remove active executable content from SVG |
+| `E_FILE_CONFLICT` | Destination file exists and `onConflict: 'error'` was specified | Change `onConflict` setting to `'overwrite'` or remove file |
+| `E_DIMENSION_LIMIT` | Requested width exceeds libvips memory bounds (4096px) | Lower `baseWidth` or maximum scale factor |
 
----
-
-## 8. For Agents
+## For agents
 
 ```json
 {
-  "pkg": "zapwebp-next",
+  "tool": "zapwebp-next",
   "version": "1.0.0",
   "type": "next-plugin",
   "import": "import { withZapwebp } from 'zapwebp-next';",
   "peerDependencies": {
     "next": ">=12.0.0"
   },
-  "canonicalUrl": "https://zapwebp.vercel.app/plugins/next"
+  "canonicalUrl": "https://zapwebp-docs.vercel.app/plugins/next"
 }
 ```
 
+## Related
+
+- [Next.js Plugin Guide](https://zapwebp-docs.vercel.app/plugins/next): Full Next.js guide and deployment recipes.
+- [Vite Plugin](https://zapwebp-docs.vercel.app/plugins/vite): Vite bundler equivalent.
+- [Core SDK](https://zapwebp-docs.vercel.app/sdk/core): Core engine powering the plugin.
+
+## License
+
+MIT © [Zapwebp](https://zapwebp.vercel.app/)

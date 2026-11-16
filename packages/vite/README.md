@@ -1,18 +1,14 @@
-# `zapwebp-vite`
+# zapwebp-vite
 
-> Official first-party Vite plugin for Zapwebp — zero-config SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), cryptographic metadata stripping, and responsive manifest generation.
+Official first-party Vite plugin for Zapwebp — zero-config SVG-to-WebP conversion with alpha transparency preservation, Retina multipliers (@1x/@2x/@3x), cryptographic metadata stripping, and responsive manifest generation.
 
----
+Covers: Automated SVG-to-WebP rasterization during `vite build` and `vite dev`, multiplier generation (`scale: [1, 2, 3]`), transparency preservation verification, metadata stripping (`clean: true`), manifest writing (`zapwebp.manifest.json`), and conflict resolution.
 
-## 1. Scope & Capabilities
+Does not cover: Modifying or deleting source SVG vector assets (source SVGs are strictly immutable).
 
-- **Covers**: Automated SVG-to-WebP rasterization during `vite build` and `vite dev`, multiplier generation (`scale: [1, 2, 3]`), transparency preservation verification, metadata stripping (`clean: true`), manifest writing (`zapwebp.manifest.json`), and conflict resolution.
-- **Does not cover**: Modifying or deleting source SVG vector assets (source SVGs are strictly immutable).
-- **Applies to**: Vite >=4.0.0, Vue, Svelte, Solid, Astro, and vanilla Vite projects.
+Applies to: `zapwebp-vite` v1.0.0 and later, Vite >=4.0.0 (Vue, Svelte, Solid, Astro, and vanilla).
 
----
-
-## 2. Installation
+## Quick start
 
 ```bash
 # npm
@@ -24,10 +20,6 @@ pnpm add -D zapwebp-vite
 # yarn
 yarn add -D zapwebp-vite
 ```
-
----
-
-## 3. Quickstart & Configuration
 
 Add the plugin to your `vite.config.ts` or `vite.config.js`:
 
@@ -51,72 +43,36 @@ export default defineConfig({
 });
 ```
 
----
+## What it does
 
-## 4. Full Options Reference
+`zapwebp-vite` hooks directly into the Vite build lifecycle and development server:
+- **Build Hook Integration**: During `vite build`, all target SVGs are rasterized and optimized into modern formats before asset bundling.
+- **Dev Server Watcher**: In `vite dev`, changes to SVGs trigger instant on-demand conversion and hot-reload.
+- **Transparency Preservation**: Guaranteed alpha preservation verified at the pixel level; transparent pixels are never flattened to black.
+- **Multipliers & Srcset**: Generates retina scale variants alongside pre-computed `zapwebp.manifest.json` metadata.
+- **Clean Mode**: Strips tracking metadata, EXIF, and AI provenance tags.
+
+### Configuration Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `scale` | `number[]` | `[1]` | Scale multipliers to render. Deduplicated and sorted ascending. |
-| `baseWidth` | `number` | `512` | 1x width in pixels (16 to 16,384). Aspect ratio is strictly preserved. |
-| `quality` | `number` | `85` | Compression quality from `1` to `100`. |
-| `lossless` | `boolean` | `false` | Enables lossless WebP compression. |
-| `clean` | `boolean` | `true` | Strips all EXIF, XMP, C2PA provenance, and private metadata chunks. |
-| `outDir` | `string` | `'public/icons'` | Output folder relative to the Vite project root. |
-| `emitManifest` | `boolean` | `true` | Generates a structured `zapwebp.manifest.json` report. |
-| `emitToPublic` | `boolean` | `true` | Emits directly to the public directory for static URL serving. |
-| `onConflict` | `'overwrite' \| 'skip' \| 'error'` | `'overwrite'` | Action when an output file already exists. |
-| `include` | `string[]` | `['**/*.svg']` | Glob patterns of SVG assets to include. |
-| `exclude` | `string[]` | `['node_modules/**', 'dist/**', '.git/**']` | Glob patterns to ignore. |
+| `scale` | `number[]` | `[1]` | Array of scale multipliers (e.g. `[1, 2, 3]`) |
+| `baseWidth` | `number` | `512` | Pixel width corresponding to `@1x` scale |
+| `quality` | `number` | `85` | Compression quality rating (1–100) |
+| `lossless` | `boolean` | `false` | Lossless encoding where supported |
+| `clean` | `boolean` | `true` | Strip EXIF, XMP, and C2PA metadata |
+| `outDir` | `string` | `'dist'` | Destination directory for converted assets |
+| `emitManifest` | `boolean` | `true` | Emit `zapwebp.manifest.json` |
+| `onConflict` | `'overwrite' \| 'skip' \| 'error'` | `'overwrite'` | Behavior on existing destination files |
 
----
-
-## 5. Multipliers & Responsive `srcset`
-
-When configuring multipliers:
-
-```typescript
-zapwebp({
-  scale: [1, 2],
-  baseWidth: 256,
-  outDir: 'public/brand',
-});
-```
-
-For a source file `logo.svg`, the plugin outputs:
-- `public/brand/logo.webp` (256px wide)
-- `public/brand/logo@2x.webp` (512px wide)
-
-In your HTML / templates:
-
-```html
-<img
-  src="/brand/logo.webp"
-  srcset="/brand/logo.webp 1x, /brand/logo@2x.webp 2x"
-  alt="Brand Logo"
-  width="256"
-/>
-```
-
----
-
-## 6. Manifest Output (`zapwebp.manifest.json`)
-
-When `emitManifest: true` is enabled, a machine-readable summary is written alongside converted assets:
+### Manifest Output (`zapwebp.manifest.json`)
 
 ```json
 {
-  "generatedBy": "zapwebp-vite@1.0.0",
-  "generatedAt": "2026-11-02T08:50:00.000Z",
-  "totals": {
-    "inputFiles": 4,
-    "outputFiles": 12,
-    "inputBytes": 145020,
-    "outputBytes": 38400,
-    "bytesSaved": 106620,
-    "savingsPercent": 73.5
-  },
-  "options": {
+  "version": "1.0.0",
+  "generator": "zapwebp-vite",
+  "generatedAt": "2026-11-01T22:00:00.000Z",
+  "config": {
     "scales": [1, 2, 3],
     "baseWidth": 512,
     "quality": 85,
@@ -138,33 +94,37 @@ When `emitManifest: true` is enabled, a machine-readable summary is written alon
 }
 ```
 
----
-
-## 7. Security & Error Diagnostics
+## Errors
 
 The plugin runs strict pre-flight checks on every SVG input using `@zapwebp/core`:
 
-- **Active Content Rejection**: Any SVG containing `<script>`, `<foreignObject>`, or `on*=` inline event attributes is rejected immediately, failing the build loudly before rasterization.
-- **Remote Entity Blocking**: External `<!ENTITY>` and remote stylesheet imports are rejected.
-- **Fail-Fast Error Codes**:
-  - `E_UNSAFE_SVG`: SVG contains active script content.
-  - `E_FILE_CONFLICT`: Output file exists and `onConflict: 'error'` was specified.
-  - `E_DIMENSION_LIMIT`: Requested width exceeds libvips memory bounds.
+| Code | Cause | Fix |
+|---|---|---|
+| `E_UNSAFE_SVG` | SVG contains `<script>`, `<foreignObject>`, or `on*` handlers | Remove active executable content from SVG |
+| `E_FILE_CONFLICT` | Destination file exists and `onConflict: 'error'` was specified | Change `onConflict` setting to `'overwrite'` or remove file |
+| `E_DIMENSION_LIMIT` | Requested width exceeds libvips memory bounds (4096px) | Lower `baseWidth` or maximum scale factor |
 
----
-
-## 8. For Agents
+## For agents
 
 ```json
 {
-  "pkg": "zapwebp-vite",
+  "tool": "zapwebp-vite",
   "version": "1.0.0",
   "type": "vite-plugin",
   "import": "import { zapwebp } from 'zapwebp-vite';",
   "peerDependencies": {
     "vite": ">=4.0.0"
   },
-  "canonicalUrl": "https://zapwebp.vercel.app/plugins/vite"
+  "canonicalUrl": "https://zapwebp-docs.vercel.app/plugins/vite"
 }
 ```
 
+## Related
+
+- [Vite Plugin Guide](https://zapwebp-docs.vercel.app/plugins/vite): Detailed Vite configuration and framework integration examples.
+- [Next.js Plugin](https://zapwebp-docs.vercel.app/plugins/next): Next.js bundler equivalent.
+- [Core SDK](https://zapwebp-docs.vercel.app/sdk/core): In-memory engine powering the plugin.
+
+## License
+
+MIT © [Zapwebp](https://zapwebp.vercel.app/)

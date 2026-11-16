@@ -92,33 +92,38 @@ const contentDir = path.join(__dirname, 'content');
 
 // Raw markdown endpoints for agentic-ready docs
 app.get('/:page.md', (req, res, next) => {
-  const filePath = path.join(contentDir, `${req.params.page}.md`);
-  if (fs.existsSync(filePath)) {
-    res.set('Content-Type', 'text/markdown; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-    return res.sendFile(filePath);
+  const safeName = path.basename(req.params.page);
+  const resolved = path.resolve(contentDir, `${safeName}.md`);
+  if (!resolved.startsWith(contentDir) || !fs.existsSync(resolved)) {
+    return next();
   }
-  next();
+  res.set('Content-Type', 'text/markdown; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  return res.sendFile(resolved);
 });
 
 app.get('/plugins/:page.md', (req, res, next) => {
-  const filePath = path.join(contentDir, 'plugins', `${req.params.page}.md`);
-  if (fs.existsSync(filePath)) {
-    res.set('Content-Type', 'text/markdown; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-    return res.sendFile(filePath);
+  const safeName = path.basename(req.params.page);
+  const pluginsDir = path.join(contentDir, 'plugins');
+  const resolved = path.resolve(pluginsDir, `${safeName}.md`);
+  if (!resolved.startsWith(pluginsDir) || !fs.existsSync(resolved)) {
+    return next();
   }
-  next();
+  res.set('Content-Type', 'text/markdown; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  return res.sendFile(resolved);
 });
 
 app.get('/sdk/:page.md', (req, res, next) => {
-  const filePath = path.join(contentDir, 'sdk', `${req.params.page}.md`);
-  if (fs.existsSync(filePath)) {
-    res.set('Content-Type', 'text/markdown; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-    return res.sendFile(filePath);
+  const safeName = path.basename(req.params.page);
+  const sdkDir = path.join(contentDir, 'sdk');
+  const resolved = path.resolve(sdkDir, `${safeName}.md`);
+  if (!resolved.startsWith(sdkDir) || !fs.existsSync(resolved)) {
+    return next();
   }
-  next();
+  res.set('Content-Type', 'text/markdown; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  return res.sendFile(resolved);
 });
 
 app.get('/feed.xml', (_req, res) => {
@@ -225,21 +230,96 @@ app.get(DOCS_ROUTES, (req, res) => {
 });
 
 // Dedicated landing routes (SEO) and root converter
-const LANDING_ROUTES = [
-  '/',
-  '/reports',
-  '/svg-to-webp',
-  '/png-to-webp',
-  '/jpg-to-webp',
-  '/webp-to-png',
-  '/svg-to-png',
-  '/png-to-avif',
-  '/avif-to-webp',
-];
+const ROUTE_SEO = {
+  '/': {
+    title: 'Zapwebp Converter — Fast & Free Online WebP & Image Converter',
+    description: 'Zapwebp Converter: Free, fast, in-browser WebP and image converter with 100% privacy and zero server uploads. Convert SVG, PNG, JPG, and AVIF preserving transparency.',
+    canonical: 'https://zapwebp.vercel.app/',
+    h1: 'Zapwebp Converter — Free WebP &amp; Image Converter',
+    heroTagline: '<strong>Zapwebp Converter</strong> (also known as <em>Zap Webp Converter</em>) is the fastest, 100% private in-browser image and WebP converter. Convert SVG, PNG, JPG, AVIF, and GIF to WebP with guaranteed transparency preservation and zero server uploads.',
+  },
+  '/png-to-webp': {
+    title: 'PNG to WebP Converter — Fast, Free & Transparency-Safe | Zapwebp',
+    description: 'Convert PNG to WebP online for free with Zapwebp Converter. Preserves 100% alpha transparency, compresses file size up to 80%, with zero server uploads.',
+    canonical: 'https://zapwebp.vercel.app/png-to-webp',
+    h1: 'PNG to WebP Converter',
+    heroTagline: 'Convert PNG images to modern WebP format with 100% alpha transparency preservation and zero server uploads. Drop your PNGs below for instant conversion.',
+  },
+  '/svg-to-webp': {
+    title: 'SVG to WebP Converter — Crisp Vector to WebP | Zapwebp',
+    description: 'Convert SVG vector graphics to WebP online for free. Retains crisp lines, alpha transparency, and renders locally with zero server tracking.',
+    canonical: 'https://zapwebp.vercel.app/svg-to-webp',
+    h1: 'SVG to WebP Converter',
+    heroTagline: 'Convert SVG vectors to high-performance WebP images with subpixel precision and full alpha channel retention.',
+  },
+  '/jpg-to-webp': {
+    title: 'JPG to WebP Converter — High-Efficiency Image Compression | Zapwebp',
+    description: 'Convert JPG / JPEG to WebP online for free. Cut image weight up to 80% without visible quality loss. Instant 100% in-browser conversion.',
+    canonical: 'https://zapwebp.vercel.app/jpg-to-webp',
+    h1: 'JPG to WebP Converter',
+    heroTagline: 'Convert JPG and JPEG photos to WebP format. Drastically reduce page load times and save bandwidth with zero quality loss.',
+  },
+  '/webp-to-png': {
+    title: 'WebP to PNG Converter — Lossless Transparency Extraction | Zapwebp',
+    description: 'Convert WebP to PNG online for free. Recover full transparent PNGs from WebP files with zero data loss and 100% client-side privacy.',
+    canonical: 'https://zapwebp.vercel.app/webp-to-png',
+    h1: 'WebP to PNG Converter',
+    heroTagline: 'Convert WebP files back to universal PNG format with lossless alpha channel preservation. Runs entirely in your browser.',
+  },
+  '/svg-to-png': {
+    title: 'SVG to PNG Converter — High-Resolution Rasterizer | Zapwebp',
+    description: 'Convert SVG to PNG online for free with custom widths and crisp rasterization. 100% in-browser memory execution.',
+    canonical: 'https://zapwebp.vercel.app/svg-to-png',
+    h1: 'SVG to PNG Converter',
+    heroTagline: 'Rasterize vector SVG files into transparent high-resolution PNGs with customizable scaling up to 4096px.',
+  },
+  '/png-to-avif': {
+    title: 'PNG to AVIF Converter — Next-Gen Image Compression | Zapwebp',
+    description: 'Convert PNG to AVIF online for free with next-gen compression and full transparency support. Instant local conversion in your browser.',
+    canonical: 'https://zapwebp.vercel.app/png-to-avif',
+    h1: 'PNG to AVIF Converter',
+    heroTagline: 'Convert PNG images to cutting-edge AVIF format for up to 50% smaller files than WebP with full alpha transparency.',
+  },
+  '/avif-to-webp': {
+    title: 'AVIF to WebP Converter — Universal Browser Compatibility | Zapwebp',
+    description: 'Convert AVIF to WebP online for free for maximum browser compatibility with guaranteed alpha preservation.',
+    canonical: 'https://zapwebp.vercel.app/avif-to-webp',
+    h1: 'AVIF to WebP Converter',
+    heroTagline: 'Convert AVIF images into universally supported WebP format with guaranteed alpha transparency preservation.',
+  },
+  '/reports': {
+    title: 'Zapwebp Performance Reports — Bandwidth & Latency Analytics | Zapwebp',
+    description: 'View aggregate conversion statistics, bandwidth savings, compression ratios, and speed benchmarks across your image library.',
+    canonical: 'https://zapwebp.vercel.app/reports',
+    h1: 'Zapwebp Performance Reports',
+    heroTagline: 'Auditable bandwidth savings, latency benchmarks, and conversion performance metrics computed locally.',
+  },
+};
 
-app.get(LANDING_ROUTES, (_req, res) => {
+const LANDING_ROUTES = Object.keys(ROUTE_SEO);
+
+let cachedIndexHtml = null;
+function getRenderedIndex(pathname) {
+  if (!cachedIndexHtml) {
+    cachedIndexHtml = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+  }
+  const meta = ROUTE_SEO[pathname] || ROUTE_SEO['/'];
+  return cachedIndexHtml
+    .replace(/<title>[\s\S]*?<\/title>/, `<title>${meta.title}</title>`)
+    .replace(/<meta\s+name="description"\s+content="[^"]*"/, `<meta name="description" content="${meta.description}"`)
+    .replace(/<link\s+rel="canonical"\s+href="[^"]*"/, `<link rel="canonical" href="${meta.canonical}"`)
+    .replace(/<meta\s+property="og:title"\s+content="[^"]*"/, `<meta property="og:title" content="${meta.title}"`)
+    .replace(/<meta\s+property="og:description"\s+content="[^"]*"/, `<meta property="og:description" content="${meta.description}"`)
+    .replace(/<meta\s+property="og:url"\s+content="[^"]*"/, `<meta property="og:url" content="${meta.canonical}"`)
+    .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"/, `<meta name="twitter:title" content="${meta.title}"`)
+    .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"/, `<meta name="twitter:description" content="${meta.description}"`)
+    .replace(/<h1 class="hero-title"[^>]*>[\s\S]*?<\/h1>/, `<h1 class="hero-title" style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 0.5rem 0; color: var(--text-primary, #ffffff);">${meta.h1}</h1>`)
+    .replace(/<p class="hero-tagline"[^>]*>[\s\S]*?<\/p>/, `<p class="hero-tagline" style="font-size: 1.05rem; color: var(--text-secondary, #94a3b8); margin: 0 auto 0.75rem auto; max-width: 680px; line-height: 1.5;">${meta.heroTagline}</p>`);
+}
+
+app.get(LANDING_ROUTES, (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.type('html').send(getRenderedIndex(req.path));
 });
 
 app.use(

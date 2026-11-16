@@ -172,6 +172,9 @@ export async function redoTransaction(rootDir, targetId) {
         await writeFile(fullPath, backupData);
         redoneOps.push({ type: 'recreated', path: op.path });
       }
+    } else if (op.type === 'delete') {
+      await rm(fullPath, { force: true });
+      redoneOps.push({ type: 'redeleted', path: op.path });
     }
   }
 

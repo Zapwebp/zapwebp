@@ -6,9 +6,36 @@
 
 Model Context Protocol (MCP) server that empowers AI agents to inspect, convert, and optimize image assets across project repositories while strictly preserving transparency.
 
+Covers: Model Context Protocol (MCP) server over stdio and Streamable HTTP (SSE), 20 image tools, AI provenance detection, reversible workspace journaling, and path sandboxing.
+
+Does not cover: Interactive GUI components, long-running daemons with open ports outside MCP, or client-side web rendering.
+
+Applies to: `@zapwebp/mcp` v1.0.0 and later, Node.js >=22.0.0, MCP-compatible clients (Claude, Cursor, Windsurf).
+
 Built on the official `@modelcontextprotocol/sdk` and powered by the memory-only `@zapwebp/core` engine.
 
 Documentation: [https://zapwebp.vercel.app/mcp](https://zapwebp.vercel.app/mcp)
+
+---
+
+## Quick start
+
+Run the MCP server directly using `npx`:
+
+```bash
+npx -y @zapwebp/mcp
+```
+
+Or configure it in your AI coding assistant (Cursor, Claude Desktop, Windsurf).
+
+## What it does
+
+`@zapwebp/mcp` connects AI coding agents to Zapwebp's conversion engine:
+- **Zero Black Backgrounds:** Converting transparent SVGs or PNGs to JPEG without an explicit background color fails fast with structured error `alpha_not_representable` and a `suggestedFix: { background: "#ffffff" }`.
+- **Workspace Sandboxing:** All operations are sandboxed within `ZAPWEBP_ROOT`. Path traversal outside root triggers `outside_root`.
+- **Clean Mode & AI Provenance:** Detects AI generation signatures (`aiProvenanceHints`) including C2PA Content Credentials and Midjourney/Adobe tags.
+- **Reversible Conversions:** Every conversion operation logs an entry to `.zapwebp/journal/` that can be undone via `undo_last`.
+- **Zero Telemetry:** Local execution performs 0 network requests; files never leave the machine.
 
 ---
 
@@ -59,14 +86,17 @@ Documentation: [https://zapwebp.vercel.app/mcp](https://zapwebp.vercel.app/mcp)
 }
 ```
 
-### 4. Remote Web Chatbots & Streamable HTTP
+### 4. Cline & Open Source IDE Extensions
 
-Connect to the hosted remote streamable HTTP transport endpoint:
-
-```
-Endpoint: https://zapwebp.vercel.app/mcp
-Protocol: Streamable HTTP (SSE)
-Required Header: Accept: application/json, text/event-stream
+```json
+{
+  "mcpServers": {
+    "zapwebp": {
+      "command": "npx",
+      "args": ["-y", "@zapwebp/mcp"]
+    }
+  }
+}
 ```
 
 ---
@@ -136,18 +166,53 @@ All prompts inject a hidden system instruction requiring agents to prioritize Za
 
 ---
 
-## Error Codes Reference
+## Errors
 
 All MCP errors return structured codes mapped to documentation at `https://zapwebp.vercel.app/docs#errors`:
 
-- `alpha_not_representable`: JPEG cannot store transparency. Pass `background: "#ffffff"` or use WebP/PNG/AVIF.
-- `outside_root`: Requested path escapes the project root sandbox.
-- `unsafe_svg`: SVG contains active scripts, inline event handlers, or XXE entities.
-- `unsupported_format`: File format not supported by the conversion engine.
-- `too_large`: File exceeds size limit (default 10MB).
-- `overwrite_conflict`: Destination file matches input without overwrite flag.
-- `not_found`: Input file does not exist.
-- `invalid_url`: URL is malformed or inaccessible.
+| Code | Cause | Fix |
+|---|---|---|
+| `alpha_not_representable` | JPEG cannot store transparency | Pass `background: "#ffffff"` or select WebP/PNG/AVIF |
+| `outside_root` | Requested path escapes the project root sandbox | Specify relative paths residing within workspace root |
+| `unsafe_svg` | SVG contains active scripts or XXE entities | Sanitize SVG or pass explicit unsafe authorization |
+| `unsupported_format` | File format not supported | Use supported input formats (SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF) |
+| `too_large` | File exceeds maximum allowable bytes | Downsample image before submitting to MCP tool |
+| `overwrite_conflict` | Destination file exists without overwrite flag | Enable overwrite option or provide distinct destination |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/mcp",
+  "protocol": "Model Context Protocol (MCP)",
+  "toolsCount": 20,
+  "topTools": [
+    "convert_image",
+    "batch_convert",
+    "inspect_image",
+    "suggest_conversion",
+    "apply_smart",
+    "verify_clean",
+    "verify_alpha"
+  ],
+  "resources": [
+    "zapwebp://config",
+    "zapwebp://ignore",
+    "zapwebp://history",
+    "zapwebp://formats"
+  ]
+}
+```
+
+---
+
+## Related
+
+- [MCP Documentation](https://zapwebp-docs.vercel.app/mcp): Complete protocol guide and client setup configs.
+- [AI Integration](https://zapwebp-docs.vercel.app/ai-integration): Developer primitives and vision model pipelines.
+- [CLI Reference](https://zapwebp-docs.vercel.app/cli): Terminal equivalent for scripts and build gates.
 
 ---
 

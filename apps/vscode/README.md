@@ -24,7 +24,7 @@ Applies to: `zapwebp-vscode` v1.1.0 and later, VS Code 1.85+.
 
 ## Quick start
 
-1. Install from the Open VSX Registry (publisher: `ebula` / `zapwebp`).
+1. Install from the Open VSX Registry or Visual Studio Marketplace (publisher: `ebula`).
 2. Right-click any image (`.svg`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.avif`, `.gif`, `.tiff`) in the Explorer or Editor.
 3. Click **Zap to WebP** or choose **Zap Image To...** for other formats.
 
@@ -59,7 +59,7 @@ A converted file appears next to the source in the same directory. Transparency 
 | `zapwebp.clean`           | boolean | `true`   | Strip EXIF, XMP, C2PA                         |
 | `zapwebp.outputExtension` | string  | `"webp"` | Target format (`webp`, `png`, `avif`, `jpeg`) |
 
-## How it works
+## What it does
 
 All conversion runs locally in the extension host using the same WASM engine as the CLI. **Nothing is uploaded.** Works offline, in remote SSH, in WSL, and in VS Code for the Web.
 

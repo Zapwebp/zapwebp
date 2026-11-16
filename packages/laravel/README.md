@@ -2,8 +2,36 @@
 
 First-party Laravel bridge for the Zapwebp transparency-safe image conversion engine.
 
-## Features
+Covers: Laravel facade (`Zap::convert`, `Zap::batch`, `Zap::check`), Blade directives (`@zapwebp`, `@picture`, `@srcset`), Artisan commands (`php artisan zap:convert`), `SafeImage` validation rule, and automatic `ConvertUploads` middleware.
 
+Does not cover: Client-side JavaScript bundling or remote cloud storage direct SDK bindings.
+
+Applies to: `zapwebp-laravel` v1.0.0 and later, PHP >=8.2, Laravel >=10.0.
+
+## Quick start
+
+```bash
+composer require zapwebp/laravel
+```
+
+Convert an image using the `Zap` facade:
+
+```php
+use Zapwebp\Laravel\Facades\Zap;
+
+$result = Zap::convert(storage_path('app/uploads/hero.png'), [
+    'to' => 'webp',
+    'quality' => 85,
+    'clean' => true,
+]);
+
+echo $result->outputPath;      // /path/to/hero.webp
+echo $result->savedBytes();    // e.g. 45200 bytes
+```
+
+## What it does
+
+`zapwebp-laravel` bridges the Laravel framework with the Zapwebp conversion engine, executing conversions with process isolation and zero third-party telemetry:
 - **Transparency Preservation**: Guaranteed alpha channel retention for WebP, AVIF, and PNG.
 - **Strict Process Isolation**: Zero shell concatenation; uses PHP `Process` array argument passing.
 - **Artisan Commands**: CLI tools `php artisan zap:convert` and `php artisan zap:check`.
@@ -19,19 +47,13 @@ First-party Laravel bridge for the Zapwebp transparency-safe image conversion en
 - Laravel >= 10.0
 - Zapwebp CLI installed locally or globally (`npm install -g zapwebp` or `pnpm add -D zapwebp`)
 
-## Installation
-
-```bash
-composer require zapwebp/laravel
-```
+## Configuration
 
 Publish the configuration file (optional):
 
 ```bash
 php artisan vendor:publish --tag=zapwebp-config
 ```
-
-## Configuration
 
 In `config/zapwebp.php`:
 
@@ -52,31 +74,24 @@ return [
 
 ### 1. Artisan Commands
 
-Batch convert images with progress reporting and savings summaries:
-
 ```bash
-# Convert a specific directory or image
-php artisan zap:convert public/images --to=webp --quality=85 --clean
+# Convert a single asset
+php artisan zap:convert resources/images/logo.svg --to=webp
 
-# Multi-scale retina generation
-php artisan zap:convert public/images/logo.png --to=avif --scale=1 --scale=2 --scale=3
+# Batch convert an entire directory with scale variants
+php artisan zap:convert resources/images --to=webp --scale=1,2,3 --out=public/images
 
-# Dry-run audit without writing
-php artisan zap:convert public/images --dry-run
-
-# Audit image integrity, alpha preservation, and metadata hygiene
-php artisan zap:check public/images --assert-alpha --strict
+# CI build check: asserts that all images are up-to-date and transparent
+php artisan zap:check resources/images
 ```
 
 ### 2. Blade Directives
 
-Render modern responsive image elements in your Blade views:
-
 ```blade
-{{-- Output optimized URL --}}
-<img src="@zapwebp('images/banner.png', ['to' => 'webp'])" alt="Banner">
+{{-- Convert an image inline to WebP --}}
+<img src="@zapwebp('images/logo.png', ['width' => 200, 'quality' => 80])" alt="Logo">
 
-{{-- Full <picture> element with AVIF, WebP, and Retina multipliers --}}
+{{-- Generate <picture> element with WebP + AVIF fallbacks --}}
 @picture('images/hero.png', ['alt' => 'Hero', 'class' => 'hero-banner'], ['formats' => ['avif', 'webp'], 'scales' => [1, 2, 3]])
 
 {{-- Generate srcset attribute --}}
@@ -94,10 +109,6 @@ $result = Zap::convert(storage_path('app/uploads/hero.png'), [
     'quality' => 85,
     'clean' => true,
 ]);
-
-echo $result->outputPath;      // /path/to/hero.webp
-echo $result->savedBytes();    // e.g. 45200 bytes
-echo $result->savedPercentage(); // e.g. 52.4%
 
 // Batch conversion
 $outputs = Zap::batch([
@@ -134,7 +145,33 @@ use Zapwebp\Laravel\Middleware\ConvertUploads;
 })
 ```
 
-All incoming images will be transparently converted to modern WebP format before reaching your controllers.
+## Errors
+
+| Code / Exception | Cause | Fix |
+|---|---|---|
+| `ZapwebpBinaryNotFoundException` | `zap` binary is not located in `$PATH` or configured path | Install `zapwebp` via npm or set `ZAPWEBP_BINARY` in `.env` |
+| `UnsafeSvgException` | Input SVG contains active scripts or external entities | Remove executable content from SVG |
+| `AlphaDropException` | Converting transparent source to JPEG without background | Specify `'background' => '#ffffff'` in options |
+| `ConversionTimeoutException` | Conversion process exceeded configured timeout limit | Increase `'timeout'` in `config/zapwebp.php` |
+
+## For agents
+
+```json
+{
+  "tool": "zapwebp-laravel",
+  "facade": "Zapwebp\\Laravel\\Facades\\Zap",
+  "artisan": ["zap:convert", "zap:check"],
+  "blade": ["@zapwebp", "@picture", "@srcset"],
+  "middleware": "Zapwebp\\Laravel\\Middleware\\ConvertUploads",
+  "rule": "Zapwebp\\Laravel\\Rules\\SafeImage"
+}
+```
+
+## Related
+
+- [Laravel Documentation](https://zapwebp-docs.vercel.app/plugins/laravel): Complete Laravel package walkthrough and test helpers.
+- [CLI Reference](https://zapwebp-docs.vercel.app/cli): Underlying terminal CLI executed by the package.
+- [Errors Reference](https://zapwebp-docs.vercel.app/errors): System error codes and fixes.
 
 ## License
 

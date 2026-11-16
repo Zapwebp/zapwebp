@@ -6,12 +6,42 @@
 
 Plugin SDK and lifecycle contracts for extending Zap conversion workflows, adapters, and asset pipelines. Enables developers ("Zap Devs") to hook into before/after conversion events, create custom storage adapters (S3, Cloudflare R2, memory), and build framework integrations (Next.js, Vite, Astro).
 
+Covers: Plugin lifecycle hooks (`beforeConvert`, `afterConvert`), `PluginManager` orchestration, custom storage adapter interfaces (`StorageAdapter`), and `definePlugin` contracts.
+
+Does not cover: Low-level rasterization codecs, HTTP network endpoints, or terminal CLI command routing.
+
+Applies to: `@zapwebp/plugin-sdk` v1.0.0 and later, Node.js >=22.0.0, TypeScript >=5.0.0.
+
 Documentation: [https://zapwebp.vercel.app/docs](https://zapwebp.vercel.app/docs)
 
 ---
 
-## Features
+## Quick start
 
+```bash
+pnpm add @zapwebp/plugin-sdk
+```
+
+```typescript
+import { definePlugin, PluginManager } from '@zapwebp/plugin-sdk';
+
+export const loggerPlugin = definePlugin({
+  name: 'zap-plugin-logger',
+  version: '1.0.0',
+  hooks: {
+    beforeConvert(ctx) {
+      console.log('Converting image with options:', ctx.options);
+    },
+    afterConvert(ctx, outputs) {
+      console.log(`Generated ${outputs.length} outputs`);
+    },
+  },
+});
+```
+
+## What it does
+
+`@zapwebp/plugin-sdk` provides an extensible, contract-based lifecycle system for building plugins and custom storage adapters:
 - **Lifecycle Event Hooks:** Intercept and modify options in `beforeConvert` and process generated buffers in `afterConvert`.
 - **Pluggable Storage Adapters:** Standardized `StorageAdapter` interface (`write`, `read`, `delete`, `exists`) for cloud and custom file backends.
 - **Contract Immutability:** Enforces strict shape validation and immutability via `definePlugin()`.
@@ -147,6 +177,38 @@ export interface StorageAdapter {
   exists(source: string): Promise<boolean>;
 }
 ```
+
+---
+
+## Errors
+
+| Code | Cause | Fix |
+|---|---|---|
+| `E_PLUGIN_SANDBOX_VIOLATION` | Plugin attempted unauthorized filesystem or network I/O | Declare permissions in `package.json` or operate on pure in-memory buffers |
+| `E_INVALID_PLUGIN_SHAPE` | Plugin missing required `name` or `version` | Ensure `definePlugin` receives valid manifest |
+| `E_HOOK_EXECUTION_FAILED` | Uncaught exception in `beforeConvert` or `afterConvert` | Wrap lifecycle hook logic in error handling |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/plugin-sdk",
+  "classes": ["PluginManager"],
+  "functions": ["definePlugin"],
+  "interfaces": ["ZapPlugin", "StorageAdapter", "ConvertContext", "OutputAsset"],
+  "hooks": ["beforeConvert", "afterConvert"]
+}
+```
+
+---
+
+## Related
+
+- [Plugin SDK Documentation](https://zapwebp-docs.vercel.app/sdk/plugin): In-depth guide to authoring plugins.
+- [Custom Storage Adapters](https://zapwebp-docs.vercel.app/storage/supabase): Cloud storage adapter guide.
+- [Scaffolding Guide](https://zapwebp-docs.vercel.app/scaffolding): Generating new plugins with `create-zapwebp`.
 
 ---
 

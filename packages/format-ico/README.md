@@ -6,20 +6,15 @@
   <p>Read, parse, and write multi-size ICO/CUR containers with 100% alpha preservation and complete web favicon suites.</p>
 </div>
 
----
+Covers: Multi-size ICO and CUR container encoding and decoding, legacy BMP DIB / modern PNG directory entries, deterministic alpha preservation, and full web favicon suite generation.
 
-## Features
+Does not cover: Vector font glyph creation or macOS ICNS containers.
 
-- **Multi-Resolution ICO Containers**: Embeds standard icon sizes (`16×16`, `32×32`, `48×48`, `64×64`, `128×128`, `256×256`) into a single container.
-- **Universal Decoding**: Parses both modern PNG-compressed ICO entries and legacy Windows BMP DIBs (32-bit ARGB, 24-bit BGR, 8/4/1-bit palletized with 1-bit AND masks).
-- **Deterministic Transparency**: Guarantees crisp alpha channels across all resolutions without black background discoloration.
-- **Favicon Suite Generator**: Automatically produces `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `site.webmanifest`, and HTML `<head>` tags from a single SVG or PNG.
-- **Standalone CLI**: Ships `zapwebp-favicon` for immediate terminal execution and CI asset pipelines.
-- **Agentic Manifest**: Full `agent.json` and TypeScript typings for AI agent tool calling and discovery.
+Applies to: `@zapwebp/format-ico` v1.0.0 and later, Node.js >=22.0.0.
 
 ---
 
-## Installation
+## Quick start
 
 ```bash
 npm install @zapwebp/format-ico
@@ -27,9 +22,29 @@ npm install @zapwebp/format-ico
 pnpm add @zapwebp/format-ico
 ```
 
----
+```javascript
+import { registerFormat, convertImage } from "@zapwebp/core";
+import { icoHandler } from "@zapwebp/format-ico";
 
-## Quick Start (Core Integration)
+// 1. Register the format handler
+registerFormat(icoHandler);
+
+// 2. Convert SVG/PNG to multi-size ICO
+const icoBuffer = await convertImage(svgBuffer, {
+  to: "ico",
+  sizes: [16, 32, 48, 256],
+});
+```
+
+## What it does
+
+`@zapwebp/format-ico` adds first-class support for multi-resolution ICO/CUR containers to Zapwebp:
+- **Multi-Resolution ICO Containers**: Embeds standard icon sizes (`16×16`, `32×32`, `48×48`, `64×64`, `128×128`, `256×256`) into a single container.
+- **Universal Decoding**: Parses both modern PNG-compressed ICO entries and legacy Windows BMP DIBs (32-bit ARGB, 24-bit BGR, 8/4/1-bit palletized with 1-bit AND masks).
+- **Deterministic Transparency**: Guarantees crisp alpha channels across all resolutions without black background discoloration.
+- **Favicon Suite Generator**: Automatically produces `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `site.webmanifest`, and HTML `<head>` tags from a single SVG or PNG.
+- **Standalone CLI**: Ships `zapwebp-favicon` for immediate terminal execution and CI asset pipelines.
+- **Agentic Manifest**: Full `agent.json` and TypeScript typings for AI agent tool calling and discovery.
 
 Register the handler with `@zapwebp/core` to unlock `.ico` input detection and output encoding:
 
@@ -119,6 +134,38 @@ for (const entry of info.entries) {
 // Extract specific resolution
 const raw32 = await decodeIco(icoBuffer, { size: 32 });
 ```
+
+---
+
+## Errors
+
+| Code | Cause | Fix |
+|---|---|---|
+| `E_CORRUPT_ICO` | File header lacks valid ICO/CUR magic bytes (0x00000100 / 0x00000200) | Check input file integrity |
+| `E_ICO_NO_VALID_IMAGES` | All directory entries contain invalid or unsupported image payloads | Provide an ICO with PNG or BMP icons |
+| `E_INVALID_SIZE` | Requested extraction size is not present in container | Call `parseIco()` to view available sizes |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/format-ico",
+  "handlers": ["icoHandler"],
+  "functions": ["parseIco", "decodeIco", "encodeIco", "generateFaviconSuite"],
+  "binaries": ["zapwebp-favicon"],
+  "supportedSizes": [16, 24, 32, 48, 64, 128, 256]
+}
+```
+
+---
+
+## Related
+
+- [ICO Plugin Documentation](https://zapwebp-docs.vercel.app/plugins/format-ico): Full CLI options and favicon integration guide.
+- [Core SDK](https://zapwebp-docs.vercel.app/sdk/core): Format handler registration and conversion.
+- [Crop Plugin](https://zapwebp-docs.vercel.app/plugins/crop): Pre-scaling images to square 1:1 before ICO generation.
 
 ---
 

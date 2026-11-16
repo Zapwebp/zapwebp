@@ -6,11 +6,17 @@
 
 Fast, transparency-safe, reversible image conversion and optimization engine for developer terminals, CI/CD pipelines, and local workspaces. Powered by the shared `@zapwebp/core` engine.
 
+Covers: Command line execution via `zap` and `zapwebp` binaries, single/batch/glob file conversions, scale multipliers, journaling/undo/redo, watch daemon, and CI check gatekeeper.
+
+Does not cover: Web GUI components, remote cloud bucket upload orchestration, or MCP AI agent protocol.
+
+Applies to: `zap` / `zapwebp` v1.0.0 and later, Node.js >=22.0.0 (Linux, macOS, Windows).
+
 Documentation: [https://zapwebp.vercel.app/cli](https://zapwebp.vercel.app/cli)
 
 ---
 
-## Installation & Execution
+## Quick start
 
 Run directly without installation via `npx` (using either `zap` or `zapwebp`), or install globally:
 
@@ -26,9 +32,16 @@ pnpm add -g zapwebp
 
 Both `zap` and `zapwebp` executables are included and behave identically.
 
----
+## What it does
 
-## Quick Starts
+`zap` and `zapwebp` provide terminal developers with a high-throughput, transparency-safe conversion workflow:
+- **Zero Black Backgrounds:** Converting transparent SVGs or PNGs to JPEG without an explicit background color fails fast with structured remediation.
+- **Journaling & Undo:** Every modification records transactions in `.zapwebp/journal/` allowing instant `zap undo` byte-for-byte rollbacks.
+- **Retina Multipliers:** Easily emit `@1x`, `@2x`, and `@3x` assets with matching manifests and `<img srcset>` tags.
+- **Git-Aware Execution:** Convert only modified or staged assets via `--changed` and `--staged` flags.
+- **Clean Mode:** Strip AI provenance metadata and verify zero-tracking status with cryptographic certificates.
+
+### Examples
 
 ```bash
 # 1. Single conversion with transparency preservation
@@ -156,13 +169,35 @@ Configure team-wide defaults in your project root:
 
 ---
 
-## Exit Codes
+## Errors
 
-| Code | Meaning |
-|---|---|
-| `0` | Success: all files converted or verified cleanly |
-| `1` | Conversion failure, check failure, or unsafe SVG input |
-| `2` | Invalid CLI arguments or unrecognized subcommand |
+| Code / Exit | Cause | Fix |
+|---|---|---|
+| Exit `1` (`E_UNSAFE_SVG`) | SVG contains active scripts or external entities | Remove active content or pass `--allow-unsafe` |
+| Exit `1` (`E_ALPHA_NOT_REPRESENTABLE`) | Converting transparent source to JPEG | Pass explicit `--background '#ffffff'` |
+| Exit `1` (`E_UNSUPPORTED_FORMAT`) | File is not recognized as a supported image | Check file magic bytes or convert supported raster |
+| Exit `2` | Invalid CLI arguments, unrecognized flags, or malformed syntax | Run `zap --help` to inspect valid options |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "zap",
+  "binaries": ["zap", "zapwebp"],
+  "subcommands": ["init", "doctor", "history", "undo", "redo", "gc", "inspect", "audit", "explain", "watch", "check"],
+  "commonFlags": ["--to", "--scale", "--clean", "--verify-clean", "--quality", "--background", "--zip", "--out-dir"]
+}
+```
+
+---
+
+## Related
+
+- [CLI Documentation](https://zapwebp-docs.vercel.app/cli): Full flags, recipes, and command catalog.
+- [MCP Reference](https://zapwebp-docs.vercel.app/mcp): AI agent server executing CLI commands.
+- [Errors Reference](https://zapwebp-docs.vercel.app/errors): System exit codes and error solutions.
 
 ---
 

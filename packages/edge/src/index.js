@@ -52,11 +52,39 @@ function createZapHandler(config = {}) {
         const subPath = url.pathname.replace(/^\/img\//, '').replace(/^\//, '');
         const sourceUrl = `${config.source.replace(/\/$/, '')}/${subPath}`;
         validateSafeUrl(sourceUrl);
-        const fetched = await fetch(sourceUrl);
+        const fetched = await fetch(sourceUrl, { signal: AbortSignal.timeout(10000) });
         if (!fetched.ok) {
           return new Response(`Source image not found: ${fetched.status}`, { status: fetched.status });
         }
-        const ab = await fetched.arrayBuffer();
+        const maxAllowed = config.maxBytes || 5 * 1024 * 1024;
+        let ab;
+        if (!fetched.body) {
+          ab = await fetched.arrayBuffer();
+        } else {
+          const reader = fetched.body.getReader();
+          const chunks = [];
+          let received = 0;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            received += value.byteLength;
+            if (received > maxAllowed) {
+              await reader.cancel('Max bytes exceeded');
+              return new Response(JSON.stringify({
+                error: 'E_TOO_LARGE',
+                message: `Remote image at "${sourceUrl}" exceeds maximum allowed size of ${maxAllowed} bytes.`,
+              }), { status: 413, headers: { 'Content-Type': 'application/json' } });
+            }
+            chunks.push(value);
+          }
+          const total = new Uint8Array(received);
+          let pos = 0;
+          for (const c of chunks) {
+            total.set(c, pos);
+            pos += c.byteLength;
+          }
+          ab = total.buffer;
+        }
         inputBytes = Buffer.from(ab);
       } else {
         return new Response('Zap Edge Handler: Provide request body or configure source resolver.', { status: 400 });

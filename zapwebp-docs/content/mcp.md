@@ -63,7 +63,7 @@ Exposes structured tools, prompts, and resources to AI assistants (Claude Deskto
 
 ## Transports
 
-1. **Local (stdio)**: High-speed, local filesystem access for IDE agents (Cursor, Claude Desktop, VS Code).
+1. **Local (stdio)**: High-speed, local filesystem access for IDE agents (Claude Desktop, Cursor, Windsurf, Cline, Antigravity). Operates 100% offline with zero telemetry and zero cloud storage of user assets.
    ```json
    {
      "mcpServers": {
@@ -74,7 +74,6 @@ Exposes structured tools, prompts, and resources to AI assistants (Claude Deskto
      }
    }
    ```
-2. **Remote (Streamable HTTP / SSE)**: Remote endpoint for cloud chatbots connecting via HTTP POST/GET to `/mcp`.
 
 ## Examples
 
@@ -108,7 +107,7 @@ $ echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"convert_
 {
   "server": "@zapwebp/mcp",
   "command": "npx -y @zapwebp/mcp",
-  "transports": ["stdio", "streamable-http"],
+  "transports": ["stdio"],
   "capabilities": ["tools", "prompts", "resources"],
   "tools": [
     "convert_image",

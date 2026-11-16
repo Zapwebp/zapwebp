@@ -49,7 +49,7 @@ async function resolveInput(input) {
     // 1. Remote HTTP/HTTPS URL
     if (/^https?:\/\//i.test(input)) {
       validateSafeUrl(input);
-      const res = await fetch(input);
+      const res = await fetch(input, { signal: AbortSignal.timeout(10000) });
       if (!res.ok) {
         throw new ZapwebpError({
           code: 'E_REMOTE_FETCH_FAILED',
@@ -58,7 +58,36 @@ async function resolveInput(input) {
           retryable: res.status >= 500,
         });
       }
-      const arrayBuf = await res.arrayBuffer();
+      const maxAllowed = 16 * 1024 * 1024;
+      let arrayBuf;
+      if (!res.body) {
+        arrayBuf = await res.arrayBuffer();
+      } else {
+        const reader = res.body.getReader();
+        const chunks = [];
+        let received = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.byteLength;
+          if (received > maxAllowed) {
+            await reader.cancel('Max bytes exceeded');
+            throw new ZapwebpError({
+              code: 'E_TOO_LARGE',
+              message: `Remote image at "${input}" exceeds maximum allowed size of ${maxAllowed} bytes.`,
+              fix: 'Provide an image under 16MB.',
+            });
+          }
+          chunks.push(value);
+        }
+        const total = new Uint8Array(received);
+        let pos = 0;
+        for (const c of chunks) {
+          total.set(c, pos);
+          pos += c.byteLength;
+        }
+        arrayBuf = total.buffer;
+      }
       const urlPath = new URL(input).pathname;
       return { buffer: Buffer.from(arrayBuf), filename: path.basename(urlPath) || 'image.bin' };
     }
@@ -219,6 +248,7 @@ class Zapwebp {
       method: 'POST',
       body: formData,
       headers,
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!res.ok) {
@@ -597,7 +627,7 @@ class Zapwebp {
 
     const headers = {};
     if (this.apiKey) headers.Authorization = `Bearer ${this.apiKey}`;
-    const res = await fetch(`${this.baseUrl}/usage`, { headers }).catch(() => null);
+    const res = await fetch(`${this.baseUrl}/usage`, { headers, signal: AbortSignal.timeout(10000) }).catch(() => null);
     if (!res || !res.ok) {
       return {
         mode: 'remote',

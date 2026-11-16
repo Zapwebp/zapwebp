@@ -289,8 +289,8 @@ async function calculateCropBox(inputWidth, inputHeight, options = {}) {
     // Detect percentage coordinates (< 1)
     const cropX = rawX < 1 && rawX >= 0 ? Math.round(rawX * inputWidth) : Math.round(rawX);
     const cropY = rawY < 1 && rawY >= 0 ? Math.round(rawY * inputHeight) : Math.round(rawY);
-    const cropW = rawW <= 1 && rawW > 0 ? Math.round(rawW * inputWidth) : Math.round(rawW);
-    const cropH = rawH <= 1 && rawH > 0 ? Math.round(rawH * inputHeight) : Math.round(rawH);
+    const cropW = rawW < 1 && rawW > 0 ? Math.round(rawW * inputWidth) : Math.round(rawW);
+    const cropH = rawH < 1 && rawH > 0 ? Math.round(rawH * inputHeight) : Math.round(rawH);
 
     // Clamping to image bounds
     const clampedX = Math.max(0, Math.min(cropX, inputWidth - 1));

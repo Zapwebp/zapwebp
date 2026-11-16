@@ -4,7 +4,7 @@
  * Zero telemetry, privacy-first local operation.
  */
 
-const CACHE_NAME = 'zapwebp-shell-v2.10.0';
+const CACHE_NAME = 'zapwebp-shell-v2.17.0';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
@@ -45,6 +45,17 @@ self.addEventListener('fetch', (event) => {
 
   // Only handle requests targeting the same origin
   if (url.origin !== self.location.origin) return;
+
+  // Never intercept API endpoints, MCP agent discovery, health checks, feeds, or markdown routes
+  if (
+    url.pathname.startsWith('/api') ||
+    url.pathname.startsWith('/mcp') ||
+    url.pathname === '/health' ||
+    url.pathname === '/feed.xml' ||
+    url.pathname.endsWith('.md')
+  ) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

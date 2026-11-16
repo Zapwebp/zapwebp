@@ -6,12 +6,43 @@
 
 Official JavaScript and TypeScript SDK for the Zap image conversion and asset optimization platform. Works offline in-memory by default, or connects to the remote hosted Zap edge service.
 
+Covers: Official JS/TS client, offline in-memory conversion, remote Edge API communication, multi-target batch optimization, and HMAC webhook verification.
+
+Does not cover: Terminal CLI parsing, native desktop plugins, or custom web component rendering.
+
+Applies to: `@zapwebp/sdk` v1.0.0 and later, Node.js >=22.0.0, browser environments.
+
 Documentation: [https://zapwebp.vercel.app/docs](https://zapwebp.vercel.app/docs)
 
 ---
 
-## Features
+## Quick start
 
+```bash
+pnpm add @zapwebp/sdk
+# or
+npm install @zapwebp/sdk
+```
+
+```typescript
+import { Zap } from '@zapwebp/sdk';
+
+// Initializes in offline mode by default
+const zap = new Zap();
+
+// Convert a single image
+const webp = await zap.convert('public/logo.svg', {
+  to: 'webp',
+  width: 512,
+  quality: 85,
+});
+
+console.log(`Converted bytes: ${webp.length}, Alpha preserved: ${webp.alphaPreserved}`);
+```
+
+## What it does
+
+`@zapwebp/sdk` delivers universal, type-safe image conversion across Node.js, modern browsers, and serverless runtimes:
 - **Zero-Config In-Memory Execution:** Runs completely offline by default using the `@zapwebp/core` engine. No API keys, no network requests, and zero latency in local development and CI pipelines.
 - **Remote Edge API Support:** Configure `baseUrl: 'https://zapwebp.vercel.app'` to delegate large batch workloads to the hosted serverless API.
 - **Multi-Target Bundling:** Convert an image to multiple formats simultaneously (`to: ['webp', 'avif', 'png']`) in a single call.
@@ -20,17 +51,7 @@ Documentation: [https://zapwebp.vercel.app/docs](https://zapwebp.vercel.app/docs
 
 ---
 
-## Installation
-
-```bash
-pnpm add @zapwebp/sdk
-# or
-npm install @zapwebp/sdk
-```
-
----
-
-## Quick Starts
+## Usage Examples
 
 ### 1. Offline Mode (Default)
 
@@ -151,6 +172,38 @@ export interface ConvertResult {
   cleanCertificate?: CleanCertificate;
 }
 ```
+
+---
+
+## Errors
+
+| Code | Cause | Fix |
+|---|---|---|
+| `E_ALPHA_NOT_REPRESENTABLE` | JPEG conversion attempted from transparent source without background | Supply `background: '#ffffff'` in options |
+| `E_UNSUPPORTED_FORMAT` | Unsupported source or target format | Provide supported format (SVG, PNG, JPEG, WebP, AVIF, GIF, TIFF) |
+| `E_NETWORK_ERROR` | Remote API endpoint unreachable | Verify `baseUrl` or check network connectivity |
+| `E_AUTH_FAILED` | Invalid API key provided for hosted mode | Check `apiKey` configuration |
+
+---
+
+## For agents
+
+```json
+{
+  "tool": "@zapwebp/sdk",
+  "class": "Zap",
+  "methods": ["convert", "inspect", "optimize", "verifyWebhookSignature"],
+  "modes": ["offline", "remote"]
+}
+```
+
+---
+
+## Related
+
+- [Core SDK Documentation](https://zapwebp-docs.vercel.app/sdk/core): Engine powering in-memory conversions.
+- [Plugin SDK](https://zapwebp-docs.vercel.app/sdk/plugin): Extending SDK workflows with custom hooks.
+- [REST API](https://zapwebp-docs.vercel.app/api): HTTP endpoints consumed by remote SDK mode.
 
 ---
 

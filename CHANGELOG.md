@@ -2,6 +2,42 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.22.0] - 2026-11-16
+
+### Changed
+
+- **SEO & Google Search Entity Authority**:
+  - **Dynamic Landing Page Metadata**: Configured `server.js` to dynamically inject distinct `<title>`, `<meta name="description">`, `<link rel="canonical">`, OpenGraph, and Twitter tags for `/png-to-webp`, `/svg-to-webp`, `/jpg-to-webp`, `/webp-to-png`, `/svg-to-png`, `/png-to-avif`, `/avif-to-webp`, and `/reports`, eliminating canonical self-consolidation to root and enabling Google indexing of high-intent search queries.
+  - **Brand Entity Disambiguation**: Updated H1 and lead paragraphs in `public/index.html` explicitly pairing `Zapwebp Converter` with `Zap Webp Converter` to prevent Google search autospell splitting ("Showing results for Zap Webp Converter").
+  - **Internal Crawl Links & Breadcrumbs**: Added a dedicated "Online Converters" column in `public/index.html` footer with crawlable links to all landing pages and added `BreadcrumbList` schema to JSON-LD.
+  - **Cross-Domain Authority Backlinks**: Added crawlable semantic backlinks from `zapwebp-docs/index.html` pointing to `https://zapwebp.vercel.app` with exact anchor text "Zapwebp Converter".
+  - **Service Worker API Isolation**: Updated `public/sw.js` to explicitly bypass `/api/`, `/mcp/`, `/health`, `/feed.xml`, and `.md` requests, bumping cache name to `zapwebp-shell-v2.17.0` to purge any stale client cache.
+  - **Deterministic Vercel Rewrites**: Added explicit landing route rewrites in `vercel.json` to prevent static 404 fallbacks.
+
+- **Edge-to-Edge Codebase Remediation (Findings 1.1-9.2)**:
+  - **Finding 9.1 (DOM XSS in Web Client)**: Implemented `escapeHtml()` in `public/app.js` and wrapped all interpolations of user-supplied filenames, formats, and messages in `innerHTML`.
+  - **Finding 4.1 (Laravel Fatal TypeError)**: Corrected `Runner.php` return type declaration from `: string` to `: ConversionResult`.
+  - **Finding 2.1 (Plugin Sandbox Global Isolation)**: Replaced monkeypatched `runInSandbox` with isolated Worker Thread execution in `worker-runner.js`.
+  - **Finding 5.2 (Server Path Traversal)**: Hardened `server.js` markdown endpoints using `path.basename` and root bounds verification.
+  - **Finding 1.1 (Portrait SVG Bounds)**: Set `renderMode = 'height'` in `@zapwebp/core` when `aspect > 1` without explicit dimensions to bound height to 2048px.
+  - **Finding 5.1 (Storage Cascade Deletion)**: Fixed `packages/storage/src/wrapper.js` to delete target format extensions (`.jpg` for JPEG) rather than hardcoded `.webp`.
+  - **Finding 7.1 (Journal Redo Deletion Bug)**: Handled `op.type === 'delete'` in `journal.js` to re-delete files during journal redo.
+  - **Finding 7.2 (Metadata Lossless Chunk Stripper)**: Created `packages/core/src/metadata/chunk-stripper.js` for bitstream chunk manipulation across JPEG, WebP, PNG, and SVG without image re-encoding.
+  - **Finding 3.1 (Remote Fetch Bounds)**: Added `AbortSignal.timeout(10000)` and chunked streaming byte limits across storage, SDK, and edge adapters.
+  - **Finding 9.2 (SSRF DNS Rebinding)**: Added asynchronous DNS lookup to validate resolved IP addresses against private and loopback subnets.
+  - **Finding 2.2 (ParallelMap NaN Concurrency)**: Sanitized concurrency in `packages/core/src/parallel.js` with `Number.isFinite(...)`.
+  - **Finding 1.2 (Crop 1px Clamping)**: Corrected percentage coordinate check in `packages/crop/src/index.js` to `< 1 && > 0` so 1px crops are not treated as 100%.
+  - **Finding 6.1 (Mocks in Production)**: Removed `createMockSvg` and `createMockImage` from `@zapwebp/core` root index exports.
+  - **Finding 6.3 (VS Code Publisher)**: Updated publisher to `"zapwebp"` in `apps/vscode/package.json`.
+  - **Findings 8.1 & 8.2 (Dynamic Versions & MIME Types)**: Replaced hardcoded strings in `@zapwebp/api` with package version and standard `getMimeType()`.
+  - **Agent Manifest Compliance**: Removed invalid empty string key `""` across all 17 `agent.json` files, resolving VS Code schema diagnostics.
+
+- **Comprehensive Documentation Standardization & Structure Enforcement**:
+  - **Workspace-Wide Scope Block Compliance**: Standardized all 20 package READMEs (`packages/*/README.md`), `apps/vscode/README.md`, `zapwebp-docs/README.md`, and all 50 content pages with strict Enterprise Architecture structure: `# Title`, `Covers:`, `Does not cover:`, `Applies to:`, `## Quick start`, `## What it does`, `## Errors`, `## For agents` JSON discovery block, and `## Related`.
+  - **Multi-Tier Documentation Mirror Synchronization**: Eliminated static asset drift across deployed mirrors. Synchronized all 50 documentation pages and 50 Tagalog translations across `content/`, `zapwebp-docs/content/`, `zapwebp-docs/public/content/`, `locales/tl/docs/`, `zapwebp-docs/public/locales/tl/docs/`, and `public/locales/tl/docs/`, preventing 404 fetch failures on standalone docs deployments.
+  - **Agentic LLMs Catalog Synchronization**: Added `@zapwebp/compressor` and `@zapwebp/format-ico` to plugins and raw markdown mirrors in `public/llms.txt` and `zapwebp-docs/public/llms.txt`.
+  - **Test Suite Hygiene**: Deduplicated duplicate test entries in `test/docs.test.js` and `test/locales-docs.test.js` with 100% pass rate maintained across all 24 packages in the workspace.
+
 ## [2.21.0] - 2026-11-16
 
 ### Added

@@ -1,6 +1,5 @@
 'use strict';
 
-const Module = require('node:module');
 const path = require('node:path');
 const { Worker } = require('node:worker_threads');
 const { ZapwebpError } = require('@zapwebp/shared');
@@ -27,7 +26,7 @@ const RESTRICTED_NETWORK_MODULES = Object.freeze([
   'node:tls',
 ]);
 
-const SENSITIVE_ENV_KEYS = [
+const SENSITIVE_ENV_KEYS = Object.freeze([
   'SSH_AUTH_SOCK',
   'SSH_AGENT_PID',
   'AWS_ACCESS_KEY_ID',
@@ -40,7 +39,7 @@ const SENSITIVE_ENV_KEYS = [
   'SECRET',
   'PASSWORD',
   'TOKEN',
-];
+]);
 
 /**
  * Validates a plugin manifest and permissions against user consent.
@@ -83,107 +82,26 @@ async function validatePluginPermissions(manifest, options = {}) {
 }
 
 /**
- * Executes a function within an in-process capability sandbox.
- * Intercepts unauthorized module loading and network requests.
+ * Executes a plugin method or code inside a separate worker thread with isolated memory and environment.
+ * Host process environment, Module._load, and globalThis are NEVER monkeypatched.
  *
- * @template T
- * @param {() => T|Promise<T>} fn
- * @param {object} [options]
- * @param {string} [options.pluginName='community-plugin']
- * @param {string[]} [options.permissions=[]]
- * @returns {Promise<T>}
- */
-async function runInSandbox(fn, options = {}) {
-  const pluginName = options.pluginName || 'community-plugin';
-  const permissions = options.permissions || [];
-  const allowNetwork = permissions.includes('network');
-
-  const originalLoad = Module._load;
-  const originalFetch = typeof globalThis.fetch === 'function' ? globalThis.fetch : null;
-
-  // Mask sensitive environment variables
-  const maskedEnv = {};
-  if (typeof process !== 'undefined' && process.env) {
-    for (const key of Object.keys(process.env)) {
-      if (SENSITIVE_ENV_KEYS.some((sensitive) => key.toUpperCase().includes(sensitive))) {
-        maskedEnv[key] = process.env[key];
-        delete process.env[key];
-      }
-    }
-  }
-
-  // Intercept module loader
-  Module._load = function (request, parent, isMain) {
-    const normalized = request.startsWith('node:') ? request.slice(5) : request;
-
-    if (RESTRICTED_FILESYSTEM_MODULES.includes(normalized) || RESTRICTED_FILESYSTEM_MODULES.includes(request)) {
-      throw new ZapwebpError({
-        code: 'E_PLUGIN_SANDBOX_VIOLATION',
-        message: `Plugin "${pluginName}" attempted unauthorized access to restricted module "${request}". Community plugins receive bytes and return bytes only; direct filesystem and process access is forbidden.`,
-        fix: 'Remove direct filesystem imports. Your plugin receives byte buffers directly in decode() or apply() arguments.',
-        docs: 'https://zapwebp-docs.vercel.app/errors#e_plugin_sandbox_violation',
-      });
-    }
-
-    if (!allowNetwork && (RESTRICTED_NETWORK_MODULES.includes(normalized) || RESTRICTED_NETWORK_MODULES.includes(request))) {
-      throw new ZapwebpError({
-        code: 'E_PLUGIN_SANDBOX_VIOLATION',
-        message: `Plugin "${pluginName}" attempted unauthorized network access via "${request}". Network access is forbidden unless explicitly declared.`,
-        fix: 'If this plugin is a remote storage adapter, declare zapwebp.permissions: ["network"] in package.json and ensure consent is granted.',
-        docs: 'https://zapwebp-docs.vercel.app/errors#e_plugin_sandbox_violation',
-      });
-    }
-
-    return originalLoad.apply(this, arguments);
-  };
-
-  // Intercept global fetch
-  if (!allowNetwork && originalFetch) {
-    globalThis.fetch = function () {
-      return Promise.reject(
-        new ZapwebpError({
-          code: 'E_PLUGIN_SANDBOX_VIOLATION',
-          message: `Plugin "${pluginName}" attempted unauthorized network access via fetch(). Network access is forbidden unless explicitly declared.`,
-          fix: 'Declare zapwebp.permissions: ["network"] in package.json if network capability is required.',
-          docs: 'https://zapwebp-docs.vercel.app/errors#e_plugin_sandbox_violation',
-        })
-      );
-    };
-  }
-
-  try {
-    const result = await fn();
-    return result;
-  } finally {
-    Module._load = originalLoad;
-    if (originalFetch) {
-      globalThis.fetch = originalFetch;
-    }
-    // Restore environment
-    if (typeof process !== 'undefined' && process.env) {
-      for (const [key, val] of Object.entries(maskedEnv)) {
-        process.env[key] = val;
-      }
-    }
-  }
-}
-
-/**
- * Executes a plugin method inside a separate worker thread with isolated memory and environment.
- *
- * @param {string} pluginModulePath - Absolute path to plugin script
- * @param {string} method - Method name ('decode', 'encode', 'apply')
- * @param {any[]} args - Serializable arguments (e.g. [Uint8Array, options])
- * @param {object} [options]
+ * @param {string|null} pluginModulePath - Absolute path to plugin script (or null if fnCode provided)
+ * @param {string|null} [method] - Method name ('decode', 'encode', 'apply')
+ * @param {any[]} [args=[]] - Serializable arguments (e.g. [Uint8Array, options])
+ * @param {object} [options={}]
+ * @param {string} [options.pluginName]
+ * @param {string[]} [options.permissions]
+ * @param {string} [options.fnCode] - Raw function string to execute inside worker
  * @returns {Promise<any>}
  */
-function executeInWorker(pluginModulePath, method, args, options = {}) {
-  const pluginName = options.pluginName || path.basename(pluginModulePath);
+function executeInWorker(pluginModulePath, method, args = [], options = {}) {
+  const pluginName = options.pluginName || (typeof pluginModulePath === 'string' ? path.basename(pluginModulePath) : 'community-plugin');
   const permissions = options.permissions || [];
+  const fnCode = options.fnCode;
   const workerScript = path.resolve(__dirname, 'worker-runner.js');
 
   return new Promise((resolve, reject) => {
-    // Sanitize environment passed to worker
+    // Sanitize environment passed to worker thread
     const cleanEnv = {};
     if (typeof process !== 'undefined' && process.env) {
       for (const [k, v] of Object.entries(process.env)) {
@@ -207,6 +125,7 @@ function executeInWorker(pluginModulePath, method, args, options = {}) {
           permissions,
           method,
           args,
+          fnCode,
         },
       });
     } catch (err) {
@@ -246,7 +165,34 @@ function executeInWorker(pluginModulePath, method, args, options = {}) {
 }
 
 /**
- * Wraps a community TransformStep with capability validation and sandboxed execution.
+ * Executes a function within an isolated Worker Thread.
+ * Guarantees zero global mutation of the main process.
+ *
+ * @template T
+ * @param {Function} fn
+ * @param {object} [options]
+ * @param {string} [options.pluginName='community-plugin']
+ * @param {string[]} [options.permissions=[]]
+ * @param {any[]} [options.args=[]]
+ * @returns {Promise<T>}
+ */
+async function runInSandbox(fn, options = {}) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('runInSandbox requires a function to execute.');
+  }
+  const pluginName = options.pluginName || 'community-plugin';
+  const permissions = options.permissions || [];
+  const args = options.args || [];
+
+  return executeInWorker(null, null, args, {
+    pluginName,
+    permissions,
+    fnCode: fn.toString(),
+  });
+}
+
+/**
+ * Wraps a community TransformStep with capability validation and sandboxed execution in worker.
  *
  * @param {object} step - Raw TransformStep { name, apply, metadata }
  * @param {object} [options]
@@ -270,26 +216,26 @@ function sandboxedTransform(step, options = {}) {
         });
       }
 
-      return runInSandbox(
-        async () => {
-          const transformed = await step.apply(image, transformOptions);
-          if (!transformed || !transformed.data || !transformed.width || !transformed.height) {
-            throw new ZapwebpError({
-              code: 'E_PLUGIN_SANDBOX_VIOLATION',
-              message: `Transform "${name}" returned an invalid RawImage. Plugins must return { data, width, height }.`,
-              fix: 'Return a valid RawImage with non-empty pixel data and integer dimensions.',
-            });
-          }
-          return transformed;
-        },
-        { pluginName: name, permissions: options.permissions || [] }
-      );
+      const transformed = await runInSandbox(step.apply, {
+        pluginName: name,
+        permissions: options.permissions || [],
+        args: [image, transformOptions],
+      });
+
+      if (!transformed || !transformed.data || !transformed.width || !transformed.height) {
+        throw new ZapwebpError({
+          code: 'E_PLUGIN_SANDBOX_VIOLATION',
+          message: `Transform "${name}" returned an invalid RawImage. Plugins must return { data, width, height }.`,
+          fix: 'Return a valid RawImage with non-empty pixel data and integer dimensions.',
+        });
+      }
+      return transformed;
     },
   };
 }
 
 /**
- * Wraps a community FormatHandler with capability assertions and sandboxed execution.
+ * Wraps a community FormatHandler with capability assertions and sandboxed execution in worker.
  *
  * @param {object} handler - Raw FormatHandler
  * @param {object} [options]
@@ -313,12 +259,11 @@ function sandboxedFormatHandler(handler, options = {}) {
         });
       }
 
-      return runInSandbox(
-        async () => {
-          return handler.decode(bytes, decodeOptions);
-        },
-        { pluginName: name, permissions: options.permissions || [] }
-      );
+      return runInSandbox(handler.decode, {
+        pluginName: name,
+        permissions: options.permissions || [],
+        args: [bytes, decodeOptions],
+      });
     },
     async encode(image, encodeOptions = {}) {
       if (!image || !image.data) {
@@ -329,12 +274,11 @@ function sandboxedFormatHandler(handler, options = {}) {
         });
       }
 
-      return runInSandbox(
-        async () => {
-          return handler.encode(image, encodeOptions);
-        },
-        { pluginName: name, permissions: options.permissions || [] }
-      );
+      return runInSandbox(handler.encode, {
+        pluginName: name,
+        permissions: options.permissions || [],
+        args: [image, encodeOptions],
+      });
     },
   };
 }
