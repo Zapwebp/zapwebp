@@ -165,6 +165,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   background: var(--header-bg, rgba(247, 247, 244, 0.88));
   border-bottom: 1px solid var(--border-mid);
+  overflow: visible !important;
 }
 
 .header-inner {
@@ -176,6 +177,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  position: relative;
+  overflow: visible;
 }
 
 .header-left {
@@ -416,6 +419,18 @@ body {
 }
 
 @media (max-width: 640px) {
+  .site-header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+  }
+  .header-right {
+    overflow: visible !important;
+  }
+  .lang-dropdown-wrap {
+    position: relative;
+  }
   .lang-dropdown-btn {
     padding: 0 8px;
     height: 34px;
@@ -425,13 +440,13 @@ body {
     display: none;
   }
   .lang-dropdown-menu {
-    position: fixed !important;
-    top: 62px !important;
-    right: 12px !important;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
     left: auto !important;
     min-width: 210px !important;
     max-width: calc(100vw - 24px) !important;
-    z-index: 99999 !important;
+    z-index: 1000 !important;
     background: var(--bg-card, #1c201a) !important;
     border: 1px solid var(--border-mid) !important;
     border-radius: var(--radius-md, 12px) !important;
@@ -623,12 +638,14 @@ body {
   color: var(--green-hover);
   background: linear-gradient(135deg, var(--green-hover) 0%, var(--green-primary) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 [data-theme="dark"] .accent-gradient {
   background: linear-gradient(135deg, #a6e22e 0%, #8dc63f 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1087,14 +1104,6 @@ body {
   color: var(--error) !important;
   border-color: var(--error) !important;
   background: rgba(207, 34, 46, 0.08) !important;
-}
-  padding: 4px 10px;
-  transition: all 120ms var(--ease-snap);
-}
-
-.result-download-btn:hover {
-  color: var(--green-hover);
-  border-color: var(--green-primary);
 }
 
 .result-alpha-dot {
