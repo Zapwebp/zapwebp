@@ -78,8 +78,54 @@ export interface MetadataHandler {
   strip(bytes: Uint8Array | Buffer): Promise<Uint8Array | Buffer>;
 }
 
+export interface CompressOptions {
+  targetBytes: number;
+  minQuality?: number;
+  maxQuality?: number;
+  allowDownscale?: boolean;
+  downscaleStep?: number;
+  maxDownscaleAttempts?: number;
+  maxIterations?: number;
+  format?: string;
+  effort?: number;
+  background?: string;
+  stripMetadata?: boolean;
+  throwOnUnreachable?: boolean;
+  encodeFn?: (image: RawImage, options: Record<string, any>) => Promise<Buffer | Uint8Array>;
+}
+
+export interface CompressionBestAttempt {
+  bytes: number;
+  quality: number;
+  width: number;
+  height: number;
+}
+
+export interface CompressionResult {
+  output: Uint8Array;
+  quality: number;
+  width: number;
+  height: number;
+  bytes: number;
+  downscaled: boolean;
+  downscaleCount: number;
+  iterations: number;
+  achieved: boolean;
+  reason?: string;
+  bestAttempt?: CompressionBestAttempt;
+}
+
+export interface CompressionHandler {
+  name: 'compressor' | string;
+  compress(
+    image: RawImage,
+    options: CompressOptions,
+  ): Promise<CompressionResult>;
+}
+
 export function definePlugin(plugin: ZapPlugin): ZapPlugin;
 export function defineTransform(step: TransformStep): TransformStep;
+export function defineCompressor(handler: CompressionHandler): CompressionHandler;
 export function safeDecode(handler: FormatHandler, bytes: Uint8Array | Buffer, options?: any): Promise<RawImage>;
 export function createMockRawImage(width?: number, height?: number): RawImage;
 export function validateStorageWrite(destinationPath: string, data: Buffer | Uint8Array): void;

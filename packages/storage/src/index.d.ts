@@ -42,6 +42,17 @@ export declare function stripCredentials(input: string | Error): string;
 
 export declare function withZapwebp(adapter: StorageAdapter, options?: ZapwebpStorageOptions): ZapwebpStorageInstance;
 
+export declare function createPool(
+  zap: ZapwebpStorageInstance,
+  poolOptions?: {
+    concurrency?: number;
+    rateLimit?: { maxPerInterval: number; intervalMs: number };
+  }
+): {
+  uploadMany: (bucket: string, files: Array<{ path: string; bytes?: Uint8Array | Buffer | string } | string>) => Promise<any>;
+  zap: ZapwebpStorageInstance;
+};
+
 export declare function writeWithRetry(
   adapter: StorageAdapter,
   bucket: string,

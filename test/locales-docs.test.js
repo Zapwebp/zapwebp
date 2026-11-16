@@ -15,6 +15,8 @@ const pages = [
   'lock-target',
   'backgrounds',
   'policy',
+  'reports',
+  'smart',
   'formats',
   'safety',
   'errors',
@@ -36,6 +38,9 @@ const pages = [
   'plugins/next',
   'plugins/github-action',
   'plugins/storage',
+  'storage/supabase',
+  'storage/firebase',
+  'storage/neocities',
   'plugins/vscode',
   'plugins/laravel',
   'plugins/lens',
@@ -51,6 +56,9 @@ const pages = [
   'lossless',
   'scaffolding',
   'reliability',
+  'storage/supabase',
+  'storage/firebase',
+  'storage/neocities',
 ];
 
 test('Tagalog documentation validation: all translated pages exist and adhere to standards', () => {

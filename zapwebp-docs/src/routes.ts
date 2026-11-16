@@ -138,6 +138,33 @@ export const DOC_ROUTES: DocRoute[] = [
     keywords: ['storage', 'supabase', 'firebase', 'neocities', 'upload', 'cascading delete']
   },
   {
+    path: '/storage/supabase',
+    file: 'storage/supabase',
+    title: 'Supabase Storage',
+    category: 'Plugins',
+    badge: 'Guide',
+    description: 'Convert images before upload to Supabase Storage with pre-upload conversion, RLS policies, and error handling.',
+    keywords: ['storage', 'supabase', 'supabase storage', 'rls', 'upload', 'batch', 'pool']
+  },
+  {
+    path: '/storage/firebase',
+    file: 'storage/firebase',
+    title: 'Firebase Storage',
+    category: 'Plugins',
+    badge: 'Guide',
+    description: 'Convert images before upload to Firebase Storage with modular SDK v9+, security rules, and error handling.',
+    keywords: ['storage', 'firebase', 'firebase storage', 'gcs', 'rules', 'upload', 'batch', 'pool']
+  },
+  {
+    path: '/storage/neocities',
+    file: 'storage/neocities',
+    title: 'Neocities Storage',
+    category: 'Plugins',
+    badge: 'Guide',
+    description: 'Convert images before upload to Neocities static hosting with rate limiting, warnings, and error handling.',
+    keywords: ['storage', 'neocities', 'neocities storage', 'static hosting', 'rate limit', 'upload', 'pool']
+  },
+  {
     path: '/plugins/vscode',
     file: 'plugins/vscode',
     title: 'VS Code Extension',
@@ -390,6 +417,9 @@ if (ROUTE_MAP['/sdk/cli']) {
 if (ROUTE_MAP['/plugins/vite']) ROUTE_MAP['/vite'] = ROUTE_MAP['/plugins/vite'];
 if (ROUTE_MAP['/plugins/next']) ROUTE_MAP['/next'] = ROUTE_MAP['/plugins/next'];
 if (ROUTE_MAP['/plugins/storage']) ROUTE_MAP['/storage'] = ROUTE_MAP['/plugins/storage'];
+if (ROUTE_MAP['/storage/supabase']) ROUTE_MAP['/plugins/storage/supabase'] = ROUTE_MAP['/storage/supabase'];
+if (ROUTE_MAP['/storage/firebase']) ROUTE_MAP['/plugins/storage/firebase'] = ROUTE_MAP['/storage/firebase'];
+if (ROUTE_MAP['/storage/neocities']) ROUTE_MAP['/plugins/storage/neocities'] = ROUTE_MAP['/storage/neocities'];
 if (ROUTE_MAP['/plugins/github-action']) {
   ROUTE_MAP['/github-action'] = ROUTE_MAP['/plugins/github-action'];
   ROUTE_MAP['/actions'] = ROUTE_MAP['/plugins/github-action'];

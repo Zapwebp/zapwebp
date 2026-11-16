@@ -48,11 +48,19 @@ Zapwebp storage adapters convert and sanitize images in memory immediately befor
 
 ## Adapters
 
-| Adapter | Import | Notes |
-|---|---|---|
-| Supabase | `supabaseAdapter(client)` | Full support (`upload`, `download`, `remove`, `list`, `exists`, `getPublicUrl`); official RLS templates |
-| Firebase | `firebaseAdapter(storage)` / `firebaseAdminAdapter(storage)` | Full support across modular Client SDK (v9+) and `firebase-admin/storage`; Security Rules templates |
-| Neocities | `neocitiesAdapter({ user, password })` | HTTP API with native `fetch`; rate-limited (10 req/min) with public host privacy notice |
+| Adapter | Guide | Import | Notes |
+|---|---|---|---|
+| Supabase | [Supabase Guide](/storage/supabase) | `supabaseAdapter(client)` | Full support (`upload`, `download`, `remove`, `list`, `exists`, `getPublicUrl`); official RLS templates |
+| Firebase | [Firebase Guide](/storage/firebase) | `firebaseAdapter(storage)` / `firebaseAdminAdapter(storage)` | Full support across modular Client SDK (v9+) and `firebase-admin/storage`; Security Rules templates |
+| Neocities | [Neocities Guide](/storage/neocities) | `neocitiesAdapter({ user, password })` | HTTP API with native `fetch`; rate-limited (10 req/min) with public host privacy notice |
+
+### Provider Comparison
+
+| Provider | Best for | Private? | Rate limit | Dedicated Guide |
+|---|---|---|---|---|
+| **Supabase** | Production, private data, PostgreSQL ecosystem | ✅ Yes | Generous | [Supabase Storage Guide](/storage/supabase) |
+| **Firebase** | Production, Google Cloud ecosystem | ✅ Yes | 1,000/sec | [Firebase Storage Guide](/storage/firebase) |
+| **Neocities** | Personal sites, hobby projects, small portfolios | ❌ No (public) | 10/min | [Neocities Storage Guide](/storage/neocities) |
 
 ## Options
 
@@ -110,6 +118,9 @@ Zapwebp storage adapters convert and sanitize images in memory immediately befor
 
 ## Related
 
+- [Supabase Storage Guide](/storage/supabase): Complete 10-section walkthrough with runnable starter.
+- [Firebase Storage Guide](/storage/firebase): Complete 10-section walkthrough with runnable starter.
+- [Neocities Storage Guide](/storage/neocities): Complete 10-section walkthrough with rate limiting and warnings.
 - [Security](/security): ISO/IEC 27001 & 27017 standards compliance and vulnerability disclosure.
 - [Privacy Policy](/privacy): Zero-telemetry, statutory compliance, and data minimization.
 - [CLI](/cli): Same conversion engine in your terminal.

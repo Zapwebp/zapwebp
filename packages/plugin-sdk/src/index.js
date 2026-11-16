@@ -174,6 +174,26 @@ function defineTransform(step) {
   return step;
 }
 
+/**
+ * Validates and defines a CompressionHandler plugin.
+ * @param {object} handler
+ * @param {string} handler.name
+ * @param {Function} handler.compress
+ * @returns {object}
+ */
+function defineCompressor(handler) {
+  if (!handler || typeof handler !== 'object') {
+    throw new Error('Compression handler must be an object.');
+  }
+  if (!handler.name || typeof handler.name !== 'string') {
+    throw new Error('Compression handler must declare a valid `name` string.');
+  }
+  if (typeof handler.compress !== 'function') {
+    throw new Error('Compression handler must declare a `compress(image, options)` function.');
+  }
+  return handler;
+}
+
 const {
   validatePluginPermissions,
   runInSandbox,
@@ -186,6 +206,7 @@ const { createWorkerScriptUrl } = require('./browser-sandbox');
 module.exports = {
   definePlugin,
   defineTransform,
+  defineCompressor,
   PluginManager,
   safeDecode,
   createMockRawImage,

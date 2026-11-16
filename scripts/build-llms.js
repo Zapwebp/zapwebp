@@ -18,6 +18,8 @@ const out = `# Zapwebp
 - [CLI](https://zapwebp-docs.vercel.app/cli): Terminal tool.
 - [MCP](https://zapwebp-docs.vercel.app/mcp): AI agent integration.
 - [AI Integration](https://zapwebp-docs.vercel.app/ai-integration): Developer primitives and vision model integration guide.
+- [Reports](https://zapwebp-docs.vercel.app/reports): Performance and carbon offset reports.
+- [Smart Optimization](https://zapwebp-docs.vercel.app/smart): Deterministic content analysis and automatic profiling.
 - [Lossless](https://zapwebp-docs.vercel.app/lossless): Lossless truth, pixel verification, and size impact.
 - [Scaffolding](https://zapwebp-docs.vercel.app/scaffolding): Agent-native plugin starter and CLI generator.
 - [Reliability](https://zapwebp-docs.vercel.app/reliability): Production reliability masterplan across six core dimensions.
@@ -42,6 +44,9 @@ const out = `# Zapwebp
 - [Next.js](https://zapwebp-docs.vercel.app/plugins/next): Next.js build plugin.
 - [GitHub Action](https://zapwebp-docs.vercel.app/plugins/github-action): PR image optimization action.
 - [Storage](https://zapwebp-docs.vercel.app/plugins/storage): Cloud storage upload interceptor.
+- [Supabase Storage](https://zapwebp-docs.vercel.app/storage/supabase): Supabase Storage pre-upload conversion guide.
+- [Firebase Storage](https://zapwebp-docs.vercel.app/storage/firebase): Firebase Storage pre-upload conversion guide.
+- [Neocities Storage](https://zapwebp-docs.vercel.app/storage/neocities): Neocities Storage pre-upload conversion guide.
 - [VS Code](https://zapwebp-docs.vercel.app/plugins/vscode): VS Code / Open VSX extension.
 - [Laravel](https://zapwebp-docs.vercel.app/plugins/laravel): Laravel service provider.
 - [Lens](https://zapwebp-docs.vercel.app/plugins/lens): Image inspection and visual diffing.
@@ -66,6 +71,8 @@ const out = `# Zapwebp
 - [Lossless Raw](/lossless.md): Lossless truth, pixel verification, and size impact analysis.
 - [Scaffolding Raw](/scaffolding.md): Agent-native plugin starter and CLI scaffolding guide.
 - [Reliability Raw](/reliability.md): Production reliability masterplan across six core dimensions.
+- [Reports Raw](/reports.md): Transaction journal aggregation and Green Code carbon calculations.
+- [Smart Raw](/smart.md): Deterministic 10-profile content optimization and signal analysis.
 - [AI Integration Raw](/ai-integration.md): AI integration support and developer pipeline primitives.
 - [Clean Raw](/clean.md): Strip metadata (EXIF, XMP, C2PA) from images.
 - [Formats Raw](/formats.md): Supported input and output formats.
@@ -83,6 +90,9 @@ const out = `# Zapwebp
 - [Next Plugin Raw](/plugins/next.md): Next.js bundler plugin documentation.
 - [GitHub Action Raw](/plugins/github-action.md): CI/CD image optimization action.
 - [Storage Plugin Raw](/plugins/storage.md): Cloud storage integration guide.
+- [Supabase Storage Raw](/storage/supabase.md): Supabase Storage integration guide.
+- [Firebase Storage Raw](/storage/firebase.md): Firebase Storage integration guide.
+- [Neocities Storage Raw](/storage/neocities.md): Neocities Storage integration guide.
 - [VS Code Plugin Raw](/plugins/vscode.md): VS Code extension documentation.
 - [Laravel Plugin Raw](/plugins/laravel.md): Laravel package documentation.
 - [Lens Plugin Raw](/plugins/lens.md): Image inspection and visual diffing CLI.

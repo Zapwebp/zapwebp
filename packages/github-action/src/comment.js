@@ -14,6 +14,10 @@ const API = 'https://api.github.com';
 function buildCommentBody(result) {
   const bytesSaved = Math.max(0, result.bytesIn - result.bytesOut);
   const savingsPercent = result.bytesIn > 0 ? ((bytesSaved / result.bytesIn) * 100).toFixed(1) : '0.0';
+  const gbSaved = bytesSaved / (1024 * 1024 * 1024);
+  const kwh = gbSaved * 0.06;
+  const wh = Math.round(kwh * 1000);
+  const co2Kg = (wh / 1000 * 0.94).toFixed(1);
 
   const rows = [
     `### ⚡ Zapwebp`,
@@ -25,6 +29,7 @@ function buildCommentBody(result) {
     `| Original size | ${(result.bytesIn / 1024).toFixed(1)} KB |`,
     `| Output size | ${(result.bytesOut / 1024).toFixed(1)} KB |`,
     `| Bandwidth saved | **${savingsPercent}%** (${(bytesSaved / 1024).toFixed(1)} KB) |`,
+    `| Carbon offset | **${wh} Wh** (~${co2Kg} kg CO₂e saved) |`,
   ];
 
   if (result.filesSkipped && result.filesSkipped > 0) {

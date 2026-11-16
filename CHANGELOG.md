@@ -2,9 +2,49 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.19.0] - 2026-11-16
+
+### Added
+
+- **Performance Reports Engine (`packages/core/src/report.js`, `zap report`)**:
+  - **Local Journal Aggregation**: Aggregates conversion metadata from `.zapwebp/journal/` without external telemetry or tracking. Computes total files processed, original bytes, optimized bytes, bandwidth savings, reduction percentage, format breakdowns, and top savings leaderboard.
+  - **Green Code Carbon Accounting**: Implements standard Green Software Foundation carbon offset formulas (`0.06 kWh/GB` and `0.4 kg CO2e/kWh`) to report energy savings and carbon emissions avoided.
+  - **Multi-Format Export**: Supports ASCII table, CSV, Markdown, and JSON output formats via `--format`.
+  - **Web Application Reports Modal (`/reports`, `public/index.html`, `public/app.js`)**: In-browser performance and carbon reporting dashboard reading directly from IndexedDB (`zapwebp-db`). Features time period filtering (All time, 30 days, 7 days), summary metric cards, format breakdowns, top savings, and one-click JSON/CSV exports.
+  - **GitHub Actions PR Summary Integration (`packages/github-action/src/comment.js`)**: Enriches Pull Request comment tables with carbon offset estimates (`Wh` and `kg CO2e`).
+  - **Model Context Protocol Tool (`get_performance_report`)**: AI agent tool querying transaction history and returning structured performance metrics.
+  - **REST API Endpoint (`POST /report`)**: HTTP endpoint analyzing conversion transaction records programmatically.
+
+- **Smart Content Optimization (`packages/core/src/smart.js`, `--smart`, `--explain`)**:
+  - **Deterministic Pixel Buffer Analysis**: 100% in-memory mathematical extraction of Sobel 3×3 edge density, color quantization (16-bit color buckets), alpha channel coverage, gradient smoothness scoring, and aspect ratio heuristics. Zero external neural networks or cloud vision APIs.
+  - **Ten Content Profiles**: Accurately classifies images into `photo`, `photo_text`, `icon`, `logo`, `screenshot`, `diagram`, `graphic_alpha`, `thumbnail`, `hero`, or `banner` with optimized format and quality recommendations.
+  - **Core Engine Integration**: `convertImage` seamlessly applies smart profile recommendations when `options.smart: true` is passed while respecting explicit caller options and conversion policies.
+  - **CLI Flags**: Added `--smart` for automatic optimization and `--explain` / `--dry-run` to output detailed structural signals and reasoning without writing files.
+  - **MCP & REST Endpoints**: Registered `apply_smart` tool in MCP server, enhanced `suggest_conversion` with smart signals, and added `POST /smart` REST endpoint.
+
+- **Team Workflows & Policy Governance (`packages/core/src/team-policy.js`, `zapwebp.policy.json`, `zap policy`)**:
+  - **Policy Governance Contract (`zapwebp.policy.json`)**: Versioned schema defining rejected formats, mandatory Clean Mode, quality boundaries, dimension limits, and file size ceilings.
+  - **Exception Lifecycles**: Supports pattern-based exceptions (glob matching) with mandatory `approvedBy` author, written `reason`, and strict `expires` date. Expired exceptions are immediately rejected.
+  - **CI/CD Enforcement Blocking**: When `enforcement.onCi` is `"block"`, unapproved formats or policy violations exit with code 1 in automated environments.
+  - **CLI Governance Commands**: Added `zap init --team` to scaffold policy contracts, `zap policy validate` to verify syntax and expiration, and `zap policy status` to inspect active rules and exceptions.
+  - **MCP Tools**: Added `validate_policy` and `get_policy_status` for autonomous AI agents.
+
+- **Comprehensive Documentation & Validation**:
+  - Added `/reports.md` and `/smart.md` documentation pages adhering to strict agentic templates.
+  - Updated `/policy.md` to cover team policy contracts, exception lifecycles, and CI enforcement.
+  - Added complete Tagalog translations (`locales/tl/docs/reports.md`, `locales/tl/docs/smart.md`, `locales/tl/docs/policy.md`).
+  - Rebuilt `llms.txt` mirrors in `public/llms.txt` and `zapwebp-docs/public/llms.txt`.
+
 ## [2.18.0] - 2026-11-15
 
 ### Added
+
+- **Cloud Storage Guides & Pool Concurrency (`@zapwebp/storage`, `/storage/supabase`, `/storage/firebase`, `/storage/neocities`)**:
+  - **Three Complete 10-Section Guides**: Created self-contained, end-to-end integration walkthroughs for Supabase Storage (`/storage/supabase`), Firebase Storage (`/storage/firebase`), and Neocities static hosting (`/storage/neocities`), covering prerequisites, installation, 30-second quickstarts, options configuration, single uploads, batch uploads, machine-readable error codes, production checklists, and cross-links.
+  - **Neocities Public Web Notice**: Embedded upfront privacy warnings regarding public discoverability, 1 GB storage limits, and 10 uploads/minute throttling.
+  - **Rate-Limited Concurrency Pool (`createPool`)**: Added `createPool(zap, { concurrency, rateLimit })` to `@zapwebp/storage` supporting token-bucket request throttling (`maxPerInterval`, `intervalMs`), automatic file reading, and aggregate byte savings tracking.
+  - **Runnable Starters (`examples/`)**: Sourced standalone GitHub template starters for `examples/supabase-storage`, `examples/firebase-storage`, and `examples/neocities-storage` with `.env.example`, `package.json`, and runnable ESM entrypoints.
+  - **Agentic & Bilingual Parity**: Added raw markdown mirrors for AI agents (`/storage/*.md`), llms.txt index links, and full Tagalog translations in `locales/tl/docs/storage/`.
 
 - **Real-World E2E Test Corpus & Test Suites (`test/fixtures/`, `test/web-real-world.test.js`, `apps/vscode/test/real-world.test.js`, `.github/workflows/e2e.yml`, `test/SMOKE.md`)**:
   - **Authentic Fixture Corpus (`test/fixtures/`)**: Sourced and structured authentic real-world test assets across `test/fixtures/` (`svg/`, `png/`, `jpg/`, `ico/`, `edge-cases/`), including Tabler icons, Lucide icons, Simple Icons brand assets, dense diagrams, Material icons, Unsplash photography, multi-resolution ICO containers, and adversarial edge cases (`script-injection.svg`, `billion-laughs.svg`, `empty.svg`, `corrupt.png`).

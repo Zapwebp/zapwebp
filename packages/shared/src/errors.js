@@ -194,6 +194,12 @@ const ERROR_CATALOG = Object.freeze({
     fix: 'Increase maxOutputBytes, adjust quality, or downscale image dimensions.',
     suggestedFix: { quality: 70 },
   },
+  E_TARGET_UNREACHABLE: {
+    code: 'E_TARGET_UNREACHABLE',
+    message: 'Cannot fit under the target size even with downscaling.',
+    fix: 'The image is too complex for the target size. Lower the target, or accept a larger file.',
+    suggestedFix: { allowDownscale: true },
+  },
   E_OUTPUT_TOO_SMALL: {
     code: 'E_OUTPUT_TOO_SMALL',
     message: 'Converted output is smaller than minimum required output bytes.',

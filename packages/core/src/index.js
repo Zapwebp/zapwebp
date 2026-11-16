@@ -31,6 +31,23 @@ const {
   evaluateSizeImpact,
   verifyLosslessPixels,
 } = require('./signals');
+const {
+  computePerformanceReport,
+  formatPerformanceReport,
+} = require('./report');
+const {
+  analyzeSmart,
+  classifyContentType,
+  extractSmartSignals,
+  RECOMMENDATION_PROFILES,
+} = require('./smart');
+const {
+  DEFAULT_TEAM_POLICY_TEMPLATE,
+  validateTeamPolicy,
+  evaluateFilePolicy,
+  checkExceptionsStatus,
+  formatPolicyStatus,
+} = require('./team-policy');
 
 let _sharpInstance = null;
 function getSharp() {
@@ -684,6 +701,7 @@ function normalizeOptions(options = {}) {
     targetOutputBytes: options.targetOutputBytes,
     accept: options.accept,
     reject: options.reject,
+    smart: Boolean(options.smart),
     keepOriginal: options.keepOriginal !== undefined ? Boolean(options.keepOriginal) : (DEFAULT_OPTIONS.keepOriginal ?? true),
     cleanupDelay: ['immediate', 'session', 'manual'].includes(String(options.cleanupDelay).toLowerCase())
       ? String(options.cleanupDelay).toLowerCase()
@@ -740,6 +758,7 @@ async function inspectImage(input) {
   }
 
   const { content, palette } = await computeContentSignals(data, { format, width, height, hasAlpha }, getSharp);
+  const smart = await analyzeSmart(data, { format, width, height, hasAlpha }, getSharp);
   const suggestions = suggest({
     format,
     width,
@@ -761,6 +780,7 @@ async function inspectImage(input) {
     content,
     palette,
     suggestions,
+    smart,
   };
 }
 
@@ -786,6 +806,23 @@ async function convertImage(input, options = {}) {
   }
 
   validateImageBytes(data);
+
+  let smartResult = null;
+  if (options.smart) {
+    try {
+      const detectedFmt = detectFormat(data);
+      smartResult = await analyzeSmart(data, { format: detectedFmt }, getSharp);
+      if (!options.to && !opts.lockTarget && smartResult.recommendation?.format) {
+        opts.to = smartResult.recommendation.format;
+      }
+      if (options.quality === undefined && smartResult.recommendation?.quality) {
+        opts.quality = smartResult.recommendation.quality;
+      }
+      if (options.lossless === undefined && smartResult.recommendation?.lossless !== undefined) {
+        opts.lossless = smartResult.recommendation.lossless;
+      }
+    } catch {}
+  }
 
   const useCache = Boolean(opts.cache);
   const cacheKey = useCache ? computeCacheKey(data, opts) : null;
@@ -1065,8 +1102,12 @@ async function convertImage(input, options = {}) {
     targetFormat: opts.to,
   });
 
-  const targetQuality = options.quality !== undefined ? Number(options.quality) : evalQ.quality;
-  const targetLossless = options.lossless !== undefined ? Boolean(options.lossless) : evalQ.lossless;
+  const targetQuality = (options.quality !== undefined)
+    ? Number(options.quality)
+    : (opts.smart && opts.quality !== undefined ? Number(opts.quality) : evalQ.quality);
+  const targetLossless = (options.lossless !== undefined)
+    ? Boolean(options.lossless)
+    : (opts.smart && opts.lossless !== undefined ? Boolean(opts.lossless) : evalQ.lossless);
 
   if (opts.to === 'jpeg' && targetLossless) {
     throw new ZapwebpError({
@@ -1337,6 +1378,7 @@ async function convertImage(input, options = {}) {
     transforms: transformReports.length > 0 ? transformReports : undefined,
     targetLockEnforced: Boolean(opts.lockTarget && !opts.overrideLock),
     targetLockBypassed: Boolean(opts.lockTarget && opts.overrideLock),
+    smart: smartResult ? { detectedType: smartResult.detectedType, recommendation: smartResult.recommendation } : undefined,
     lifecycle: {
       keepOriginal: opts.keepOriginal,
       originalPath: options.inputPath || options.filePath || options.originalPath || undefined,
@@ -1694,6 +1736,17 @@ module.exports = {
   computeContentSignals,
   attachCustomMetadata,
   extractCustomMetadata,
+  computePerformanceReport,
+  formatPerformanceReport,
+  analyzeSmart,
+  classifyContentType,
+  extractSmartSignals,
+  RECOMMENDATION_PROFILES,
+  DEFAULT_TEAM_POLICY_TEMPLATE,
+  validateTeamPolicy,
+  evaluateFilePolicy,
+  checkExceptionsStatus,
+  formatPolicyStatus,
   getTransforms,
   getSharp,
   getResvg,

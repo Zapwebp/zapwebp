@@ -123,6 +123,14 @@ function persistSettings() {
   } catch {}
 }
 
+// Reactive State Store Bridge (Web Components & Universal Store)
+const zapStore = (typeof window !== 'undefined' && window.ZapUI?.createZapStore)
+  ? window.ZapUI.createZapStore({ targetFormat: settings.format, initialState: { settings } })
+  : null;
+if (typeof window !== 'undefined') {
+  window.zapStore = zapStore;
+}
+
 // ==========================================================================
 // 1. IndexedDB Persistence Layer (zapwebp-db)
 // ==========================================================================
@@ -724,6 +732,211 @@ if (brandResetBtn) {
 }
 
 // ==========================================================================
+// Performance & Carbon Reports Controller
+// ==========================================================================
+const reportsModal = document.querySelector('#reports-modal');
+const navReportsBtn = document.querySelector('#nav-reports-btn');
+const reportsCloseBtn = document.querySelector('#reports-close-btn');
+const btnCloseReports = document.querySelector('#btn-close-reports');
+const btnExportReportJson = document.querySelector('#btn-export-report-json');
+const btnExportReportCsv = document.querySelector('#btn-export-report-csv');
+const periodPills = document.querySelectorAll('.period-pill');
+let activeReportPeriod = 'all';
+
+async function computeBrowserPerformanceReport(sinceDays = 0) {
+  const records = await dbGetAllFiles();
+  const sinceMs = sinceDays > 0 ? Date.now() - sinceDays * 86400000 : 0;
+  const filtered = records.filter((r) => !sinceMs || (r.createdAt && r.createdAt >= sinceMs));
+
+  let originalBytes = 0;
+  let optimizedBytes = 0;
+  const byFormat = {};
+  const savings = [];
+
+  for (const r of filtered) {
+    const sizeIn = Number(r.sizeIn) || 0;
+    const sizeOut = Number(r.sizeOut) || 0;
+    const saved = Math.max(0, sizeIn - sizeOut);
+    originalBytes += sizeIn;
+    optimizedBytes += sizeOut;
+
+    const fmt = (r.format || 'unknown').toLowerCase();
+    if (!byFormat[fmt]) byFormat[fmt] = { count: 0, originalBytes: 0, optimizedBytes: 0, savedBytes: 0 };
+    byFormat[fmt].count++;
+    byFormat[fmt].originalBytes += sizeIn;
+    byFormat[fmt].optimizedBytes += sizeOut;
+    byFormat[fmt].savedBytes += saved;
+
+    savings.push({
+      id: r.id,
+      name: r.name || 'unnamed',
+      format: fmt,
+      sizeIn,
+      sizeOut,
+      savedBytes: saved,
+      savedPercent: sizeIn > 0 ? Math.round((saved / sizeIn) * 100) : 0,
+      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString()
+    });
+  }
+
+  const savedBytes = Math.max(0, originalBytes - optimizedBytes);
+  const savedPercent = originalBytes > 0 ? Math.round((savedBytes / originalBytes) * 100) : 0;
+  const savedGb = savedBytes / (1024 * 1024 * 1024);
+  const kwhSaved = savedGb * 0.06;
+  const co2Grams = kwhSaved * 400;
+
+  savings.sort((a, b) => b.savedBytes - a.savedBytes);
+
+  return {
+    totalFiles: filtered.length,
+    originalBytes,
+    optimizedBytes,
+    savedBytes,
+    savedPercent,
+    kwhSaved,
+    co2Grams,
+    byFormat,
+    topSavings: savings.slice(0, 10),
+    allRecords: savings
+  };
+}
+
+async function renderReportsModal(period = activeReportPeriod) {
+  activeReportPeriod = period;
+  const days = period === '30' ? 30 : period === '7' ? 7 : 0;
+  const report = await computeBrowserPerformanceReport(days);
+
+  const totalFilesEl = document.querySelector('#rep-total-files');
+  const savedBytesEl = document.querySelector('#rep-saved-bytes');
+  const savedPctEl = document.querySelector('#rep-saved-pct');
+  const dataFlowEl = document.querySelector('#rep-data-flow');
+  const carbonEl = document.querySelector('#rep-carbon');
+  const carbonCo2El = document.querySelector('#rep-carbon-co2');
+  const formatListEl = document.querySelector('#rep-format-list');
+  const topListEl = document.querySelector('#rep-top-list');
+
+  if (totalFilesEl) totalFilesEl.textContent = String(report.totalFiles);
+  if (savedBytesEl) savedBytesEl.textContent = formatKb(report.savedBytes);
+  if (savedPctEl) savedPctEl.textContent = `${report.savedPercent}% reduction`;
+  if (dataFlowEl) dataFlowEl.textContent = `${formatKb(report.originalBytes)} → ${formatKb(report.optimizedBytes)}`;
+
+  if (carbonEl) {
+    carbonEl.textContent = report.kwhSaved < 1
+      ? `${(report.kwhSaved * 1000).toFixed(1)} mWh`
+      : `${report.kwhSaved.toFixed(2)} Wh`;
+  }
+  if (carbonCo2El) {
+    carbonCo2El.textContent = report.co2Grams < 1000
+      ? `${report.co2Grams.toFixed(1)} g CO₂e avoided`
+      : `${(report.co2Grams / 1000).toFixed(2)} kg CO₂e avoided`;
+  }
+
+  if (formatListEl) {
+    const formats = Object.keys(report.byFormat);
+    if (formats.length === 0) {
+      formatListEl.innerHTML = '<div class="reports-empty-msg">No conversions recorded yet.</div>';
+    } else {
+      formatListEl.innerHTML = formats.map((fmt) => {
+        const item = report.byFormat[fmt];
+        return `
+          <div class="report-row">
+            <span><strong>${fmt.toUpperCase()}</strong> (${item.count} files)</span>
+            <span>${formatKb(item.savedBytes)} saved</span>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  if (topListEl) {
+    if (report.topSavings.length === 0) {
+      topListEl.innerHTML = '<div class="reports-empty-msg">Convert files to see savings leaderboard.</div>';
+    } else {
+      topListEl.innerHTML = report.topSavings.map((item, idx) => `
+        <div class="report-row">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;">
+            ${idx + 1}. ${item.name} (${item.format})
+          </span>
+          <span>${formatKb(item.sizeIn)} → ${formatKb(item.sizeOut)} (<strong>-${item.savedPercent}%</strong>)</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function openReportsModal() {
+  if (!reportsModal) return;
+  reportsModal.hidden = false;
+  renderReportsModal(activeReportPeriod);
+}
+
+function closeReportsModal() {
+  if (!reportsModal) return;
+  reportsModal.hidden = true;
+}
+
+if (navReportsBtn) {
+  navReportsBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openReportsModal();
+  });
+}
+if (reportsCloseBtn) reportsCloseBtn.addEventListener('click', closeReportsModal);
+if (btnCloseReports) btnCloseReports.addEventListener('click', closeReportsModal);
+if (reportsModal) {
+  reportsModal.addEventListener('click', (e) => {
+    if (e.target === reportsModal) closeReportsModal();
+  });
+}
+
+periodPills.forEach((pill) => {
+  pill.addEventListener('click', () => {
+    periodPills.forEach((p) => p.classList.remove('is-active'));
+    pill.classList.add('is-active');
+    renderReportsModal(pill.dataset.period || 'all');
+  });
+});
+
+if (btnExportReportJson) {
+  btnExportReportJson.addEventListener('click', async () => {
+    const days = activeReportPeriod === '30' ? 30 : activeReportPeriod === '7' ? 7 : 0;
+    const report = await computeBrowserPerformanceReport(days);
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zapwebp-performance-report-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+if (btnExportReportCsv) {
+  btnExportReportCsv.addEventListener('click', async () => {
+    const days = activeReportPeriod === '30' ? 30 : activeReportPeriod === '7' ? 7 : 0;
+    const report = await computeBrowserPerformanceReport(days);
+    const rows = [
+      ['filename', 'format', 'size_in_bytes', 'size_out_bytes', 'saved_bytes', 'saved_percent', 'created_at']
+    ];
+    for (const r of report.allRecords) {
+      rows.push([r.name, r.format, r.sizeIn, r.sizeOut, r.savedBytes, r.savedPercent, r.createdAt]);
+    }
+    const csvContent = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zapwebp-performance-report-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+if (typeof window !== 'undefined' && window.location.pathname.startsWith('/reports')) {
+  setTimeout(openReportsModal, 150);
+}
+
+// ==========================================================================
 // Comprehensive Web i18n Translation Engine (EN / TL)
 // ==========================================================================
 const I18N_DICTIONARIES = {
@@ -731,6 +944,7 @@ const I18N_DICTIONARIES = {
     'nav.docs': 'Docs',
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
+    'nav.reports': 'Reports',
     'hero.badge': '100% In-Browser · Zero Server Uploads',
     'hero.title': 'Convert<span class="accent-gradient"> correctly.</span>',
     'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Transparency preserved</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Metadata stripped</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Zero server uploads</span>',
@@ -813,6 +1027,7 @@ const I18N_DICTIONARIES = {
     'nav.docs': 'Mga Gabay',
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
+    'nav.reports': 'Mga Ulat',
     'hero.badge': '100% Sa Loob ng Browser · Walang Server Uploads',
     'hero.title': 'Mag-convert<span class="accent-gradient"> nang tama.</span>',
     'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Nananatili ang aninag</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Tinanggal ang metadata</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Walang server uploads</span>',
@@ -1124,6 +1339,10 @@ function syncUiWithSettings() {
   updateQualitySliderState();
   updateBackgroundPickerVisibility();
   updateToggleCards();
+
+  if (zapStore) {
+    zapStore.setState({ targetFormat: settings.format, settings: { ...settings } });
+  }
 }
 
 function updateToggleCards() {
@@ -1951,7 +2170,9 @@ const downloadRestoreCache = new Map();
 function showToast(message, options = {}) {
   const container = document.getElementById('toast-container');
   if (!container) return;
-  const item = document.createElement('div');
+  const isCustomElement = Boolean(typeof window !== 'undefined' && window.customElements?.get('zap-toast'));
+  const item = document.createElement(isCustomElement ? 'zap-toast' : 'div');
+  if (options.type) item.setAttribute('type', options.type);
   item.className = 'toast-item';
   item.innerHTML = `<span>${message}</span>`;
 
@@ -2092,7 +2313,8 @@ function renderResultsView() {
       ? Math.round(((item.originalSize - out.size) / item.originalSize) * 100)
       : 0;
 
-    const singleCard = document.createElement('div');
+    const isZapCard = Boolean(typeof window !== 'undefined' && window.customElements?.get('zap-card'));
+    const singleCard = document.createElement(isZapCard ? 'zap-card' : 'div');
     singleCard.className = 'single-result-card';
     singleCard.innerHTML = `
       <div class="single-card-top">
@@ -2254,9 +2476,11 @@ function renderResultsView() {
   const isList = settings.viewMode === 'list';
   resultsContainer.className = `results-container ${isList ? 'view-list' : 'view-grid'}`;
 
+  const isZapCard = Boolean(typeof window !== 'undefined' && window.customElements?.get('zap-card'));
+
   for (const item of itemsList) {
     if (item.status === 'converting') {
-      const convCard = document.createElement('div');
+      const convCard = document.createElement(isZapCard ? 'zap-card' : 'div');
       convCard.className = 'result-card';
       convCard.innerHTML = `
         <div class="converting-skeleton">
@@ -2269,7 +2493,7 @@ function renderResultsView() {
     }
 
     if (item.status === 'error') {
-      const errCard = document.createElement('div');
+      const errCard = document.createElement(isZapCard ? 'zap-card' : 'div');
       errCard.className = 'result-card is-error';
       errCard.innerHTML = `
         <button type="button" class="btn-single-delete" title="${t('single.delete', 'Remove')}" style="position:absolute;top:6px;right:6px;">✕</button>
@@ -2351,7 +2575,7 @@ function renderResultsView() {
       resultsContainer.appendChild(row);
     } else {
       // Grid View Card
-      const card = document.createElement('div');
+      const card = document.createElement(isZapCard ? 'zap-card' : 'div');
       card.className = 'result-card';
       card.dataset.itemId = item.id;
 
@@ -2475,6 +2699,7 @@ async function clearAllItems() {
   convertedItems.clear();
   downloadRestoreCache.clear();
   await dbClearFiles();
+  if (zapStore) zapStore.reset();
   renderResultsView();
 }
 
@@ -2690,6 +2915,13 @@ async function handleFiles(files) {
 
   // Render view immediately with skeletons
   renderResultsView();
+  if (zapStore) {
+    zapStore.setState({
+      status: 'converting',
+      progress: 0,
+      files: Array.from(convertedItems.values()),
+    });
+  }
 
   // Progress Bar initialization
   cancelBatchRequested = false;
@@ -2758,6 +2990,19 @@ async function handleFiles(files) {
 
     // Update view as each file completes
     renderResultsView();
+
+    if (zapStore) {
+      const allDone = Array.from(convertedItems.values()).every((it) => it.status === 'done' || it.status === 'error');
+      const converted = Array.from(convertedItems.values()).filter((it) => it.status === 'done');
+      const totalSaved = converted.reduce((acc, it) => acc + Math.max(0, it.originalSize - (it.outputs?.[0]?.size || 0)), 0);
+      zapStore.setState({
+        status: allDone ? 'done' : 'converting',
+        progress: pct,
+        convertedCount: converted.length,
+        totalBytesSaved: totalSaved,
+        files: Array.from(convertedItems.values()),
+      });
+    }
   }
 
   if (convertingState) convertingState.hidden = true;

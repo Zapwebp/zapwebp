@@ -45,6 +45,15 @@ const {
   generateSrcset,
   auditConversionCommand,
   explainBlackBackground,
+  computePerformanceReport,
+  formatPerformanceReport,
+  analyzeSmart,
+  DEFAULT_TEAM_POLICY_TEMPLATE,
+  validateTeamPolicy,
+  evaluateFilePolicy,
+  checkExceptionsStatus,
+  formatPolicyStatus,
+  getSharp,
   INPUT_FORMATS,
   OUTPUT_FORMATS,
 } = core;
@@ -56,8 +65,10 @@ USAGE
   zap <command> [options]
 
 COMMANDS
-  init              Set up config, ignore rules, and .gitignore
+  init              Set up config, ignore rules, and .gitignore (--team for policy)
   watch             Convert on change (undoable)
+  report [path]     Show aggregate performance savings report
+  policy <cmd>      Manage team governance policy (validate, status)
   audit             Dry-run + safety audit report or command linter
   check             CI mode: exit 1 if any conversion is needed
   explain <file>    Explain why a file will or won't convert
@@ -78,6 +89,10 @@ OPTIONS
       --out-dir <dir>     Destination folder for converted outputs
       --to <formats>      Target format(s), comma-separated (default: webp)
       --from <format>     Restrict input format filter
+      --smart             Deterministic pixel analysis to recommend/apply best format
+      --explain           Explain smart optimization decision
+      --since <period>    Filter report by timeframe (e.g. "30 days ago", "7d")
+      --team              Initialize team governance policy (zap init --team)
       --scale <scales>    Multiplier scales, e.g. 1,2,3 (default: 1)
       --base-width <px>   Base pixel width for scale 1x (default: 512)
       --width <px>        Explicit output width (max 4096)
@@ -255,6 +270,27 @@ function parseArgs(argv) {
     else if (arg === '--verify-clean') parsed.options.verifyClean = true;
     else if (arg === '--assert-alpha') parsed.options.assertAlpha = true;
     else if (arg === '--report') parsed.options.report = true;
+    else if (arg === '--smart') {
+      parsed.smart = true;
+      parsed.options.smart = true;
+    }
+    else if (arg === '--explain') parsed.explain = true;
+    else if (arg === '--team') parsed.team = true;
+    else if (arg === '--since') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a timeframe string (e.g. "30 days ago", 7d).`);
+      parsed.since = value;
+    }
+    else if (arg === '--format') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a format name (e.g. table, json, csv, markdown).`);
+      parsed.format = value.toLowerCase();
+    }
+    else if (arg === '--top') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a number.`);
+      parsed.topN = Number(value);
+    }
     else if (arg === '--zip') parsed.zip = true;
     else if (arg === '--srcset') parsed.srcset = true;
     else if (arg === '--changed') parsed.changed = true;
@@ -390,6 +426,12 @@ async function main() {
       }
     }
 
+    if (args.team) {
+      const policyPath = path.join(rootDir, 'zapwebp.policy.json');
+      await writeAtomic(policyPath, JSON.stringify(DEFAULT_TEAM_POLICY_TEMPLATE, null, 2) + '\n');
+      process.stdout.write('  - Created zapwebp.policy.json (Team Governance Policy)\n');
+    }
+
     process.stdout.write('✓ Initialized Zap in this project:\n  - Created .zapwebp.config.json\n  - Created .zapwebpignore\n  - Synchronized .gitignore\n');
     return;
   }
@@ -483,6 +525,59 @@ async function main() {
     process.stdout.write(`Engine Availability:  ✓ @zapwebp/core ready (resvg + sharp)\n`);
     process.stdout.write(`Telemetry:            ✓ Disabled (0 network calls)\n\n`);
     return;
+  }
+
+  // 7b. Subcommand: report
+  if (args.inputs[0] === 'report') {
+    const targetPath = args.inputs[1] || '.';
+    const transactions = await listTransactions(rootDir);
+    const reportData = computePerformanceReport(transactions, {
+      path: targetPath === '.' ? '' : targetPath,
+      since: args.since,
+      topN: args.topN || 10,
+    });
+    const outputFmt = args.format || (args.json ? 'json' : 'table');
+    process.stdout.write(formatPerformanceReport(reportData, outputFmt) + '\n');
+    return;
+  }
+
+  // 7c. Subcommand: policy
+  if (args.inputs[0] === 'policy') {
+    const action = args.inputs[1];
+    const policyPath = path.join(rootDir, 'zapwebp.policy.json');
+    const exists = await stat(policyPath).then(() => true, () => false);
+    if (!exists) {
+      throw new Error('zapwebp.policy.json not found in project root. Run "zap init --team" to generate a policy template.');
+    }
+    const content = await readFile(policyPath, 'utf8');
+    let policyObj;
+    try {
+      policyObj = JSON.parse(content);
+    } catch (e) {
+      throw new Error(`Invalid JSON in zapwebp.policy.json: ${e.message}`);
+    }
+
+    if (action === 'validate') {
+      const { valid, errors } = validateTeamPolicy(policyObj);
+      if (valid) {
+        process.stdout.write('✓ zapwebp.policy.json is valid and conforms to enterprise standards.\n');
+        return;
+      }
+      process.stderr.write('❌ zapwebp.policy.json contains validation errors:\n');
+      for (const err of errors) {
+        process.stderr.write(`  - ${err}\n`);
+      }
+      process.exitCode = 1;
+      return;
+    }
+
+    if (action === 'status' || !action) {
+      const statusOut = formatPolicyStatus(policyObj);
+      process.stdout.write(statusOut + '\n');
+      return;
+    }
+
+    throw new Error(`Unknown policy command: "${action}". Supported: validate, status.`);
   }
 
   // 8. Subcommand: gitignore
@@ -897,6 +992,55 @@ async function main() {
     if (!args.watch) return;
   }
 
+  // Team Policy Enforcement
+  const policyFile = path.join(rootDir, 'zapwebp.policy.json');
+  let teamPolicy = null;
+  if (await stat(policyFile).then(() => true, () => false)) {
+    try {
+      teamPolicy = JSON.parse(await readFile(policyFile, 'utf8'));
+    } catch {}
+  }
+
+  if (teamPolicy) {
+    const isCi = Boolean(process.env.CI);
+    let policyFailed = false;
+    for (const fileItem of inScopeFiles) {
+      const evalRes = evaluateFilePolicy(teamPolicy, fileItem, options, { isCi });
+      if (!evalRes.allowed && evalRes.violations.length) {
+        const enf = isCi ? (teamPolicy.enforcement?.onCi || 'block') : (teamPolicy.enforcement?.onLocal || 'warn');
+        if (enf === 'block') {
+          process.stderr.write(`❌ Policy Violation: ${path.relative(rootDir, fileItem.path)}\n`);
+          for (const v of evalRes.violations) {
+            process.stderr.write(`   - ${v}\n`);
+          }
+          policyFailed = true;
+        } else {
+          process.stderr.write(`⚠️  Policy Warning: ${path.relative(rootDir, fileItem.path)}\n`);
+          for (const v of evalRes.violations) {
+            process.stderr.write(`   - ${v}\n`);
+          }
+        }
+      }
+    }
+    if (policyFailed) {
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  // Smart Optimization: Explanation & Dry-Run
+  if (args.smart && (args.explain || args.dryRun)) {
+    for (const fileItem of inScopeFiles) {
+      const bytes = await readFile(fileItem.path).catch(() => null);
+      if (!bytes) continue;
+      const res = await analyzeSmart(bytes, { format: fileItem.format }, getSharp);
+      process.stdout.write(`\nFile: ${path.relative(rootDir, fileItem.path)}\n${res.recommendation.explanation}\n`);
+    }
+    if (args.explain || args.dryRun) {
+      return;
+    }
+  }
+
   // Execute Conversion Run
   const transactionId = generateTransactionId();
   const operations = [];
@@ -937,6 +1081,7 @@ async function main() {
           lockTarget,
           strict: isStrict,
           overrideLock,
+          smart: Boolean(args.smart),
           ...(computedWidth ? { width: computedWidth } : {}),
         };
 
@@ -969,6 +1114,11 @@ async function main() {
             path: path.relative(rootDir, dest).replace(/\\/g, '/'),
             sha256: sha256(converted.data),
             bytes: converted.size,
+            inputPath: path.relative(rootDir, fileItem.path).replace(/\\/g, '/'),
+            inputBytes: currentBytes.length,
+            format: converted.targetFormat || target,
+            fromFormat: fileItem.format,
+            durationMs: converted.durationMs || 0,
           });
           records.push({
             input: fileItem.path,
@@ -976,6 +1126,8 @@ async function main() {
             scale,
             format: converted.targetFormat || target,
             size: converted.size,
+            inputBytes: currentBytes.length,
+            durationMs: converted.durationMs || 0,
             passedThrough: true,
             status: 'passed_through',
             warnings: converted.warnings || [],
@@ -990,6 +1142,11 @@ async function main() {
           path: path.relative(rootDir, dest).replace(/\\/g, '/'),
           sha256: sha256(converted.data),
           bytes: converted.size,
+          inputPath: path.relative(rootDir, fileItem.path).replace(/\\/g, '/'),
+          inputBytes: currentBytes.length,
+          format: target,
+          fromFormat: fileItem.format,
+          durationMs: converted.durationMs || 0,
         });
 
         records.push({
@@ -998,6 +1155,8 @@ async function main() {
           scale,
           format: target,
           size: converted.size,
+          inputBytes: currentBytes.length,
+          durationMs: converted.durationMs || 0,
           width: converted.width,
           height: converted.height,
           alphaPreserved: converted.alphaPreserved,
@@ -1102,6 +1261,7 @@ async function main() {
       cwd: rootDir,
       status: 'completed',
       operations,
+      records,
     });
   }
 

@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { decodeToRgba } = require('@zapwebp/core');
-const { withZapwebp } = require('../src/wrapper');
+const { withZapwebp, createPool } = require('../src/wrapper');
 
 const transparentSvg = Buffer.from(
   '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">' +
@@ -343,4 +343,34 @@ test('Wrapper: crop preset auto-crops asset before uploading to storage', async 
   assert.ok(adapter.store.has('bucket:photos/user.webp'));
   const uploadedBytes = adapter.store.get('bucket:photos/user.webp');
   assert.ok(uploadedBytes.length > 0);
+});
+
+test('Wrapper: upload returns convenience fields and createPool batches with concurrency', async () => {
+  const adapter = createMockAdapter();
+  const zap = withZapwebp(adapter, {
+    scale: [1],
+    targetFormat: 'webp',
+  });
+
+  const res = await zap.upload('bucket', 'logo.svg', transparentSvg);
+  assert.equal(res.path, 'logo.webp');
+  assert.equal(res.converted, true);
+  assert.equal(res.originalBytes, transparentSvg.length);
+  assert.ok(res.bytes > 0);
+
+  // Test createPool
+  const pool = createPool(zap, { concurrency: 2 });
+  const files = [
+    { path: 'a.svg', bytes: transparentSvg },
+    { path: 'b.svg', bytes: transparentSvg },
+  ];
+  const results = await pool.uploadMany('bucket', files);
+  assert.equal(results.length, 2);
+  assert.equal(results[0].path, 'a.webp');
+  assert.equal(results[1].path, 'b.webp');
+  assert.ok(results.summary);
+  assert.equal(results.summary.files, 2);
+
+  const totalSaved = results.reduce((sum, r) => sum + (r.originalBytes - r.bytes), 0);
+  assert.equal(typeof totalSaved, 'number');
 });

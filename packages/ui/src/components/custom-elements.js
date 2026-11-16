@@ -16,6 +16,10 @@ function defineCustomElements() {
   if (!customElements.get('zap-toast')) {
     customElements.define('zap-toast', class extends HTMLElement {
       connectedCallback() {
+        if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
+        if (!this.hasAttribute('aria-live')) this.setAttribute('aria-live', 'polite');
+        if (this.children.length > 0) return;
+
         const type = this.getAttribute('type') || 'info';
         const code = this.getAttribute('code');
         let title = this.getAttribute('title') || '';
@@ -46,6 +50,9 @@ function defineCustomElements() {
     customElements.define('zap-banner', class extends HTMLElement {
       connectedCallback() {
         const type = this.getAttribute('type') || 'warning';
+        if (!this.hasAttribute('role')) this.setAttribute('role', type === 'error' ? 'alert' : 'region');
+        if (this.children.length > 0) return;
+
         const code = this.getAttribute('code');
         const actions = this.getAttribute('actions') || 'dismiss';
         let title = this.getAttribute('title') || '';
@@ -78,6 +85,10 @@ function defineCustomElements() {
   if (!customElements.get('zap-modal')) {
     customElements.define('zap-modal', class extends HTMLElement {
       connectedCallback() {
+        if (!this.hasAttribute('role')) this.setAttribute('role', 'dialog');
+        if (!this.hasAttribute('aria-modal')) this.setAttribute('aria-modal', 'true');
+        if (this.children.length > 0) return;
+
         const type = this.getAttribute('type') || 'error';
         const code = this.getAttribute('code');
         let title = this.getAttribute('title') || '';
@@ -144,6 +155,24 @@ function defineCustomElements() {
   if (!customElements.get('zap-dropzone')) {
     customElements.define('zap-dropzone', class extends HTMLElement {
       connectedCallback() {
+        if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
+        if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
+        if (!this.hasAttribute('aria-label')) {
+          this.setAttribute('aria-label', this.getAttribute('title') || 'Drop images here to convert');
+        }
+
+        if (this.children.length > 0) {
+          // Keyboard activation for pre-existing inline child structure
+          this.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              const fileInput = document.getElementById('file-input');
+              if (fileInput) fileInput.click();
+            }
+          });
+          return;
+        }
+
         const accept = this.getAttribute('accept') || 'image/*';
         const maxBytes = Number(this.getAttribute('max-bytes')) || 5242880;
         const multiple = this.getAttribute('multiple') !== 'false';

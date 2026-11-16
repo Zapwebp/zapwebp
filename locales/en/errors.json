@@ -20,6 +20,7 @@
   "E_CORRUPT_CONTAINER": "File container became unreadable after metadata stripping.",
   "E_INPUT_TOO_LARGE": "Input file exceeds maximum allowed bytes limit of {{maxBytes}}.",
   "E_OUTPUT_TOO_LARGE": "Could not compress image below target output bytes limit of {{maxBytes}}.",
+  "E_TARGET_UNREACHABLE": "Cannot fit under target size of {{targetBytes}} bytes even with downscaling.",
   "E_FORMAT_REJECTED": "Image format is rejected by conversion policy allowlist or denylist.",
   "E_UNSUPPORTED_LOCALE": "Requested locale '{{locale}}' is not supported.",
   "E_CROP_EMPTY": "Crop coordinates produced a 0×0 empty image.",

@@ -81,7 +81,7 @@ Required Header: Accept: application/json, text/event-stream
 
 ---
 
-## Available Tools (15 Tools)
+## Available Tools (20 Tools)
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -89,7 +89,11 @@ Required Header: Accept: application/json, text/event-stream
 | `batch_convert` | `input`, `outDir`, `to?`, `scales?`, `baseWidth?`, `quality?`, `clean?`, `ignore?` | Converts multiple files with multiplier scales (@1x/@2x/@3x) and manifest.json |
 | `optimize_assets` | `projectRoot?`, `globs?`, `targets?`, `outDir?`, `dryRun?` | Scans workspace and generates optimized modern format variants |
 | `inspect_image` | `inputPath` | Returns format, dimensions, alpha transparency, C2PA, and `aiProvenanceHints` |
-| `suggest_conversion` | `inputPath`, `useCase?` | Recommends optimal format, dimensions, and quality with reasoning |
+| `suggest_conversion` | `inputPath` | Analyzes pixel buffer to recommend optimal format, quality, and lossless settings |
+| `apply_smart` | `inputPath`, `outputPath?` | Applies content-aware smart optimization converting to recommended format/quality |
+| `get_performance_report` | `path?`, `since?`, `format?`, `topN?` | Aggregates conversion logs into an Enterprise Performance & Carbon Report |
+| `validate_policy` | `policyPath?` | Validates the project's team governance policy (`zapwebp.policy.json`) |
+| `get_policy_status` | `policyPath?` | Returns team policy status, active exceptions, and expired exception warnings |
 | `verify_clean` | `inputPath` | Asserts 0 metadata chunks and returns a verifiable Clean Certificate |
 | `verify_alpha` | `inputPath` | Asserts output image retains transparent alpha pixels |
 | `audit_conversion` | `command` | Lints shell conversion commands (e.g. `magick`) and returns safe Zap tool calls |

@@ -1,0 +1,14 @@
+{
+  "name": "example-firebase-storage",
+  "version": "1.0.0",
+  "description": "Firebase Storage with Zapwebp pre-upload conversion walkthrough",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@zapwebp/storage": "^1.1.1",
+    "firebase": "^11.4.0"
+  }
+}

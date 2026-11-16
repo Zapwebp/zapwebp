@@ -109,4 +109,33 @@ test('Plugin SDK: safeDecode, createMockRawImage, and validateStorageWrite work 
   assert.throws(() => validateStorageWrite('path.webp', Buffer.alloc(0)), /empty or null data/);
 });
 
+test('Plugin SDK: defineCompressor validates contract', () => {
+  const { defineCompressor } = require('../src');
+  assert.throws(() => defineCompressor(null), /must be an object/);
+  assert.throws(() => defineCompressor({}), /declare a valid `name` string/);
+  assert.throws(() => defineCompressor({ name: 'compressor' }), /declare a `compress\(image, options\)` function/);
+
+  const validHandler = {
+    name: 'compressor',
+    async compress(image, options) {
+      return {
+        output: new Uint8Array(),
+        quality: 75,
+        width: image.width,
+        height: image.height,
+        bytes: 0,
+        downscaled: false,
+        downscaleCount: 0,
+        iterations: 1,
+        achieved: true,
+      };
+    },
+  };
+
+  const defined = defineCompressor(validHandler);
+  assert.equal(defined.name, 'compressor');
+  assert.equal(typeof defined.compress, 'function');
+});
+
+
 

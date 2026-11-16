@@ -1,0 +1,13 @@
+{
+  "name": "example-neocities-storage",
+  "version": "1.0.0",
+  "description": "Neocities static hosting with Zapwebp pre-upload conversion walkthrough",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@zapwebp/storage": "^1.1.1"
+  }
+}

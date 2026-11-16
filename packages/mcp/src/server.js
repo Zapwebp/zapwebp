@@ -39,6 +39,14 @@ const {
   scaleSuffix,
   generateSrcset,
   suggest,
+  computePerformanceReport,
+  formatPerformanceReport,
+  analyzeSmart,
+  validateTeamPolicy,
+  evaluateFilePolicy,
+  checkExceptionsStatus,
+  formatPolicyStatus,
+  getSharp,
   INPUT_FORMATS,
   OUTPUT_FORMATS,
 } = core;
@@ -750,6 +758,7 @@ export function createMcpServer(options = {}) {
     const sourcePath = await withinRoot(root, inputPath, true);
     const data = await readImageFile(sourcePath);
     const info = await inspectImage(data);
+    const smart = await analyzeSmart(data, { format: info.format, width: info.width, height: info.height }, getSharp);
     const suggestions = (typeof suggest === 'function' ? suggest : core.suggest)(info, useCase);
     const top = suggestions && suggestions.length ? suggestions[0] : { to: 'webp', quality: 80, lossless: false, reason: 'Default WebP recommendation.' };
 
@@ -775,6 +784,7 @@ export function createMcpServer(options = {}) {
       content: info.content,
       recommended,
       alternatives,
+      smart,
     }, null, 2));
   });
 
@@ -968,6 +978,110 @@ export function createMcpServer(options = {}) {
     const list = await listTransactions(root);
     const filtered = status === 'all' ? list : list.filter((t) => t.status === status);
     return resultText(JSON.stringify({ count: filtered.length, transactions: filtered }, null, 2));
+  });
+
+  // 16. Tool: get_performance_report
+  server.registerTool('get_performance_report', {
+    description: 'Aggregates conversion transaction logs into an Enterprise Performance Report showing files converted, original/optimized bytes, percentage saved, top file savings, format breakdown, and estimated carbon offset.',
+    inputSchema: z.object({
+      path: z.string().optional().describe('Filter report by target path prefix (e.g. "public/images")'),
+      since: z.string().optional().describe('Filter by timeframe (e.g. "30 days ago", "7d", "2026-10-01")'),
+      format: z.enum(['table', 'json', 'csv', 'markdown']).default('json'),
+      topN: z.number().int().min(1).max(50).default(10),
+    }),
+  }, async ({ path: filterPath, since, format = 'json', topN = 10 }) => {
+    const transactions = await listTransactions(root);
+    const report = computePerformanceReport(transactions, {
+      path: filterPath,
+      since,
+      topN,
+    });
+    const formatted = formatPerformanceReport(report, format);
+    return resultText(formatted);
+  });
+
+  // 17. Tool: apply_smart
+  server.registerTool('apply_smart', {
+    description: 'Applies content-aware smart optimization to an image, automatically converting it to the recommended format and quality.',
+    inputSchema: z.object({
+      inputPath: z.string().describe('Relative path to the image to convert'),
+      outputPath: z.string().optional().describe('Destination file path (optional, auto-derived from recommendation)'),
+    }),
+  }, async ({ inputPath, outputPath }) => {
+    const sourcePath = await withinRoot(root, inputPath, true);
+    const data = await readImageFile(sourcePath);
+    const detectedFormat = detectFormat(data);
+    const smart = await analyzeSmart(data, { format: detectedFormat }, getSharp);
+    const target = smart.recommendation.format;
+    const destInput = outputPath || path.join(path.dirname(inputPath), outputName(inputPath, target));
+    const destPath = await withinRoot(root, destInput);
+
+    const converted = await convertImage(data, {
+      smart: true,
+      to: target,
+      quality: smart.recommendation.quality,
+      lossless: smart.recommendation.lossless,
+      clean: true,
+    });
+    await writeAtomic(destPath, converted.data);
+
+    return resultText(JSON.stringify({
+      success: true,
+      input: path.relative(root, sourcePath),
+      output: path.relative(root, destPath),
+      detectedType: smart.detectedType,
+      format: target,
+      originalBytes: data.length,
+      optimizedBytes: converted.size,
+      savedBytes: Math.max(0, data.length - converted.size),
+      savedPercentage: data.length > 0 ? Number((((data.length - converted.size) / data.length) * 100).toFixed(1)) : 0,
+      explanation: smart.recommendation.explanation,
+    }, null, 2));
+  });
+
+  // 19. Tool: validate_policy
+  server.registerTool('validate_policy', {
+    description: 'Validates the project\'s team governance policy file (zapwebp.policy.json).',
+    inputSchema: z.object({
+      policyPath: z.string().optional().default('zapwebp.policy.json'),
+    }),
+  }, async ({ policyPath = 'zapwebp.policy.json' }) => {
+    const targetFile = await withinRoot(root, policyPath, true);
+    const content = await readFile(targetFile, 'utf8');
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      return errorResult(`Invalid JSON in policy file: ${e.message}`);
+    }
+    const result = validateTeamPolicy(parsed);
+    return resultText(JSON.stringify(result, null, 2));
+  });
+
+  // 20. Tool: get_policy_status
+  server.registerTool('get_policy_status', {
+    description: 'Returns team governance policy status, including active and expired exceptions.',
+    inputSchema: z.object({
+      policyPath: z.string().optional().default('zapwebp.policy.json'),
+    }),
+  }, async ({ policyPath = 'zapwebp.policy.json' }) => {
+    const targetFile = await withinRoot(root, policyPath, true);
+    const content = await readFile(targetFile, 'utf8');
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      return errorResult(`Invalid JSON in policy file: ${e.message}`);
+    }
+    const exceptionsStatus = checkExceptionsStatus(parsed);
+    const formatted = formatPolicyStatus(parsed);
+    return resultText(JSON.stringify({
+      version: parsed.version,
+      policy: parsed.policy,
+      enforcement: parsed.enforcement,
+      exceptions: exceptionsStatus,
+      statusDisplay: formatted,
+    }, null, 2));
   });
 
   // Backwards compatibility tools

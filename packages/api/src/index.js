@@ -3,7 +3,18 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('node:path');
-const { convertImage, detectFormat, inspectImage, outputName, INPUT_FORMATS, OUTPUT_FORMATS } = require('@zapwebp/core');
+const {
+  convertImage,
+  detectFormat,
+  inspectImage,
+  outputName,
+  computePerformanceReport,
+  formatPerformanceReport,
+  analyzeSmart,
+  getSharp,
+  INPUT_FORMATS,
+  OUTPUT_FORMATS,
+} = require('@zapwebp/core');
 
 function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFileBytes, maxFiles = 20, maxWidth = 4096, maxResponseBytes = Number.POSITIVE_INFINITY } = {}) {
   const router = express.Router();
@@ -237,6 +248,34 @@ function createApiRouter({ maxFileBytes = 4 * 1024 * 1024, maxBatchBytes = maxFi
     }
     res.json({ results });
   });
+
+  router.post('/report', express.json(), (req, res) => {
+    try {
+      const transactions = Array.isArray(req.body?.transactions) ? req.body.transactions : [];
+      const options = req.body?.options || {};
+      const report = computePerformanceReport(transactions, options);
+      const format = req.query?.format || req.body?.format || 'json';
+      if (format === 'json') {
+        return res.json(report);
+      }
+      res.type('text/plain').send(formatPerformanceReport(report, format));
+    } catch (err) {
+      res.status(400).json({ error: err.message || 'Report generation failed.' });
+    }
+  });
+
+  router.post('/smart', upload.single('file'), async (req, res) => {
+    if (!req.file?.buffer) return res.status(400).json({ error: 'Attach an image file in the `file` form field.' });
+    try {
+      const format = detectFormat(req.file.buffer);
+      const meta = await inspectImage(req.file.buffer);
+      const smart = await analyzeSmart(req.file.buffer, { format, width: meta.width, height: meta.height }, getSharp);
+      res.json(smart);
+    } catch (err) {
+      res.status(400).json({ error: err.message || 'Smart analysis failed.' });
+    }
+  });
+
   router.use((error, _req, res, _next) => {
     const status = error instanceof multer.MulterError ? error.code === 'LIMIT_FILE_SIZE' ? 413 : 400 : 400;
     res.status(status).json({ error: error.message || 'Upload failed.' });

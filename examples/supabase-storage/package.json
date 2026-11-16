@@ -1,0 +1,14 @@
+{
+  "name": "example-supabase-storage",
+  "version": "1.0.0",
+  "description": "Supabase Storage with Zapwebp pre-upload conversion walkthrough",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "@zapwebp/storage": "^1.1.1"
+  }
+}

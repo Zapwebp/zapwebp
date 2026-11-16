@@ -1,7 +1,7 @@
 'use strict';
 
 const { resolveOptions, DEFAULT_OPTIONS, validateStorageConfig, validateAdapterContract } = require('./options');
-const { withZapwebp, writeWithRetry } = require('./wrapper');
+const { withZapwebp, writeWithRetry, createPool } = require('./wrapper');
 const { validateStoragePath, stripCredentials, validateSafeUrl, isPrivateIp } = require('./sanitize');
 const { supabaseAdapter, SUPABASE_RLS_TEMPLATES } = require('./adapters/supabase');
 const { firebaseAdapter, firebaseAdminAdapter, FIREBASE_RULES_TEMPLATES } = require('./adapters/firebase');
@@ -18,6 +18,7 @@ module.exports = {
   stripCredentials,
   withZapwebp,
   writeWithRetry,
+  createPool,
   supabaseAdapter,
   SUPABASE_RLS_TEMPLATES,
   firebaseAdapter,

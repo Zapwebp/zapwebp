@@ -286,6 +286,13 @@
             data-i18n="nav.mcp"
             >MCP</a
           >
+          <button
+            type="button"
+            class="nav-link nav-link-reports"
+            id="nav-reports-btn"
+            aria-label="View Performance Report"
+            style="background: transparent; border: none; font: inherit; cursor: pointer;"
+            >Reports</button>
         </nav>
 
         <div class="header-right">
@@ -403,7 +410,7 @@
         </div>
 
         <!-- Lossless & Size Limit Conflict Warning Banner -->
-        <div
+        <zap-banner
           class="lossless-conflict-banner"
           id="lossless-conflict-banner"
           hidden
@@ -436,10 +443,10 @@
               Remove Size Limit
             </button>
           </div>
-        </div>
+        </zap-banner>
 
         <!-- Lossless Degraded Source (JPEG) Warning Banner -->
-        <div
+        <zap-banner
           class="lossless-conflict-banner lossless-degraded-banner"
           id="lossless-degraded-banner"
           hidden
@@ -470,7 +477,7 @@
               Keep Lossless
             </button>
           </div>
-        </div>
+        </zap-banner>
 
         <!-- The Interactive Converter -->
         <div class="converter-card" id="converter-container" toolname="convert_image" tooldescription="Convert images into WebP, AVIF, PNG, or JPEG with guaranteed transparency preservation in local browser memory">
@@ -484,7 +491,7 @@
           />
 
           <!-- Dropzone Workspace -->
-          <div
+          <zap-dropzone
             class="dropzone-area"
             id="dropzone"
             tabindex="0"
@@ -716,7 +723,7 @@
               hidden
               aria-live="polite"
             ></div>
-          </div>
+          </zap-dropzone>
 
           <!-- Integrated Controls Bar -->
           <div class="cockpit-bar">
@@ -2226,7 +2233,7 @@
     </div>
 
     <!-- Confirm Delete All Modal -->
-    <div class="confirm-modal-backdrop" id="confirm-delete-modal" hidden>
+    <zap-modal class="confirm-modal-backdrop" id="confirm-delete-modal" hidden>
       <div
         class="confirm-modal-panel"
         role="alertdialog"
@@ -2260,10 +2267,10 @@
           </button>
         </div>
       </div>
-    </div>
+    </zap-modal>
 
     <!-- Confirm Delete Original Modal -->
-    <div class="confirm-modal-backdrop" id="confirm-delete-original-modal" hidden>
+    <zap-modal class="confirm-modal-backdrop" id="confirm-delete-original-modal" hidden>
       <div
         class="confirm-modal-panel"
         role="alertdialog"
@@ -2296,7 +2303,83 @@
           </button>
         </div>
       </div>
-    </div>
+    </zap-modal>
+
+    <!-- Performance & Carbon Reports Modal -->
+    <zap-modal class="confirm-modal-backdrop" id="reports-modal" hidden>
+      <div
+        class="confirm-modal-panel reports-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reports-modal-title"
+      >
+        <div class="reports-header">
+          <div class="reports-header-text">
+            <h3 class="confirm-modal-title" id="reports-modal-title">📊 Performance &amp; Carbon Report</h3>
+            <p class="confirm-modal-desc">Cumulative bandwidth saved and environmental impact from your browser conversions.</p>
+          </div>
+          <button type="button" class="reports-close-btn" id="reports-close-btn" aria-label="Close Report">✕</button>
+        </div>
+
+        <!-- Period Filter Pills -->
+        <div class="reports-period-pills" role="tablist" aria-label="Report Period">
+          <button type="button" class="period-pill is-active" data-period="all">All Time</button>
+          <button type="button" class="period-pill" data-period="30">Last 30 Days</button>
+          <button type="button" class="period-pill" data-period="7">Last 7 Days</button>
+        </div>
+
+        <!-- Summary Metrics Grid -->
+        <div class="reports-metrics-grid">
+          <div class="report-metric-card">
+            <span class="metric-label">Files Converted</span>
+            <span class="metric-value" id="rep-total-files">0</span>
+          </div>
+          <div class="report-metric-card">
+            <span class="metric-label">Bandwidth Saved</span>
+            <span class="metric-value highlight" id="rep-saved-bytes">0 KB</span>
+            <span class="metric-sub" id="rep-saved-pct">0% reduction</span>
+          </div>
+          <div class="report-metric-card">
+            <span class="metric-label">Data Processed</span>
+            <span class="metric-value" id="rep-data-flow">0 KB → 0 KB</span>
+          </div>
+          <div class="report-metric-card">
+            <span class="metric-label">Carbon Offset</span>
+            <span class="metric-value green" id="rep-carbon">0 Wh</span>
+            <span class="metric-sub" id="rep-carbon-co2">0 g CO₂e avoided</span>
+          </div>
+        </div>
+
+        <!-- Format Breakdown -->
+        <div class="reports-section">
+          <h4 class="reports-section-title">Breakdown by Target Format</h4>
+          <div class="reports-format-list" id="rep-format-list">
+            <div class="reports-empty-msg">No conversions recorded yet.</div>
+          </div>
+        </div>
+
+        <!-- Top Savings -->
+        <div class="reports-section">
+          <h4 class="reports-section-title">Top Space Savings</h4>
+          <div class="reports-top-list" id="rep-top-list">
+            <div class="reports-empty-msg">Convert files to see savings leaderboard.</div>
+          </div>
+        </div>
+
+        <!-- Privacy & Local Execution Notice -->
+        <div class="reports-zero-notice">
+          <span class="zero-badge">🔒 100% In-Memory &amp; Local Storage</span>
+          <span>Zero external telemetry. All metrics calculated directly in your browser.</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="confirm-modal-actions" style="margin-top: 16px;">
+          <button type="button" class="btn-confirm-cancel" id="btn-export-report-json">Export JSON</button>
+          <button type="button" class="btn-confirm-cancel" id="btn-export-report-csv">Export CSV</button>
+          <button type="button" class="btn-confirm-cancel" id="btn-close-reports" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">Close</button>
+        </div>
+      </div>
+    </zap-modal>
 
     <!-- Lifecycle Toast Notification Container -->
     <div class="toast-container" id="toast-container" aria-live="polite"></div>

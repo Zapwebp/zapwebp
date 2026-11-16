@@ -310,6 +310,81 @@ export function parallelMap<T, R>(
 
 export * from './formats/index';
 
+export interface PerformanceReport {
+  period: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  totalFiles: number;
+  originalBytes: number;
+  originalFormatted: string;
+  optimizedBytes: number;
+  optimizedFormatted: string;
+  savedBytes: number;
+  savedFormatted: string;
+  savedPercentage: number;
+  avgLatencyMs: number;
+  topSavings: Array<{
+    fileName: string;
+    path: string;
+    inputPath: string;
+    originalBytes: number;
+    optimizedBytes: number;
+    savedBytes: number;
+    savedPercent: number;
+    format: string;
+    durationMs: number;
+    timestamp: string;
+  }>;
+  byFormat: Array<{
+    format: string;
+    count: number;
+    savedBytes: number;
+    originalBytes: number;
+    optimizedBytes: number;
+    savedFormatted: string;
+  }>;
+  bySource: Array<{
+    source: string;
+    count: number;
+    savedBytes: number;
+    savedFormatted: string;
+  }>;
+  carbon: {
+    gbSaved: number;
+    kwh: number;
+    wh: number;
+    co2Kg: number;
+  };
+  items: Array<any>;
+}
+
+export function computePerformanceReport(transactions?: any[], options?: { since?: string | number | Date; path?: string; topN?: number }): PerformanceReport;
+export function formatPerformanceReport(report: PerformanceReport, format?: 'table' | 'json' | 'csv' | 'markdown'): string;
+
+export interface SmartRecommendation {
+  detectedType: string;
+  signals: Record<string, any>;
+  recommendation: {
+    format: string;
+    quality: number;
+    lossless: boolean;
+    fallbackFormat: string | null;
+    reason: string;
+    explanation: string;
+  };
+}
+
+export function analyzeSmart(buffer: Buffer | Uint8Array, meta: Record<string, any>, getSharp: () => any): Promise<SmartRecommendation>;
+export function classifyContentType(signals: Record<string, any>): string;
+export function extractSmartSignals(rawData: Buffer | Uint8Array, width: number, height: number, meta?: Record<string, any>): Record<string, any>;
+export const RECOMMENDATION_PROFILES: Record<string, any>;
+
+export const DEFAULT_TEAM_POLICY_TEMPLATE: Record<string, any>;
+export function validateTeamPolicy(policy: any): { valid: boolean; errors: string[] };
+export function evaluateFilePolicy(policyConfig: any, fileItem: { path: string; format?: string; size?: number }, conversionOptions?: Record<string, any>, context?: Record<string, any>): { allowed: boolean; violations: string[]; exceptionApplied?: any };
+export function checkExceptionsStatus(policyConfig: any): { active: any[]; expired: any[] };
+export function formatPolicyStatus(policyConfig: any): string;
+
 export const MAX_WIDTH: number;
 export const INPUT_FORMATS: readonly InputFormat[];
 export const OUTPUT_FORMATS: readonly OutputFormat[];

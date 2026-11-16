@@ -36,6 +36,16 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// Security Headers & Zero Telemetry Guard
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
 const MEBIBYTE = 1024 * 1024;
 const IS_VERCEL = process.env.VERCEL === '1';
 const DEFAULT_MAX_FILE_BYTES = IS_VERCEL ? 4 * MEBIBYTE : 5 * MEBIBYTE;
@@ -182,6 +192,10 @@ const DOCS_ROUTES = [
   '/plugins/next',
   '/plugins/github-action',
   '/plugins/storage',
+  '/storage',
+  '/storage/supabase',
+  '/storage/firebase',
+  '/storage/neocities',
   '/plugins/vscode',
   '/plugins/laravel',
   '/plugins/lens',
@@ -208,6 +222,7 @@ app.get(DOCS_ROUTES, (req, res) => {
 // Dedicated landing routes (SEO) and root converter
 const LANDING_ROUTES = [
   '/',
+  '/reports',
   '/svg-to-webp',
   '/png-to-webp',
   '/jpg-to-webp',

@@ -1,6 +1,7 @@
 # @zapwebp/format-ico
 
 <div align="center">
+  <img src="zapwebp-ico.svg" alt="Zapwebp ICO" width="120" height="120" />
   <h3>High-Resolution ICO Plugin & Favicon Generator for Zapwebp</h3>
   <p>Read, parse, and write multi-size ICO/CUR containers with 100% alpha preservation and complete web favicon suites.</p>
 </div>
@@ -33,21 +34,21 @@ pnpm add @zapwebp/format-ico
 Register the handler with `@zapwebp/core` to unlock `.ico` input detection and output encoding:
 
 ```javascript
-import { registerFormat, convertImage } from '@zapwebp/core';
-import { icoHandler } from '@zapwebp/format-ico';
+import { registerFormat, convertImage } from "@zapwebp/core";
+import { icoHandler } from "@zapwebp/format-ico";
 
 // 1. Register the format handler
 registerFormat(icoHandler);
 
 // 2. Convert SVG/PNG to multi-size ICO
 const icoBuffer = await convertImage(svgBuffer, {
-  to: 'ico',
+  to: "ico",
   sizes: [16, 32, 48, 256],
 });
 
 // 3. Convert existing ICO to modern WebP
 const webpBuffer = await convertImage(icoBuffer, {
-  to: 'webp',
+  to: "webp",
   quality: 90,
 });
 ```
@@ -59,22 +60,22 @@ const webpBuffer = await convertImage(icoBuffer, {
 Generate a complete production web favicon package from a single high-resolution image:
 
 ```javascript
-import { generateFaviconSuite } from '@zapwebp/format-ico';
+import { generateFaviconSuite } from "@zapwebp/format-ico";
 
-const suite = await generateFaviconSuite('./logo.svg', {
-  name: 'My Web Application',
-  shortName: 'MyApp',
-  themeColor: '#10b981',
-  backgroundColor: '#ffffff',
-  prefix: '/',
+const suite = await generateFaviconSuite("./logo.svg", {
+  name: "My Web Application",
+  shortName: "MyApp",
+  themeColor: "#10b981",
+  backgroundColor: "#ffffff",
+  prefix: "/",
 });
 
-console.log(suite.files['favicon.ico']);        // Multi-size ICO buffer
-console.log(suite.files['apple-touch-icon.png']); // 180x180 PNG
-console.log(suite.files['icon-192.png']);         // 192x192 PWA PNG
-console.log(suite.files['icon-512.png']);         // 512x512 PWA Splash PNG
-console.log(suite.files['site.webmanifest']);     // W3C JSON manifest string
-console.log(suite.html);                         // Ready-to-use HTML tags
+console.log(suite.files["favicon.ico"]); // Multi-size ICO buffer
+console.log(suite.files["apple-touch-icon.png"]); // 180x180 PNG
+console.log(suite.files["icon-192.png"]); // 192x192 PWA PNG
+console.log(suite.files["icon-512.png"]); // 512x512 PWA Splash PNG
+console.log(suite.files["site.webmanifest"]); // W3C JSON manifest string
+console.log(suite.html); // Ready-to-use HTML tags
 ```
 
 ---
@@ -88,6 +89,7 @@ npx zapwebp-favicon logo.svg -o ./public --name "My Project" --theme-color "#10b
 ```
 
 CLI Options:
+
 - `-o, --out <dir>`: Output directory (default: `./favicon-dist`).
 - `-n, --name <name>`: Application name for `site.webmanifest`.
 - `-s, --short-name <name>`: Short application name.
@@ -103,13 +105,15 @@ CLI Options:
 ## Direct Container Inspection
 
 ```javascript
-import { parseIco, decodeIco } from '@zapwebp/format-ico';
+import { parseIco, decodeIco } from "@zapwebp/format-ico";
 
 // Inspect container structure
 const info = parseIco(icoBuffer);
 console.log(`Contains ${info.count} icons:`);
 for (const entry of info.entries) {
-  console.log(` - ${entry.width}x${entry.height} (${entry.format}, ${entry.bitCount}bpp)`);
+  console.log(
+    ` - ${entry.width}x${entry.height} (${entry.format}, ${entry.bitCount}bpp)`,
+  );
 }
 
 // Extract specific resolution

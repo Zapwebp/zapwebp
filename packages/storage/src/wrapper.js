@@ -149,6 +149,11 @@ function withZapwebp(adapter, options) {
           upsert: resolved.onConflict === 'overwrite',
         });
         return {
+          path: passThroughPath,
+          url: '',
+          bytes: byteLength,
+          originalBytes: byteLength,
+          converted: false,
           source: { path: filePath, bytes: byteLength, format: 'unknown' },
           outputs: [{ scale: 1, path: passThroughPath, bytes: byteLength, format: 'unknown', passedThrough: true }],
           manifest: null,
@@ -191,6 +196,11 @@ function withZapwebp(adapter, options) {
           throw new Error(`E_CONFLICT: Destination file already exists at "${primaryTargetPath}"`);
         }
         return {
+          path: primaryTargetPath,
+          url: '',
+          bytes: 0,
+          originalBytes: byteLength,
+          converted: false,
           source: {
             path: filePath,
             bytes: byteLength,
@@ -301,7 +311,13 @@ function withZapwebp(adapter, options) {
       );
     }
 
+    const primaryOut = uploadedOutputs[0] || {};
     return {
+      path: primaryOut.path || filePath,
+      url: primaryOut.publicUrl || '',
+      bytes: primaryOut.bytes || byteLength,
+      originalBytes: byteLength,
+      converted: true,
       source: {
         path: filePath,
         bytes: byteLength,
@@ -436,16 +452,111 @@ function withZapwebp(adapter, options) {
     }
   }
 
-  return {
+  const instance = {
     adapter,
     options: resolved,
     upload,
     uploadMany,
     remove,
   };
+
+  instance.pool = (opts) => createPool(instance, opts);
+  return instance;
+}
+
+/**
+ * Creates a bounded worker pool for managing batch uploads with concurrency and rate-limiting.
+ *
+ * @param {import('./types').ZapwebpStorageInstance} zap
+ * @param {{
+ *   concurrency?: number,
+ *   rateLimit?: { maxPerInterval: number, intervalMs: number }
+ * }} [poolOptions]
+ * @returns {{ uploadMany: (bucket: string, files: Array<{ path: string, bytes?: Uint8Array|Buffer|string } | string>) => Promise<any>, zap: import('./types').ZapwebpStorageInstance }}
+ */
+function createPool(zap, poolOptions = {}) {
+  if (!zap || typeof zap.upload !== 'function') {
+    throw new TypeError('createPool requires a ZapwebpStorageInstance with an upload method.');
+  }
+
+  const concurrency = Math.max(1, Math.min(16, Number(poolOptions.concurrency) || 4));
+  const rateLimit = poolOptions.rateLimit;
+
+  async function uploadMany(bucket, files) {
+    if (!Array.isArray(files)) {
+      throw new TypeError('files must be an array of file paths or { path, bytes } objects.');
+    }
+
+    let tokens = rateLimit?.maxPerInterval || Infinity;
+    let lastReset = Date.now();
+    const intervalMs = rateLimit?.intervalMs || 60000;
+    const maxTokens = rateLimit?.maxPerInterval || Infinity;
+
+    async function acquireToken() {
+      if (!rateLimit) return;
+      while (true) {
+        const now = Date.now();
+        if (now - lastReset >= intervalMs) {
+          tokens = maxTokens;
+          lastReset = now;
+        }
+        if (tokens > 0) {
+          tokens--;
+          return;
+        }
+        const waitTime = Math.max(50, intervalMs - (now - lastReset) + 10);
+        await new Promise((r) => setTimeout(r, waitTime));
+      }
+    }
+
+    const fs = require('node:fs');
+    const reports = new Array(files.length);
+    let cursor = 0;
+
+    async function worker() {
+      while (cursor < files.length) {
+        const idx = cursor++;
+        const item = files[idx];
+        const filePath = typeof item === 'string' ? item : item.path;
+        let fileBytes = typeof item === 'object' && item.bytes ? item.bytes : null;
+
+        if (!fileBytes && typeof item === 'string') {
+          fileBytes = await fs.promises.readFile(filePath);
+        }
+
+        await acquireToken();
+        const rep = await zap.upload(bucket, filePath, fileBytes);
+        reports[idx] = rep;
+      }
+    }
+
+    const activeWorkers = Array.from({ length: Math.min(concurrency, files.length) }, () => worker());
+    await Promise.all(activeWorkers);
+
+    const totalIn = reports.reduce((acc, r) => acc + (r.source?.bytes || r.originalBytes || 0), 0);
+    const totalOut = reports.reduce((acc, r) => acc + (r.outputs?.[0]?.bytes || r.bytes || 0), 0);
+    const savedBytes = Math.max(0, totalIn - totalOut);
+    const savedPercent = totalIn > 0 ? Math.round((savedBytes / totalIn) * 100) : 0;
+
+    reports.summary = {
+      files: reports.length,
+      bytesIn: totalIn,
+      bytesOut: totalOut,
+      savedBytes,
+      saved: savedPercent,
+    };
+
+    return reports;
+  }
+
+  return {
+    uploadMany,
+    zap,
+  };
 }
 
 module.exports = {
   withZapwebp,
   writeWithRetry,
+  createPool,
 };

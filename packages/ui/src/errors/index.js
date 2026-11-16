@@ -63,6 +63,15 @@ const ERROR_MAP = {
     retryable: true,
     suggestedRetry: { quality: 70 },
   },
+  E_TARGET_UNREACHABLE: {
+    title: 'Target size unreachable',
+    message: (ctx) => ctx?.message || 'Cannot fit under the target size even with downscaling.',
+    fix: 'The image is too complex for the target size. Lower the target, or accept a larger file.',
+    component: 'card',
+    severity: 'error',
+    retryable: true,
+    suggestedRetry: { allowDownscale: true },
+  },
   E_CORRUPT_HEADER: {
     title: 'File appears corrupted',
     message: 'The file header does not match any known image format.',

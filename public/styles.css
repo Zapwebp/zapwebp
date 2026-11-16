@@ -3536,6 +3536,188 @@ body {
   opacity: 0.9;
 }
 
+/* Reports Modal */
+.reports-modal-panel {
+  max-width: 620px;
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: left;
+  padding: 24px;
+}
+
+.reports-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.reports-header-text .confirm-modal-title {
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.reports-header-text .confirm-modal-desc {
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.reports-close-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reports-close-btn:hover {
+  background: var(--bg-dropzone-hover);
+  color: var(--text-primary);
+}
+
+.reports-period-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.period-pill {
+  background: var(--bg);
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms var(--ease-snap);
+}
+
+.period-pill.is-active,
+.period-pill:hover {
+  background: var(--bg-dropzone-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.reports-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 500px) {
+  .reports-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.report-metric-card {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.metric-value.highlight {
+  color: var(--accent);
+}
+
+.metric-value.green {
+  color: #22c55e;
+}
+
+.metric-sub {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.reports-section {
+  margin-bottom: 16px;
+}
+
+.reports-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.reports-format-list,
+.reports-top-list {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.report-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.report-row:last-child {
+  border-bottom: none;
+}
+
+.reports-empty-msg {
+  color: var(--gray-600);
+  font-style: italic;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.reports-zero-notice {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.zero-badge {
+  font-weight: 700;
+  color: #22c55e;
+  white-space: nowrap;
+}
+
 
 /* ==========================================================================
    Revamped 3-Tap Layout, Lossless Conflict Banner, Slide-Over Settings & Badges
