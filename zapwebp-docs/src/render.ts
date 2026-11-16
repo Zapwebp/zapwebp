@@ -21,7 +21,12 @@ export async function renderDoc(fileKey: string, mount: HTMLElement): Promise<vo
     if (!res.ok) {
       throw new Error(`Document not found: ${fileKey}`);
     }
-    rawMarkdown = await res.text();
+    const text = await res.text();
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('text/html') || text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+      throw new Error(`Document not found: ${fileKey}`);
+    }
+    rawMarkdown = text;
   }
 
   // Find route metadata
