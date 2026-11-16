@@ -28,6 +28,11 @@ registry.register(avifHandler);
 registry.register(gifHandler);
 registry.register(tiffHandler);
 
+try {
+  const { icoHandler } = require('@zapwebp/format-ico');
+  if (icoHandler) registry.register(icoHandler);
+} catch {}
+
 module.exports = {
   FormatRegistry,
   registry,

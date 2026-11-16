@@ -62,6 +62,7 @@ test('ICO Normalize Sizes: cleans and deduplicates resolutions', () => {
 test('ICO Encode: generates high-resolution multi-size ICO container', async () => {
   const icoBuffer = await encodeIco(SAMPLE_SVG, {
     sizes: [16, 32, 48, 64, 128, 256],
+    format: 'png',
   });
 
   assert.ok(Buffer.isBuffer(icoBuffer));
@@ -82,6 +83,32 @@ test('ICO Encode: generates high-resolution multi-size ICO container', async () 
   }
 });
 
+test('ICO Config & Presets: supports declarative presets and hybrid format per size', async () => {
+  // Test default hybrid: BMP for <= 32, PNG for > 32
+  const hybridIco = await encodeIco(SAMPLE_SVG, {
+    sizes: [16, 32, 48, 64],
+  });
+  const parsedHybrid = parseIco(hybridIco);
+  assert.equal(parsedHybrid.entries.find((e) => e.width === 16).format, 'bmp');
+  assert.equal(parsedHybrid.entries.find((e) => e.width === 32).format, 'bmp');
+  assert.equal(parsedHybrid.entries.find((e) => e.width === 48).format, 'png');
+  assert.equal(parsedHybrid.entries.find((e) => e.width === 64).format, 'png');
+
+  // Test windows preset (all BMP)
+  const windowsIco = await encodeIco(SAMPLE_SVG, { preset: 'windows' });
+  const parsedWindows = parseIco(windowsIco);
+  assert.deepEqual(parsedWindows.entries.map((e) => e.width), [16, 32, 48, 256]);
+  for (const e of parsedWindows.entries) {
+    assert.equal(e.format, 'bmp');
+  }
+
+  // Test cursor preset (type: 'cur')
+  const curBuffer = await encodeIco(SAMPLE_SVG, { preset: 'cursor' });
+  const parsedCur = parseIco(curBuffer);
+  assert.equal(parsedCur.type, 'cur');
+  assert.deepEqual(parsedCur.entries.map((e) => e.width), [32, 64]);
+});
+
 test('ICO Decode: extracts largest resolution and specific sizes', async () => {
   const icoBuffer = await encodeIco(SAMPLE_SVG, {
     sizes: [16, 32, 64, 256],
@@ -98,6 +125,11 @@ test('ICO Decode: extracts largest resolution and specific sizes', async () => {
   const small = await decodeIco(icoBuffer, { size: 32 });
   assert.equal(small.width, 32);
   assert.equal(small.height, 32);
+
+  // Decode all entries with extractAll
+  const allImages = await decodeIco(icoBuffer, { extractAll: true });
+  assert.equal(allImages.length, 4);
+  assert.deepEqual(allImages.map((img) => img.width), [16, 32, 64, 256]);
 });
 
 test('ICO BMP DIB: decodes legacy 32-bit BMP DIB with AND transparency mask', () => {

@@ -2,8 +2,10 @@
 
 const sharp = require('sharp');
 const { ZapwebpError } = require('@zapwebp/shared');
+const { resolveIcoConfig, DEFAULT_CONFIG } = require('./config');
+const { encodeBmpDib } = require('./bmp');
 
-const DEFAULT_ICO_SIZES = [16, 32, 48, 64, 128, 256];
+const DEFAULT_ICO_SIZES = DEFAULT_CONFIG.sizes;
 const MAX_SIZES_COUNT = 20;
 
 /**
@@ -51,12 +53,14 @@ function normalizeSizes(sizesInput) {
 }
 
 /**
- * Assembles pre-rendered PNG or BMP image buffers into a valid ICO container.
+ * Assembles pre-rendered PNG or BMP image buffers into a valid ICO or CUR container.
  *
- * @param {Array<{ width: number, height: number, data: Buffer, bitCount?: number }>} images
+ * @param {Array<{ width: number, height: number, data: Buffer, bitCount?: number, hotspotX?: number, hotspotY?: number }>} images
+ * @param {Object} [options]
+ * @param {'ico' | 'cur'} [options.type] - Container type: 1 for ICO, 2 for CUR (default: 'ico')
  * @returns {Buffer}
  */
-function buildIcoContainer(images) {
+function buildIcoContainer(images, options = {}) {
   if (!Array.isArray(images) || images.length === 0) {
     throw new ZapwebpError({
       code: 'E_INVALID_CONFIG',
@@ -74,13 +78,14 @@ function buildIcoContainer(images) {
     });
   }
 
+  const isCursor = options.type === 'cur';
   const headerSize = 6;
   const directorySize = 16 * count;
   let currentOffset = headerSize + directorySize;
 
   const header = Buffer.alloc(headerSize);
   header.writeUInt16LE(0, 0); // Reserved
-  header.writeUInt16LE(1, 2); // Type = 1 (ICO)
+  header.writeUInt16LE(isCursor ? 2 : 1, 2); // Type: 1 = ICO, 2 = CUR
   header.writeUInt16LE(count, 4); // Count
 
   const directoryEntries = [];
@@ -96,10 +101,17 @@ function buildIcoContainer(images) {
     const entry = Buffer.alloc(16);
     entry.writeUInt8(widthByte, 0);
     entry.writeUInt8(heightByte, 1);
-    entry.writeUInt8(0, 2); // Color count (0 for 32bpp)
+    entry.writeUInt8(0, 2); // Color count (0 for >= 8bpp)
     entry.writeUInt8(0, 3); // Reserved
-    entry.writeUInt16LE(1, 4); // Color planes
-    entry.writeUInt16LE(bitCount, 6); // Bits per pixel
+
+    if (isCursor) {
+      entry.writeUInt16LE(img.hotspotX || 0, 4); // Hotspot X for CUR
+      entry.writeUInt16LE(img.hotspotY || 0, 6); // Hotspot Y for CUR
+    } else {
+      entry.writeUInt16LE(1, 4); // Color planes
+      entry.writeUInt16LE(bitCount, 6); // Bits per pixel
+    }
+
     entry.writeUInt32LE(data.length, 8); // Size in bytes
     entry.writeUInt32LE(currentOffset, 12); // Offset
 
@@ -112,16 +124,14 @@ function buildIcoContainer(images) {
 }
 
 /**
- * Encodes an image into a high-resolution, multi-size ICO buffer.
+ * Encodes an image into a high-resolution, multi-size ICO/CUR buffer using declarative config.
  *
  * @param {Buffer | { data: Uint8ClampedArray | Buffer, width: number, height: number }} source
- * @param {Object} [options]
- * @param {number[] | string} [options.sizes] - Array or comma-separated list of sizes (e.g. [16, 32, 48, 256])
- * @param {string} [options.background] - Optional background color for flattening
+ * @param {Partial<import('./config').IcoConfig>} [options]
  * @returns {Promise<Buffer>}
  */
-async function encodeIco(source, options = {}) {
-  const sizes = normalizeSizes(options.sizes);
+async function writeIco(source, options = {}) {
+  const config = resolveIcoConfig(options);
 
   let sharpFactory;
 
@@ -149,38 +159,59 @@ async function encodeIco(source, options = {}) {
       });
   }
 
-  /** @type {Array<{ width: number, height: number, data: Buffer, bitCount: number }>} */
-  const encodedImages = [];
+  const encodedImages = await Promise.all(
+    config.sizes.map(async (size) => {
+      const format = typeof config.format === 'function' ? config.format(size) : config.format;
 
-  for (const size of sizes) {
-    let pipeline = sharpFactory().resize(size, size, {
-      fit: 'contain',
-      background: options.background || { r: 0, g: 0, b: 0, alpha: 0 },
-    });
+      let pipeline = sharpFactory().resize(size, size, {
+        fit: config.fit || 'contain',
+        background: config.background && config.background !== 'transparent'
+          ? config.background
+          : { r: 0, g: 0, b: 0, alpha: 0 },
+      });
 
-    if (options.background) {
-      pipeline = pipeline.flatten({ background: options.background });
-    }
+      if (config.background && config.background !== 'transparent') {
+        pipeline = pipeline.flatten({ background: config.background });
+      }
 
-    const pngBuffer = await pipeline
-      .png({
-        compressionLevel: 9,
-        adaptiveFiltering: true,
-      })
-      .toBuffer();
+      if (format === 'bmp') {
+        const rawRes = await pipeline.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        const bmpData = encodeBmpDib(rawRes.data, rawRes.info.width, rawRes.info.height);
+        return {
+          width: size,
+          height: size,
+          data: bmpData,
+          bitCount: 32,
+        };
+      }
 
-    encodedImages.push({
-      width: size,
-      height: size,
-      data: pngBuffer,
-      bitCount: 32,
-    });
-  }
+      // Default: PNG encoding
+      const pngBuffer = await pipeline
+        .png({
+          compressionLevel: config.compressionLevel !== undefined ? config.compressionLevel : 9,
+          adaptiveFiltering: true,
+          palette: config.colorType === 'palette',
+          colours: config.colorType === 'palette' ? (config.paletteSize || 256) : undefined,
+        })
+        .toBuffer();
 
-  return buildIcoContainer(encodedImages);
+      return {
+        width: size,
+        height: size,
+        data: pngBuffer,
+        bitCount: 32,
+      };
+    })
+  );
+
+  return buildIcoContainer(encodedImages, { type: config.type });
 }
 
+// Backwards-compatible alias
+const encodeIco = writeIco;
+
 module.exports = {
+  writeIco,
   encodeIco,
   buildIcoContainer,
   normalizeSizes,

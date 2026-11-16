@@ -59,7 +59,7 @@ async function generateFaviconSuite(input, options = {}) {
   const icoSizes = options.sizes || [16, 32, 48, 64, 128, 256];
 
   // 1. Generate multi-size favicon.ico
-  const icoBuffer = await encodeIco(sourceBuffer, { sizes: icoSizes });
+  const icoBuffer = await encodeIco(sourceBuffer, { sizes: options.sizes, preset: options.preset });
 
   // Helper to generate square PNG
   const renderPng = async (dimension) => {
@@ -110,26 +110,40 @@ async function generateFaviconSuite(input, options = {}) {
   };
   const manifestJson = JSON.stringify(manifest, null, 2);
 
+  // Check if source image is SVG
+  const isSvg = sourceBuffer.subarray(0, 200).toString('utf8').toLowerCase().includes('<svg');
+
   // 6. Construct HTML head tags
-  const html = [
+  const htmlList = [
     `<link rel="icon" href="${prefix}favicon.ico" sizes="any">`,
+  ];
+  if (isSvg) {
+    htmlList.push(`<link rel="icon" href="${prefix}favicon.svg" type="image/svg+xml">`);
+  }
+  htmlList.push(
     `<link rel="icon" type="image/png" sizes="32x32" href="${prefix}favicon-32x32.png">`,
     `<link rel="icon" type="image/png" sizes="16x16" href="${prefix}favicon-16x16.png">`,
     `<link rel="apple-touch-icon" sizes="180x180" href="${prefix}apple-touch-icon.png">`,
     `<link rel="manifest" href="${prefix}site.webmanifest">`,
-    `<meta name="theme-color" content="${themeColor}">`,
-  ].join('\n');
+    `<meta name="theme-color" content="${themeColor}">`
+  );
+  const html = htmlList.join('\n');
+
+  const files = {
+    'favicon.ico': icoBuffer,
+    'apple-touch-icon.png': appleTouchIcon,
+    'icon-192.png': icon192,
+    'icon-512.png': icon512,
+    'favicon-32x32.png': icon32,
+    'favicon-16x16.png': icon16,
+    'site.webmanifest': manifestJson,
+  };
+  if (isSvg) {
+    files['favicon.svg'] = sourceBuffer;
+  }
 
   return {
-    files: {
-      'favicon.ico': icoBuffer,
-      'apple-touch-icon.png': appleTouchIcon,
-      'icon-192.png': icon192,
-      'icon-512.png': icon512,
-      'favicon-32x32.png': icon32,
-      'favicon-16x16.png': icon16,
-      'site.webmanifest': manifestJson,
-    },
+    files,
     html,
     manifest,
   };

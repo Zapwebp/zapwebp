@@ -12,11 +12,11 @@
     />
     <meta name="theme-color" content="#f7f7f4" id="meta-theme-color" />
     <title>
-      Zapwebp Converter — Fast &amp; Free Online WebP &amp; Image Converter
+      Zapwebp Converter (Zap WebP) — Fast &amp; Free Online WebP &amp; Image Converter
     </title>
     <meta
       name="description"
-      content="Zapwebp Converter: Free, fast, in-browser WebP and image converter with 100% privacy and zero server uploads. Convert SVG, PNG, JPG, and AVIF preserving transparency."
+      content="Zapwebp Converter (Zap WebP): Free, fast, in-browser WebP and image converter with 100% privacy and zero server uploads. Convert SVG, PNG, JPG, and AVIF preserving transparency."
     />
     <meta
       name="keywords"
@@ -219,10 +219,10 @@
             "mainEntity": [
               {
                 "@type": "Question",
-                "name": "What is Zapwebp Converter?",
+                "name": "What is Zapwebp Converter (Zap Webp Converter)?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Zapwebp Converter is a free, high-performance online WebP and image converter that runs 100% locally in your browser memory. It converts SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF images while preserving transparency and stripping EXIF metadata without any server uploads."
+                  "text": "Zapwebp Converter (also searched as Zap Webp Converter or Zap WebP) is a free, high-performance online WebP and image converter that runs 100% locally in your browser memory. It converts SVG, PNG, JPEG, WebP, AVIF, GIF, and TIFF images while preserving transparency and stripping EXIF metadata without any server uploads."
                 }
               },
               {
@@ -326,16 +326,50 @@
         </nav>
 
         <div class="header-right">
-          <!-- Language Toggle Button (Header) -->
-          <button
-            type="button"
-            class="header-lang-btn"
-            id="header-lang-btn"
-            aria-label="Toggle language"
-            title="Switch language (EN / TL)"
-          >
-            🌐 EN
-          </button>
+          <!-- Accessible Language Dropdown (Zapwebp Standard) -->
+          <div class="lang-dropdown-wrap" id="header-lang-dropdown-wrap">
+            <button
+              type="button"
+              class="control-btn lang-dropdown-btn header-lang-btn"
+              id="header-lang-btn"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="Select language"
+              title="Select language (EN / TL)"
+            >
+              <svg class="globe-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span class="lang-current-label" id="header-lang-current-label">English</span>
+              <svg class="chevron-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="lang-dropdown-menu" id="header-lang-dropdown-menu" hidden>
+              <div class="dropdown-header">
+                <span data-i18n="header.language">Language</span>
+              </div>
+              <div class="dropdown-items-group" id="header-lang-options-group">
+                <button type="button" class="dropdown-item is-active" data-locale="en">
+                  <span class="loc-name">English</span>
+                  <span class="loc-code">EN</span>
+                  <span class="loc-check">✓</span>
+                </button>
+                <button type="button" class="dropdown-item" data-locale="tl">
+                  <span class="loc-name">Tagalog</span>
+                  <span class="loc-code">TL</span>
+                </button>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a href="https://github.com/Zapwebp/zapwebp/tree/main/locales" target="_blank" rel="noopener noreferrer" class="dropdown-item dropdown-item-contribute">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span data-i18n="header.contribute_translation">Contribute translation</span>
+                <span class="ext-arrow">↗</span>
+              </a>
+            </div>
+          </div>
 
           <!-- Single Theme Toggle (Light / Dark) -->
           <button
@@ -436,7 +470,7 @@
             AI-Ready Image Infrastructure · Deterministic Guarantees
           </div>
           <h1 class="hero-title" style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 0.5rem 0; color: var(--text-primary, #ffffff);">
-            Zapwebp Converter — Free WebP &amp; Image Converter
+            Zapwebp Converter (Zap WebP) — Free WebP &amp; Image Converter
           </h1>
           <p class="hero-tagline" style="font-size: 1.05rem; color: var(--text-secondary, #94a3b8); margin: 0 auto 0.75rem auto; max-width: 680px; line-height: 1.5;">
             <strong>Zapwebp Converter</strong> (also known as <em>Zap Webp Converter</em>) is the fastest, 100% private in-browser image and WebP converter. Convert SVG, PNG, JPG, AVIF, and GIF to WebP with guaranteed transparency preservation and zero server uploads.

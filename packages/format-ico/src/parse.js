@@ -182,6 +182,14 @@ function decodeBmpDib(dibBuffer, expectedWidth, expectedHeight) {
   const biCompression = dibBuffer.readUInt32LE(16);
   const biClrUsed = dibBuffer.readUInt32LE(32);
 
+  if (![1, 4, 8, 24, 32].includes(biBitCount)) {
+    throw new ZapwebpError({
+      code: 'E_UNSUPPORTED_FORMAT',
+      message: `Unsupported BMP bit depth: ${biBitCount}. Supported bit depths are 1, 4, 8, 24, and 32.`,
+      fix: 'Provide a BMP image with 1, 4, 8, 24, or 32 bits per pixel.',
+    });
+  }
+
   const width = biWidth > 0 ? biWidth : expectedWidth;
   const height = biHeight !== 0 ? Math.floor(Math.abs(biHeight) / 2) : expectedHeight;
 
@@ -358,11 +366,45 @@ async function decodeIco(input, options = {}) {
     });
   }
 
-  // Find requested size or largest entry
+  // Handle extractAll: decodes all entries and returns an array
+  if (options.extractAll) {
+    const allDecoded = [];
+    for (const entry of parsed.entries) {
+      if (entry.format === 'png') {
+        const { data: raw, info } = await sharp(entry.data, {
+          limitInputPixels: 4096 * 4096,
+          failOn: 'error',
+        })
+          .ensureAlpha()
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+        allDecoded.push({
+          data: new Uint8ClampedArray(raw.buffer, raw.byteOffset, raw.byteLength),
+          width: info.width,
+          height: info.height,
+          channels: 4,
+          alphaPreserved: true,
+          format: 'png',
+          bitCount: entry.bitCount,
+        });
+      } else {
+        const raw = decodeBmpDib(entry.data, entry.width, entry.height);
+        allDecoded.push({
+          ...raw,
+          format: 'bmp',
+          bitCount: entry.bitCount,
+        });
+      }
+    }
+    return allDecoded;
+  }
+
+  // Find requested size (via extract or size) or select largest entry
+  const targetDimension = options.extract || options.size;
   let selected = parsed.entries[0];
 
-  if (options.size) {
-    const match = parsed.entries.find((e) => e.width === options.size || e.height === options.size);
+  if (targetDimension) {
+    const match = parsed.entries.find((e) => e.width === targetDimension || e.height === targetDimension);
     if (match) selected = match;
   } else {
     // Sort descending by resolution (width * height), then bitCount

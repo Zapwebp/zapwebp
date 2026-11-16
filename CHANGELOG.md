@@ -2,6 +2,26 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.23.0] - 2026-11-16
+
+### Added
+
+- **@zapwebp/format-ico Configurable Architecture & Production Hardening**:
+  - **Declarative Config Schema (`IcoConfig`, `DEFAULT_CONFIG`)**: Implemented zero-hardcoded configuration engine with comprehensive bounds validation (`E_ICO_NO_SIZES`, `E_ICO_TOO_MANY_ENTRIES`, `E_ICO_INVALID_SIZE`), environment variable overrides (`ZAPWEBP_ICO_*`), and project-level config file (`zapwebp.config.json`).
+  - **Deterministic Presets**: Added immutable presets (`default`, `favicon`, `windows`, `high-res`, `legacy`, `app-icon`, `cursor`).
+  - **BMP DIB Encoder & Hybrid Optimization (`bmp.js`)**: Implemented Windows BMP DIB encoding with double-height headers, BGRA XOR masks, and 1-bit AND masks. Encodes 16×16 and 32×32 as BMP DIB for legacy Windows compatibility while encoding larger sizes as PNG.
+  - **Multi-Size Favicon Suite Workflow**: Enhanced `zapwebp-favicon` CLI and API to generate `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `site.webmanifest`, and HTML header snippets.
+  - **Core Format Registry Integration**: Registered `icoHandler` into `@zapwebp/core` format registry.
+
+### Fixed
+
+- **Mobile Responsiveness & Header Dropdown Overflow Clipping**:
+  - **Fixed Header Clipping**: Removed `overflow-x: hidden;` on `.site-header` in `zapwebp-docs/public/docs.css` on mobile screens (`@media (max-width: 768px)`), which was forcing `overflow-y: auto` and severely clipping absolute dropdown menus (cutting off the "LANGUAGE" header and trapping vertical scrolls).
+  - **Standardized Accessible Language Picker**: Integrated the exact same accessible dropdown component (`.lang-dropdown-wrap`, `.lang-dropdown-btn`, `.lang-dropdown-menu`) into the main Web Converter (`public/index.html` & `public/app.js`), replacing the plain text button with globe icon, current language name, chevron icon, active checkmark states, outside click/tap dismissal via `pointerdown`, and keyboard `Escape` closing.
+  - **Mobile Layout & Viewport Containment**: Configured responsive positioning on narrow screens (`< 480px`), hiding the text label in favor of clean 34px touch targets while keeping dropdown menus strictly within viewport margins (`max-width: calc(100vw - 16px)`).
+  - **Design Token Harmonization**: Synchronized `zapwebp-docs/public/tokens.css` with fluid typography (`clamp(...)`) and WCAG 2.2 AA touch target minimums (`--touch-target-min: 44px`).
+  - **Cross-Service Navigation**: Added a direct Web Converter link in the documentation mobile drawer sidebar footer for instant navigation back to the web converter.
+
 ## [2.22.0] - 2026-11-16
 
 ### Changed

@@ -965,6 +965,8 @@ const I18N_DICTIONARIES = {
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
     'nav.reports': 'Reports',
+    'header.language': 'Language',
+    'header.contribute_translation': 'Contribute translation',
     'hero.badge': '100% In-Browser · Zero Server Uploads',
     'hero.title': 'Convert<span class="accent-gradient"> correctly.</span>',
     'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Transparency preserved</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Metadata stripped</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Zero server uploads</span>',
@@ -1048,6 +1050,8 @@ const I18N_DICTIONARIES = {
     'nav.cli': 'CLI',
     'nav.mcp': 'MCP',
     'nav.reports': 'Mga Ulat',
+    'header.language': 'Wika',
+    'header.contribute_translation': 'Mag-ambag ng salin',
     'hero.badge': '100% Sa Loob ng Browser · Walang Server Uploads',
     'hero.title': 'Mag-convert<span class="accent-gradient"> nang tama.</span>',
     'hero.description': '<span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Nananatili ang aninag</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Tinanggal ang metadata</span><span class="hero-pill-sep" aria-hidden="true">•</span><span class="hero-pill-item"><svg class="hero-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Walang server uploads</span>',
@@ -1156,12 +1160,35 @@ function applyTranslations(lang) {
     footerLangBtn.setAttribute('aria-label', activeLang === 'en' ? 'Switch to Tagalog' : 'Switch to English');
   }
 
-  // Update header button if present
+  // Update header language component
+  const headerLangCurrentLabel = document.querySelector('#header-lang-current-label');
+  if (headerLangCurrentLabel) {
+    headerLangCurrentLabel.textContent = activeLang === 'tl' ? 'Tagalog' : 'English';
+  }
   const headerLangBtn = document.querySelector('#header-lang-btn');
   if (headerLangBtn) {
-    headerLangBtn.textContent = activeLang === 'en' ? '🌐 EN' : '🌐 TL';
-    headerLangBtn.setAttribute('title', activeLang === 'en' ? 'Switch to Tagalog (TL)' : 'Switch to English (EN)');
+    headerLangBtn.setAttribute('title', activeLang === 'tl' ? 'Pumili ng wika (Tagalog)' : 'Select language (English)');
+    headerLangBtn.setAttribute('aria-label', activeLang === 'tl' ? 'Pumili ng wika' : 'Select language');
   }
+
+  // Update active state in dropdown options
+  const langOptions = document.querySelectorAll('#header-lang-options-group .dropdown-item');
+  langOptions.forEach((btn) => {
+    const loc = btn.getAttribute('data-locale');
+    if (loc === activeLang) {
+      btn.classList.add('is-active');
+      if (!btn.querySelector('.loc-check')) {
+        const check = document.createElement('span');
+        check.className = 'loc-check';
+        check.textContent = '✓';
+        btn.appendChild(check);
+      }
+    } else {
+      btn.classList.remove('is-active');
+      const check = btn.querySelector('.loc-check');
+      if (check) check.remove();
+    }
+  });
 
   // Translate all DOM elements tagged with data-i18n
   document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -1182,26 +1209,79 @@ function applyTranslations(lang) {
   }
 }
 
-function toggleLanguage() {
-  const current = getActiveLanguage();
-  const next = current === 'en' ? 'tl' : 'en';
-  applyTranslations(next);
+const headerLangWrap = document.querySelector('#header-lang-dropdown-wrap');
+const headerLangBtn = document.querySelector('#header-lang-btn');
+const headerLangMenu = document.querySelector('#header-lang-dropdown-menu');
+
+function toggleHeaderLangDropdown() {
+  if (!headerLangMenu) return;
+  const isHidden = headerLangMenu.hidden;
+  if (isHidden) {
+    headerLangMenu.hidden = false;
+    headerLangBtn?.setAttribute('aria-expanded', 'true');
+  } else {
+    closeHeaderLangDropdown();
+  }
 }
 
-// Bind Header & Footer Language Toggle Buttons
+function closeHeaderLangDropdown() {
+  if (headerLangMenu && !headerLangMenu.hidden) {
+    headerLangMenu.hidden = true;
+    headerLangBtn?.setAttribute('aria-expanded', 'false');
+  }
+}
+
+if (headerLangBtn) {
+  headerLangBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHeaderLangDropdown();
+  });
+}
+
+// Option selection inside dropdown
+const langOptionsGroup = document.querySelector('#header-lang-options-group');
+if (langOptionsGroup) {
+  langOptionsGroup.querySelectorAll('.dropdown-item').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const loc = item.getAttribute('data-locale');
+      if (loc) {
+        applyTranslations(loc);
+        closeHeaderLangDropdown();
+      }
+    });
+  });
+}
+
+// Close dropdown on outside click or Esc
+document.addEventListener('pointerdown', (e) => {
+  if (!headerLangWrap?.contains(e.target)) {
+    closeHeaderLangDropdown();
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!headerLangWrap?.contains(e.target)) {
+    closeHeaderLangDropdown();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && headerLangMenu && !headerLangMenu.hidden) {
+    closeHeaderLangDropdown();
+  }
+});
+
+// Bind Footer Language Toggle Button
 const footerLangBtn = document.querySelector('#footer-lang-btn');
 if (footerLangBtn) {
   footerLangBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    toggleLanguage();
-  });
-}
-
-const headerLangBtn = document.querySelector('#header-lang-btn');
-if (headerLangBtn) {
-  headerLangBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    toggleLanguage();
+    const current = getActiveLanguage();
+    const next = current === 'en' ? 'tl' : 'en';
+    applyTranslations(next);
   });
 }
 

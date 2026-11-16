@@ -56,6 +56,7 @@ async function main() {
   let backgroundColor = '#ffffff';
   let prefix = '/';
   let sizes = null;
+  let preset = null;
   let writeHtmlFile = false;
   let jsonOutput = false;
 
@@ -75,6 +76,8 @@ async function main() {
       prefix = args[++i];
     } else if (arg === '--sizes') {
       sizes = normalizeSizes(args[++i]);
+    } else if (arg === '-p' || arg === '--preset') {
+      preset = args[++i];
     } else if (arg === '--html-file') {
       writeHtmlFile = true;
     } else if (arg === '--json') {
@@ -102,7 +105,8 @@ async function main() {
       themeColor,
       backgroundColor,
       prefix,
-      sizes,
+      sizes: sizes || undefined,
+      preset: preset || undefined,
     });
 
     const resolvedOutDir = path.resolve(process.cwd(), outDir);
