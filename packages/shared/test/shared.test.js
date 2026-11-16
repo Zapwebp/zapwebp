@@ -58,18 +58,23 @@ test('Shared: defaults and constants match expected boundaries', () => {
   assert.ok(ERROR_CATALOG.alpha_loss_forbidden);
 });
 
-test('Shared: isPrivateIp detects loopback, link-local, and private subnets', () => {
-  assert.equal(isPrivateIp('127.0.0.1'), true);
-  assert.equal(isPrivateIp('localhost'), true);
-  assert.equal(isPrivateIp('169.254.169.254'), true);
-  assert.equal(isPrivateIp('10.0.0.1'), true);
-  assert.equal(isPrivateIp('192.168.1.1'), true);
-  assert.equal(isPrivateIp('172.16.0.1'), true);
-  assert.equal(isPrivateIp('::1'), true);
-  assert.equal(isPrivateIp('fe80::1'), true);
-  assert.equal(isPrivateIp('fc00::1'), true);
-  assert.equal(isPrivateIp('example.com'), false);
-  assert.equal(isPrivateIp('8.8.8.8'), false);
+test('Shared: isPrivateIp detects loopback, link-local, and private subnets', async () => {
+  assert.equal(await isPrivateIp('127.0.0.1'), true);
+  assert.equal(await isPrivateIp('localhost'), true);
+  assert.equal(await isPrivateIp('169.254.169.254'), true);
+  assert.equal(await isPrivateIp('10.0.0.1'), true);
+  assert.equal(await isPrivateIp('192.168.1.1'), true);
+  assert.equal(await isPrivateIp('172.16.0.1'), true);
+  assert.equal(await isPrivateIp('::1'), true);
+  assert.equal(await isPrivateIp('fe80::1'), true);
+  assert.equal(await isPrivateIp('fc00::1'), true);
+  assert.equal(await isPrivateIp('example.com'), false);
+  assert.equal(await isPrivateIp('8.8.8.8'), false);
+
+  // Sync variant
+  assert.equal(isPrivateIp.sync('127.0.0.1'), true);
+  assert.equal(isPrivateIp.sync('localhost'), true);
+  assert.equal(isPrivateIp.sync('8.8.8.8'), false);
 });
 
 test('Shared: validateSafeUrl permits safe public URLs and rejects private/unsupported URLs', () => {

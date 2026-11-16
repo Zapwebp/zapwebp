@@ -1788,21 +1788,38 @@ body {
     position: relative;
   }
   .lang-dropdown-btn {
-    padding: 0 6px;
-    height: 32px;
+    padding: 0 8px;
+    height: 34px;
     gap: 4px;
   }
   .lang-current-label {
     display: none;
   }
   .lang-dropdown-menu {
-    right: -4px;
-    min-width: 200px;
-    max-width: calc(100vw - 16px);
+    position: fixed !important;
+    top: 58px !important;
+    right: 12px !important;
+    left: auto !important;
+    min-width: 210px !important;
+    max-width: calc(100vw - 24px) !important;
+    z-index: 99999 !important;
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--color-border) !important;
+    padding: 6px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+  .dropdown-item {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 13.5px;
   }
   .control-btn {
-    width: 32px;
-    padding: 0;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 6px;
     justify-content: center;
   }
   .docs-breadcrumbs {

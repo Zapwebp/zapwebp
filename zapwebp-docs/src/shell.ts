@@ -346,7 +346,9 @@ export function shell(content: HTMLElement): HTMLElement {
 
     // Wire clicks on items
     langOptionsGroup.querySelectorAll('.dropdown-item').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const chosen = btn.getAttribute('data-locale');
         if (chosen) {
           setLocale(chosen);
@@ -355,6 +357,9 @@ export function shell(content: HTMLElement): HTMLElement {
       });
     });
   }
+
+  // Pre-render dropdown items on initialization
+  renderDropdownOptions();
 
   function toggleLangDropdown() {
     const isHidden = langDropdownMenu?.hidden ?? true;

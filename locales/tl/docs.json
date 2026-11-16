@@ -65,5 +65,11 @@
   "title.Common FAQs": "Mga Karaniwang Tanong (FAQ)",
   "title.Stability": "Katatagan (Stability)",
   "title.Performance": "Bilis at Performance",
-  "title.Core Freeze": "Pag-freeze ng Core (Hardening)"
+  "title.Core Freeze": "Pag-freeze ng Core (Hardening)",
+  "title.Smart Optimization": "Matalinong Pag-optimize (Smart)",
+  "title.Lossless": "Walang Bawas (Lossless)",
+  "title.Performance Reports": "Mga Ulat sa Bilis at Carbon",
+  "title.AI Integration": "Integrasyon ng AI",
+  "title.Plugin Scaffolding": "Paggawa ng Plugin (Scaffolding)",
+  "title.Reliability": "Maaasahan (Reliability)"
 }

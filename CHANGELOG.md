@@ -2,6 +2,24 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.24.0] - 2026-11-16
+
+### Fixed
+
+- **Mobile Viewport Language Picker & Header Clipping Resolution**:
+  - **Viewport-Anchored Mobile Dropdown**: Resolved mobile dropdown clipping defects by configuring `position: fixed; top: 58px; right: 12px; z-index: 99999` on viewports `<= 640px` in both `zapwebp-docs/public/docs.css` and `public/styles.css`. This completely eliminates clipping by sticky header bounds and `-webkit-backdrop-filter` compositor layers.
+  - **Pre-Rendered Locale Options**: Pre-populated language options (`English EN ✓`, `Tagalog TL`) on component initialization in `zapwebp-docs/src/shell.ts` and `public/app.js`, preventing empty dropdown rendering on initial touch.
+  - **Touch Target Accessibility (WCAG 2.2 AA)**: Enforced `min-height: 44px` with `padding: 10px 14px` on all dropdown options and header control buttons for thumb ergonomics.
+  - **Web Converter Mobile Layout**: Refactored `.format-pills` from cramped horizontal nowrap to fluid responsive 4-column grid (`repeat(4, 1fr)`) with 44px button touch targets and clear active states.
+  - **Shared Security Test Fix**: Updated `packages/shared/test/shared.test.js` to properly `await` asynchronous `isPrivateIp()` DNS rebinding checks.
+
+### Added
+
+- **Complete 50-Route Documentation Parity & Routing Infrastructure**:
+  - **Added Missing Routes in Server & Vercel**: Added 13 missing documentation routes (`/lock-target`, `/backgrounds`, `/policy`, `/smart`, `/lossless`, `/reports`, `/ai-integration`, `/scaffolding`, `/faq`, `/stability`, `/performance`, `/reliability`, `/freeze`) and aliases (`/smart-optimization`, `/carbon`, `/performance-reports`, `/lossless-mode`, `/ai-pipeline`, `/reliability-masterplan`) to `server.js` `DOCS_ROUTES` and `vercel.json` rewrites.
+  - **Vite Standalone Docs Verification**: Rebuilt `zapwebp-docs` and `public/docs.js` covering all 50 routes in both English and Tagalog.
+  - **Localization Parity**: Achieved 100% key parity (202 keys) across `locales/en/docs.json` and `locales/tl/docs.json`.
+
 ## [2.23.0] - 2026-11-16
 
 ### Added

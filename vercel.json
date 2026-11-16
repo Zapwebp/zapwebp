@@ -13,6 +13,10 @@
     { "source": "/health", "destination": "/api/index.js?__zap_url=/health" },
     { "source": "/mcp", "destination": "/api/index.js?__zap_url=/mcp" },
     { "source": "/feed.xml", "destination": "/api/index.js?__zap_url=/feed.xml" },
+    { "source": "/docs", "destination": "/api/index.js?__zap_url=/docs" },
+    { "source": "/docs/(.*)", "destination": "/api/index.js?__zap_url=/docs/$1" },
+    { "source": "/(convert|cli|clean|formats|safety|errors|developers|about|privacy|terms|security|code-of-conduct|contributing|translators|lock-target|backgrounds|policy|smart|smart-optimization|lossless|lossless-mode|carbon|performance-reports|ai-integration|ai-pipeline|scaffolding|faq|stability|performance|reliability|reliability-masterplan|freeze|ui)", "destination": "/api/index.js?__zap_url=/$1" },
+    { "source": "/(plugins|storage|sdk)/(.*)", "destination": "/api/index.js?__zap_url=/$1/$2" },
     { "source": "/(.*\\.md)", "destination": "/api/index.js?__zap_url=/$1" },
     { "source": "/plugins/(.*\\.md)", "destination": "/api/index.js?__zap_url=/plugins/$1" },
     { "source": "/sdk/(.*\\.md)", "destination": "/api/index.js?__zap_url=/sdk/$1" }
