@@ -257,10 +257,7 @@ body {
 }
 
 .lang-dropdown-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 999;
+  display: none !important;
 }
 
 .lang-dropdown-menu {
@@ -1803,11 +1800,11 @@ body {
     display: none;
   }
   .lang-dropdown-menu {
-    position: fixed !important;
-    top: 56px !important;
-    right: 12px !important;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
     left: auto !important;
-    min-width: 220px !important;
+    min-width: 210px !important;
     max-width: calc(100vw - 24px) !important;
     z-index: 1000 !important;
     background: var(--color-surface-raised) !important;

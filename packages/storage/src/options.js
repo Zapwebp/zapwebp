@@ -12,6 +12,8 @@ const DEFAULT_OPTIONS = Object.freeze({
   clean: true,
   maxBytes: 5 * 1024 * 1024, // 5 MB
   keepOriginal: false,
+  deleteOriginal: false,
+  allowDeleteOriginal: false,
   outPrefix: '',
   onConflict: 'skip',
   emitManifest: true,
@@ -134,6 +136,8 @@ function resolveOptions(userOptions = {}) {
     clean: raw.clean !== undefined ? Boolean(raw.clean) : DEFAULT_OPTIONS.clean,
     maxBytes,
     keepOriginal: Boolean(raw.keepOriginal),
+    deleteOriginal: Boolean(raw.deleteOriginal),
+    allowDeleteOriginal: Boolean(raw.allowDeleteOriginal),
     outPrefix,
     onConflict,
     emitManifest: raw.emitManifest !== undefined ? Boolean(raw.emitManifest) : DEFAULT_OPTIONS.emitManifest,

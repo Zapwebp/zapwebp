@@ -36,6 +36,8 @@ function parseInputs(argv = [], env = process.env) {
   let rawMode = env.INPUT_MODE;
   let rawCommitMessage = env['INPUT_COMMIT-MESSAGE'] || env.INPUT_COMMIT_MESSAGE;
   let rawToken = env.INPUT_TOKEN || env.GITHUB_TOKEN;
+  let rawDeleteOriginal = env['INPUT_DELETE-ORIGINAL'] || env.INPUT_DELETE_ORIGINAL;
+  let rawKeepOriginal = env['INPUT_KEEP-ORIGINAL'] || env.INPUT_KEEP_ORIGINAL;
 
   // Support positional arguments passed by Docker entrypoint:
   if (argv.length > 0) {
@@ -168,6 +170,9 @@ function parseInputs(argv = [], env = process.env) {
 
   const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
+  const deleteOriginal = rawDeleteOriginal !== undefined ? String(rawDeleteOriginal).trim().toLowerCase() === 'true' : false;
+  const keepOriginal = rawKeepOriginal !== undefined ? String(rawKeepOriginal).trim().toLowerCase() !== 'false' : !deleteOriginal;
+
   return {
     glob,
     inputGlob: glob,
@@ -181,6 +186,8 @@ function parseInputs(argv = [], env = process.env) {
     mode,
     commitMessage,
     token,
+    deleteOriginal,
+    keepOriginal,
   };
 }
 

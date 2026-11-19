@@ -89,6 +89,11 @@
         "command": "zapwebp.zapPanel",
         "title": "Zap Folder (Configure Formats)",
         "category": "Zapwebp"
+      },
+      {
+        "command": "zapwebp.undo",
+        "title": "Undo Last Conversion",
+        "category": "Zapwebp"
       }
     ],
     "menus": {
@@ -252,6 +257,11 @@
           "type": "boolean",
           "default": true,
           "description": "Remember the last-used target format per source format and promote it in the QuickPick menu."
+        },
+        "zapwebp.deleteOriginalAfterConversion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delete original image files after conversion. Deleted files are backed up to .zapwebp/backups/ and can be restored using the 'Zapwebp: Undo Last Conversion' command."
         }
       }
     }

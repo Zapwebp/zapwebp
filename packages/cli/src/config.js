@@ -2,7 +2,14 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { DEFAULT_OPTIONS } from '@zapwebp/shared';
 
-export const CONFIG_FILENAMES = ['.zapwebp.config.json', 'zapwebp.config.json', 'zapwebp.json', '.zapwebp.json'];
+export const CONFIG_FILENAMES = [
+  path.join('.zapwebp', 'config.json'),
+  '.zapwebp/config.json',
+  '.zapwebp.config.json',
+  'zapwebp.config.json',
+  'zapwebp.json',
+  '.zapwebp.json',
+];
 
 export const DEFAULT_CONFIG = {
   format: DEFAULT_OPTIONS.to,
@@ -18,6 +25,8 @@ export const DEFAULT_CONFIG = {
   lockTarget: undefined,
   strict: true,
   overrideLock: false,
+  allowDeleteOriginal: false,
+  deleteBackupRetentionDays: 30,
   gitignore: {
     outputs: 'auto',
     journal: 'auto',
@@ -70,7 +79,7 @@ export function resolveConfigPrecedence({ cliOptions = {}, fileConfig = {}, env 
     'maxFileSizeBytes', 'followSymlinks', 'allowOutsideRoot',
     'lockTarget', 'strict', 'overrideLock',
     'sameFormat', 'sizeMode', 'minInputBytes', 'maxInputBytes', 'minOutputBytes', 'maxOutputBytes',
-    'keepOriginal', 'cleanupDelay',
+    'keepOriginal', 'cleanupDelay', 'allowDeleteOriginal', 'deleteOriginal', 'deleteBackupRetentionDays',
   ];
 
   for (const field of fields) {

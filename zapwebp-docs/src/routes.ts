@@ -130,6 +130,15 @@ export const DOC_ROUTES: DocRoute[] = [
     description: 'Transaction journal aggregation, project-wide bandwidth reporting, and Green Code carbon offset estimation.',
     keywords: ['reports', 'carbon', 'performance report', 'bandwidth', 'journal', 'audit']
   },
+  {
+    path: '/deletion',
+    file: 'deletion',
+    title: 'File Deletion',
+    category: 'Core',
+    badge: 'Opt-In',
+    description: 'Zero-data-loss original file deletion with first-time consent, SHA-256 verified 30-day backups, and undo restoration.',
+    keywords: ['deletion', 'delete-original', 'backup', 'undo', 'retention', 'opt-in', 'journal']
+  },
 
   // Plugins
   {

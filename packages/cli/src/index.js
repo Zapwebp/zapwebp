@@ -1083,15 +1083,47 @@ async function main() {
   const records = [];
   const sessionCleanups = [];
 
-  if (args.deleteOriginal && !args.yes && !args.dryRun && !args.check) {
-    if (!process.stdin.isTTY) {
-      throw new ZapwebpError({
-        code: 'E_CONFIRMATION_REQUIRED',
-        message: `--delete-original will permanently delete ${inScopeFiles.length} source file(s). Pass --yes to confirm.`,
-        fix: 'Add --yes to the command line to confirm original file deletion.',
-      });
+  const isDeleteOptIn = options.allowDeleteOriginal === true || fileConfig.allowDeleteOriginal === true;
+
+  if (args.deleteOriginal && !args.dryRun && !args.check) {
+    if (!isDeleteOptIn && !args.yes) {
+      if (!process.stdin.isTTY) {
+        throw new ZapwebpError({
+          code: 'E_DELETE_NOT_ENABLED',
+          message: `--delete-original requires explicit opt-in (requires --yes in non-interactive environments). Set 'allowDeleteOriginal: true' in .zapwebp/config.json or pass --yes to confirm for this run.`,
+          fix: 'Add --yes to the command line or configure "allowDeleteOriginal": true in .zapwebp/config.json.',
+        });
+      }
+
+      process.stderr.write(`⚠️  --delete-original will permanently delete ${inScopeFiles.length} source file(s) after conversion.\n`);
+      process.stderr.write(`   Deleted originals are backed up to .zapwebp/backups/ for 30 days and restorable with: zapwebp undo\n`);
+
+      const readline = await import('node:readline/promises');
+      const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+      try {
+        const answer = await rl.question('   Proceed and remember this choice in .zapwebp/config.json? [y/N]: ');
+        if (answer.trim().toLowerCase() === 'y' || answer.trim().toLowerCase() === 'yes') {
+          const zapConfigDir = path.join(rootDir, '.zapwebp');
+          const zapConfigFile = path.join(zapConfigDir, 'config.json');
+          await mkdir(zapConfigDir, { recursive: true });
+          let existingJson = {};
+          try {
+            existingJson = JSON.parse(await readFile(zapConfigFile, 'utf8'));
+          } catch {}
+          existingJson.allowDeleteOriginal = true;
+          existingJson.deleteBackupRetentionDays = existingJson.deleteBackupRetentionDays || 30;
+          await writeFile(zapConfigFile, JSON.stringify(existingJson, null, 2) + '\n', 'utf8');
+          process.stderr.write(`   Saved allowDeleteOriginal: true to .zapwebp/config.json\n`);
+        } else {
+          process.stderr.write('   Aborted original file deletion.\n');
+          args.deleteOriginal = false;
+        }
+      } finally {
+        rl.close();
+      }
+    } else if (args.deleteOriginal) {
+      process.stderr.write(`⚠️  --delete-original active: backing up to .zapwebp/backups/ and deleting ${inScopeFiles.length} source file(s).\n`);
     }
-    process.stderr.write(`⚠️  --delete-original will permanently delete ${inScopeFiles.length} source file(s) after conversion.\n`);
   }
 
   for (const fileItem of inScopeFiles) {
@@ -1230,6 +1262,17 @@ async function main() {
       await mkdir(path.dirname(backupFull), { recursive: true });
       await writeFile(backupFull, currentBytes);
 
+      // Deterministic SHA-256 verification of backup file before deleting original
+      const backupWritten = await readFile(backupFull);
+      const backupHash = sha256(backupWritten);
+      if (backupHash !== fileItem.sha256) {
+        throw new ZapwebpError({
+          code: 'E_BACKUP_VERIFICATION_FAILED',
+          message: `Backup SHA-256 mismatch for ${relSrc}. Source file was not deleted.`,
+          fix: 'Check disk space and write permissions in .zapwebp/backups/.',
+        });
+      }
+
       operations.push({
         type: 'delete',
         path: relSrc,
@@ -1240,6 +1283,7 @@ async function main() {
       const cleanupMode = args.cleanup || 'immediate';
       if (cleanupMode === 'immediate') {
         await rm(fileItem.path, { force: true });
+        process.stderr.write(`🗑  ${path.basename(fileItem.path)} → ${backupRel} (Restore with: zapwebp undo)\n`);
       } else if (cleanupMode === 'session') {
         sessionCleanups.push(fileItem.path);
       }
@@ -1311,6 +1355,9 @@ async function main() {
       operations,
       records,
     });
+
+    const retentionDays = options.deleteBackupRetentionDays || fileConfig.deleteBackupRetentionDays || 30;
+    await pruneJournal(rootDir, 50, retentionDays).catch(() => {});
   }
 
   // Synchronize .gitignore

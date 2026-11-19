@@ -576,6 +576,22 @@ document.querySelectorAll('input[name="setting-keep-original"]').forEach((radio)
 // Delete on download radio handlers
 document.querySelectorAll('input[name="setting-delete-on-download"]').forEach((radio) => {
   radio.addEventListener('change', () => {
+    if (radio.value === 'delete') {
+      const consented = localStorage.getItem('zapwebp_delete_on_download_consented');
+      if (!consented) {
+        const ok = window.confirm(
+          'Zapwebp will remove converted files from your browser session memory immediately after download.\n\nYou can restore "Keep in Browser" anytime from the settings drawer. Proceed?'
+        );
+        if (!ok) {
+          const keepRadio = document.getElementById('setting-del-download-keep');
+          if (keepRadio) keepRadio.checked = true;
+          settings.deleteOnDownload = false;
+          persistSettings();
+          return;
+        }
+        localStorage.setItem('zapwebp_delete_on_download_consented', 'true');
+      }
+    }
     settings.deleteOnDownload = (radio.value === 'delete');
     persistSettings();
   });

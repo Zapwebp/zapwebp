@@ -56,6 +56,7 @@ function readConfig(workspaceConfig) {
     defaultTargets,
     showMultipliersForPng: Boolean(config.get('showMultipliersForPng', false)),
     rememberLastChoice: Boolean(config.get('rememberLastChoice', true)),
+    deleteOriginalAfterConversion: Boolean(config.get('deleteOriginalAfterConversion', false)),
   };
 }
 

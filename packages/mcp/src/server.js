@@ -1,7 +1,7 @@
 import { McpServer, ResourceTemplate, createMcpHandler } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
-import { readFile, writeFile, mkdir, realpath, stat, lstat, glob, rename, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, realpath, stat, lstat, glob, rename, rm, unlink } from 'node:fs/promises';
 import { randomUUID, createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -312,8 +312,20 @@ export function createMcpServer(options = {}) {
       maxOutputBytes: z.number().int().positive().optional().describe('Maximum allowed output bytes after compression'),
       acceptFormats: z.array(z.string()).optional().describe('List of accepted input formats'),
       rejectFormats: z.array(z.string()).optional().describe('List of rejected input formats'),
+      deleteOriginal: z.boolean().default(false).describe('Delete original image file after conversion. Backed up to .zapwebp/backups/ for 30 days. Requires allowDeleteOriginal: true in .zapwebp/config.json.'),
     }),
   }, async ({ inputPath, outputPath, scale, ...rawOptions }) => {
+    if (rawOptions.deleteOriginal) {
+      const { config: fileConfig } = await loadConfigFile(root);
+      if (fileConfig.allowDeleteOriginal !== true) {
+        return errorResult("Original file deletion is disabled for AI agents by default. To enable, set 'allowDeleteOriginal: true' in .zapwebp/config.json in the project root.", {
+          error: 'delete_not_enabled',
+          code: 'E_DELETE_NOT_ENABLED',
+          fix: "Add '\"allowDeleteOriginal\": true' to .zapwebp/config.json in the project root.",
+        });
+      }
+    }
+
     const source = await withinRoot(root, inputPath, true);
     const input = await readImageFile(source);
     const format = detectFormat(input);
@@ -402,6 +414,43 @@ export function createMcpServer(options = {}) {
 
     // Record in transaction journal
     const txId = generateTransactionId();
+    const operations = [{
+      type: 'create',
+      path: path.relative(root, destination).replace(/\\/g, '/'),
+      sha256: converted.certificate?.sha256 || createHash('sha256').update(converted.data).digest('hex'),
+      bytes: converted.size,
+    }];
+
+    let deleteBackupRel = null;
+    if (rawOptions.deleteOriginal) {
+      const relSrc = path.relative(root, source).replace(/\\/g, '/');
+      deleteBackupRel = path.join('.zapwebp', 'backups', txId, relSrc).replace(/\\/g, '/');
+      const backupFull = path.resolve(root, deleteBackupRel);
+
+      await mkdir(path.dirname(backupFull), { recursive: true });
+      await writeFile(backupFull, input);
+
+      const written = await readFile(backupFull);
+      const backupHash = createHash('sha256').update(written).digest('hex');
+      const inputHash = createHash('sha256').update(input).digest('hex');
+
+      if (backupHash !== inputHash) {
+        return errorResult(`Backup verification failed for ${relSrc}. Source file was not deleted.`, {
+          error: 'backup_verification_failed',
+          code: 'E_BACKUP_VERIFICATION_FAILED',
+        });
+      }
+
+      await unlink(source);
+
+      operations.push({
+        type: 'delete',
+        path: relSrc,
+        sha256Before: inputHash,
+        backupPath: deleteBackupRel,
+      });
+    }
+
     await writeTransaction(root, {
       id: txId,
       startedAt: new Date().toISOString(),
@@ -409,12 +458,7 @@ export function createMcpServer(options = {}) {
       command: `mcp:convert_image ${path.relative(root, source)} -> ${path.relative(root, destination)}`,
       cwd: root,
       status: 'completed',
-      operations: [{
-        type: 'create',
-        path: path.relative(root, destination).replace(/\\/g, '/'),
-        sha256: converted.certificate?.sha256 || createHash('sha256').update(converted.data).digest('hex'),
-        bytes: converted.size,
-      }],
+      operations,
     }).catch(() => {});
 
     const inputBytes = input.length;
@@ -423,6 +467,9 @@ export function createMcpServer(options = {}) {
     const relSrc = path.relative(root, source).replace(/\\/g, '/');
 
     let summaryText = `✅ Converted ${relSrc} → ${relDest}\n   ${converted.width}×${converted.height} · ${converted.size.toLocaleString()} bytes${savedPercent > 0 ? ` · ${savedPercent}% smaller` : ''}\n   Transparency preserved: ${converted.alphaPreserved ? 'yes (verified)' : 'no'}\n   Metadata removed: ${converted.clean ? (converted.removedMetadata?.length ? `${converted.removedMetadata.length} blocks (${converted.removedMetadata.join(', ')})` : 'clean (0 chunks)') : 'preserved'}`;
+    if (deleteBackupRel) {
+      summaryText += `\n   Original deleted: yes (backed up to ${deleteBackupRel}, restorable with undo_last)`;
+    }
     if (converted.lossless) {
       summaryText += `\n   Lossless: ${converted.losslessVerified ? 'verified pixel-identical' : 'enabled'} (source quality: ${converted.sourceQuality?.estimated || 'unknown'})`;
     }
@@ -436,6 +483,8 @@ export function createMcpServer(options = {}) {
     return resultText(JSON.stringify({
       summary: summaryText,
       outputPath: relDest,
+      originalDeleted: Boolean(deleteBackupRel),
+      backupPath: deleteBackupRel || undefined,
       format: converted.format,
       width: converted.width,
       height: converted.height,

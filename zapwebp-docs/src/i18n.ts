@@ -84,6 +84,7 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Stability': 'Stability',
     'title.Performance': 'Performance',
     'title.Core Freeze': 'Core Freeze',
+    'title.File Deletion': 'File Deletion',
   },
   tl: {
     'header.search_placeholder': 'Maghanap sa dokumentasyon...',
@@ -157,6 +158,7 @@ const catalog: Record<string, Record<string, string>> = {
     'title.Stability': 'Katatagan (Stability)',
     'title.Performance': 'Bilis at Performance',
     'title.Core Freeze': 'Pag-freeze ng Core (Hardening)',
+    'title.File Deletion': 'Pagbura ng File (Opt-In)',
   }
 };
 

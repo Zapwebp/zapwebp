@@ -5872,12 +5872,11 @@ body {
     gap: 12px;
   }
 
-  .header-right .lang-dropdown-wrap,
   .header-right .github-icon-btn {
     display: none !important;
   }
 
-  .theme-toggle-btn, .settings-btn {
+  .theme-toggle-btn, .settings-btn, .lang-dropdown-btn {
     min-width: 44px;
     min-height: 44px;
     display: inline-flex;

@@ -94,6 +94,12 @@ function withZapwebp(adapter, options) {
    * @returns {Promise<import('./types').UploadReport>}
    */
   async function upload(bucket, filePath, bytesOrUrl, uploadOptions = {}) {
+    if ((uploadOptions.deleteOriginal || resolved.deleteOriginal) && !uploadOptions.allowDeleteOriginal && !resolved.allowDeleteOriginal) {
+      const err = new Error("E_DELETE_NOT_ENABLED: Original file deletion requires explicit opt-in. Pass allowDeleteOriginal: true in options or configure allowDeleteOriginal: true in .zapwebp/config.json.");
+      err.code = 'E_DELETE_NOT_ENABLED';
+      throw err;
+    }
+
     // 1. Path Sandboxing & Length Limits
     const sanitizedPath = validateStoragePath(filePath);
 

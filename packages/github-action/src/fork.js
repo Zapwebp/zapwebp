@@ -56,6 +56,15 @@ function assertForkSafety(inputs, env = process.env) {
       '.github/workflows'
     );
   }
+
+  if ((inputs.deleteOriginal || inputs.keepOriginal === false) && isForkPullRequest(env)) {
+    throw new ZapwebpActionError(
+      'E_FORK_DELETE_FORBIDDEN',
+      'Zapwebp: Original file deletion is strictly forbidden on pull requests from forks.',
+      'Remove `delete-original: true` or `keep-original: false` from the workflow file.',
+      '.github/workflows'
+    );
+  }
 }
 
 module.exports = {

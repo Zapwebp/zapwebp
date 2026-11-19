@@ -2,6 +2,45 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.26.0] - 2026-11-19
+
+### Added
+
+- **Original File Deletion Opt-In Architecture (Zero-Data-Loss Guarantee)**:
+  - **Strictly Disabled by Default**: No surface deletes original source files unless explicitly configured and consented to by the user.
+  - **Unified Configuration Schema (`allowDeleteOriginal`, `deleteBackupRetentionDays`)**: Added `allowDeleteOriginal: false` and `deleteBackupRetentionDays: 30` to `.zapwebp/config.json` resolution schema in `packages/cli/src/config.js`.
+  - **Deterministic SHA-256 Backups Before Deletion**: All deletions create a cryptographic backup in `.zapwebp/backups/{txId}/{path}` and verify SHA-256 byte identity before unlinking the source file.
+  - **CLI Opt-In & Safety Guards**:
+    - Added `--delete-original` flag with interactive TTY consent prompt that saves choice to `.zapwebp/config.json`.
+    - Non-interactive environments (CI/scripts) strictly throw `E_DELETE_NOT_ENABLED` unless `--yes` is explicitly passed.
+    - Single-command restoration via `zapwebp undo` or `zap undo`.
+    - Pruned backups older than 30 days during journal cleanup operations.
+  - **MCP AI Agent Protocol Guard**:
+    - Added `deleteOriginal: boolean` parameter to `convert_image` tool schema.
+    - AI agents are blocked with `E_DELETE_NOT_ENABLED` unless `.zapwebp/config.json` in the project root explicitly sets `"allowDeleteOriginal": true`.
+    - Reversible restoration via `undo_last` tool.
+  - **VS Code Extension Integration**:
+    - Added `zapwebp.deleteOriginalAfterConversion` configuration setting.
+    - Added modal confirmation prompt upon first activation with OS Trash integration (`useTrash: true`) and `.zapwebp/backups/` double safety.
+    - Registered `zapwebp.undo` ("Zapwebp: Undo Last Conversion") command palette action.
+  - **Developer SDK & Storage Adapters**:
+    - Added `deleteOriginal` option in `@zapwebp/sdk` and `@zapwebp/storage`.
+    - Throws `E_DELETE_NOT_ENABLED` if caller attempts deletion without setting `allowDeleteOriginal: true`.
+  - **CI Security Guard (`E_FORK_DELETE_FORBIDDEN`)**:
+    - GitHub Action detects fork pull requests (`event.pull_request.head.repo.full_name !== event.repository.full_name`) and strictly rejects deletion requests.
+  - **Comprehensive Documentation**:
+    - Added `content/deletion.md` and Tagalog translation `locales/tl/docs/deletion.md` detailing opt-in requirements, backup lifecycles, and restoration across all surfaces.
+    - Added `/deletion` route to `zapwebp-docs/src/routes.ts` and `zapwebp-docs/src/i18n.ts`.
+
+### Fixed
+
+- **Mobile Viewport Language Dropdown & Stacking Context Remediation**:
+  - **Eliminated Backdrop-Filter Containment Clipping**: Replaced `position: fixed` in `zapwebp-docs/public/docs.css` with button-anchored positioning (`position: absolute !important; top: calc(100% + 8px) !important; right: 0 !important;`), preventing the 52px sticky header's `backdrop-filter: blur(12px)` bounding box from trapping and clipping the language menu.
+  - **Suppressed Fixed Backdrop Artifact**: Disabled `.lang-dropdown-backdrop` (`display: none !important;`) on mobile, relying on robust document-level pointer events and Escape key listeners for dismissals without obscuring the navigation bar.
+  - **Restored Mobile Language Selector on Web Converter**: Removed `display: none !important;` rule on `.header-right .lang-dropdown-wrap` at `@media (max-width: 640px)` in `public/styles.css`, ensuring the language picker is always available on mobile screens.
+  - **Touch Target Ergonomics (WCAG 2.2 AA)**: Configured 44×44px minimum touch targets on mobile language buttons and dropdown items.
+  - **Verified 51-Route Documentation Parity**: Synchronized all markdown assets across `content/`, `zapwebp-docs/content/`, and `zapwebp-docs/public/content/`. Rebuilt standalone docs client (`npm run build --prefix zapwebp-docs`) and verified all test suites.
+
 ## [2.25.0] - 2026-11-19
 
 ### Changed
