@@ -2,6 +2,25 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.25.0] - 2026-11-19
+
+### Changed
+
+- **Web Converter UI/UX Masterplan (v2.1 Focus) Realization**:
+  - **Dropzone Above the Fold**: Removed hero text and marketing headers above `#dropzone`, placing the converter dropzone directly in the initial viewport on both desktop and mobile viewports.
+  - **Three Essential Visible Controls**: Streamlined `#cockpit-bar` into 3 essential rows: Target Format pills (`WebP`, `AVIF`, `PNG`, `JPEG`), Quality Slider with live % readout, and Clean Metadata switch. All secondary and advanced controls (Multi-scale @1x/@2x/@3x, Target Lock, JPEG background color, Lossless mode, Retention lifecycles) are organized into the Settings Drawer.
+  - **Settings Drawer Architecture**: Redesigned `#settings-slideover` as a clean scrollable drawer with top-level Output and Size groups, collapsible `<details class="setting-accordion">` for Advanced configurations, Theme toggle, Language selector, Quick Links, and a dedicated "Reset to defaults" action button (`#btn-reset-defaults`).
+  - **Single Result Layout**: Upgraded single file card layout with prominent centered thumbnail, concise info line (`name · size · dimensions · Transparency ✓`), full-width primary download button (`Download WEBP`), quick actions (`Convert another`, `Inspect`, `Crop`, `Delete`), and expandable `▸ Details` accordion (showing Input, Output, Saved %, Alpha preserved, Metadata removed, Duration in ms).
+  - **Tactile Depth CSS System**: Added physical gradients, elevation shadows, inset highlights (`inset 0 1px 0 rgba(255,255,255,0.08)`), active pressed-down inset states (`inset 0 2px 4px rgba(0, 0, 0, 0.25)`), and physical toggle styling with zero GPU-heavy `backdrop-filter` overhead.
+  - **Technical Architecture & SEO Section**: Added `#seo-content` below `<main>` with H2 headline, "Why Zapwebp?" bullet points, and 5 interactive FAQ accordions.
+  - **Clean Minimal Footer**: Replaced the 4-column mega-footer with a clean one-line footer: `⚡ Zapwebp · © 2026 · MIT · Privacy · Terms · Docs · GitHub`.
+
+### Fixed
+
+- **Mobile Language Dropdown Occlusion**: Added fixed viewport positioning (`position: fixed !important; top: 56px !important; right: 12px !important;`) and a click-away backdrop overlay (`.lang-dropdown-backdrop`) on mobile screens in `zapwebp-docs`, eliminating header occlusion, touch trap errors, and viewport edge clipping.
+- **Documentation Markdown Text Extraction**: Switched `innerText` to `textContent || ''` in `zapwebp-docs/src/render.ts` when processing pre-render code blocks, ensuring deterministic rendering across detached DOM containers.
+- **Mobile Touch Targets**: Enforced 44×44px minimum touch targets across all interactive buttons, header controls, and format pills on screens $\le 640\text{px}$.
+
 ## [2.24.0] - 2026-11-16
 
 ### Fixed

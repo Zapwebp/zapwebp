@@ -51,6 +51,7 @@ export function shell(content: HTMLElement): HTMLElement {
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
+          <div class="lang-dropdown-backdrop" id="lang-dropdown-backdrop" hidden></div>
           <div class="lang-dropdown-menu" id="lang-dropdown-menu" hidden>
             <div class="dropdown-header">
               <span>${t('header.language')}</span>
@@ -324,6 +325,7 @@ export function shell(content: HTMLElement): HTMLElement {
   const langDropdownWrap = header.querySelector('#lang-dropdown-wrap') as HTMLElement;
   const langDropdownBtn = header.querySelector('#lang-dropdown-btn') as HTMLElement;
   const langDropdownMenu = header.querySelector('#lang-dropdown-menu') as HTMLElement;
+  const langDropdownBackdrop = header.querySelector('#lang-dropdown-backdrop') as HTMLElement;
   const langOptionsGroup = header.querySelector('#lang-options-group') as HTMLElement;
   const langCurrentLabel = header.querySelector('#lang-current-label') as HTMLElement;
 
@@ -366,6 +368,7 @@ export function shell(content: HTMLElement): HTMLElement {
     if (isHidden) {
       renderDropdownOptions();
       langDropdownMenu.hidden = false;
+      if (langDropdownBackdrop) langDropdownBackdrop.hidden = false;
       langDropdownBtn.setAttribute('aria-expanded', 'true');
     } else {
       closeLangDropdown();
@@ -375,6 +378,7 @@ export function shell(content: HTMLElement): HTMLElement {
   function closeLangDropdown() {
     if (langDropdownMenu) {
       langDropdownMenu.hidden = true;
+      if (langDropdownBackdrop) langDropdownBackdrop.hidden = true;
       langDropdownBtn.setAttribute('aria-expanded', 'false');
     }
   }
@@ -384,9 +388,20 @@ export function shell(content: HTMLElement): HTMLElement {
     toggleLangDropdown();
   });
 
+  langDropdownBackdrop?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeLangDropdown();
+  });
+
   // Close dropdown on outside click or Esc
   document.addEventListener('pointerdown', (e) => {
     if (!langDropdownWrap?.contains(e.target as Node)) {
+      closeLangDropdown();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
       closeLangDropdown();
     }
   });

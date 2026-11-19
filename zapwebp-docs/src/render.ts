@@ -268,7 +268,7 @@ function transformTables(container: HTMLElement) {
 function transformCodeBlocks(container: HTMLElement) {
   container.querySelectorAll('pre').forEach((pre) => {
     const code = pre.querySelector('code');
-    const rawText = code ? code.innerText : pre.innerText;
+    const rawText = code ? (code.textContent || '') : (pre.textContent || '');
     const classList = code ? code.className : '';
     const langMatch = classList.match(/language-(\w+)/);
     const lang = (langMatch ? langMatch[1] : inferLanguage(rawText)).toLowerCase();

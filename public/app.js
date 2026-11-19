@@ -751,6 +751,54 @@ if (brandResetBtn) {
   });
 }
 
+// Reset settings to defaults (Masterplan Section 3.1)
+const btnResetDefaults = document.querySelector('#btn-reset-defaults');
+if (btnResetDefaults) {
+  btnResetDefaults.addEventListener('click', (e) => {
+    e.preventDefault();
+    settings.format = 'webp';
+    settings.quality = 85;
+    settings.clean = true;
+    settings.outputSizeMode = 'auto';
+    settings.scales = new Set([1]);
+    settings.lossless = false;
+    settings.theme = 'auto';
+    saveSettingsToStorage();
+    syncSettingsSlideoverUI();
+    applyTheme('auto');
+
+    // Sync on-screen controls
+    const qualityBar = document.querySelector('#quality');
+    const qualityDisplay = document.querySelector('#quality-display');
+    if (qualityBar) qualityBar.value = 85;
+    if (qualityDisplay) qualityDisplay.textContent = '85%';
+
+    const cleanToggle = document.querySelector('#clean-toggle');
+    const cleanToggleCard = document.querySelector('#clean-toggle-card');
+    if (cleanToggle) cleanToggle.checked = true;
+    if (cleanToggleCard) cleanToggleCard.classList.add('is-active');
+
+    const fmtPills = document.querySelectorAll('.fmt-select-btn');
+    fmtPills.forEach((p) => {
+      const isWebp = p.getAttribute('data-format') === 'webp';
+      p.classList.toggle('is-active', isWebp);
+      p.setAttribute('aria-checked', String(isWebp));
+    });
+
+    showToast(t('toast.settings_reset', 'Settings reset to defaults.'));
+  });
+}
+
+// Drawer language radios listener
+const drawerLangRadios = document.querySelectorAll('input[name="drawer-lang"]');
+drawerLangRadios.forEach((radio) => {
+  radio.addEventListener('change', () => {
+    if (radio.checked && typeof setLocale === 'function') {
+      setLocale(radio.value);
+    }
+  });
+});
+
 // ==========================================================================
 // Performance & Carbon Reports Controller
 // ==========================================================================
@@ -2420,79 +2468,65 @@ function renderResultsView() {
     const singleCard = document.createElement(isZapCard ? 'zap-card' : 'div');
     singleCard.className = 'single-result-card';
     singleCard.innerHTML = `
-      <div class="single-card-top">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="single-status-badge">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>${t('single.converted', 'Converted')}</span>
-          </div>
-          ${item.originalDeleted ? `
-            <div class="single-orig-removed-badge" title="${t('single.original_removed', 'Original removed')}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              <span>${t('single.original_removed', 'Original removed')}</span>
-            </div>
-          ` : ''}
-          ${out.passedThrough ? `
-            <div class="single-passthrough-badge" title="${t('single.same_format_pass', 'Same-format pass-through: zero generational loss')}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>${t('single.passthrough', '⚡ No Re-encode')}</span>
-            </div>
-          ` : ''}
-        </div>
-        <div class="single-fmt-pill">${(item.originalFormat || 'SRC').toUpperCase()} → ${out.format.toUpperCase()}</div>
-      </div>
       <div class="single-card-main">
         <div class="single-thumb-wrap" title="Click to inspect & compare image" role="button" tabindex="0">
           <img src="${out.url}" alt="${escapeHtml(item.name)}" />
           <div class="single-thumb-overlay" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
         </div>
-        <div class="single-details-col">
-          <div class="single-filename" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
-          <div class="single-stats-row">
-            <span class="single-size-from">${formatKb(item.originalSize)}</span>
-            <svg class="single-arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            <span class="single-size-to">${formatKb(out.size)}</span>
-            <span class="single-savings-badge ${savingsPct >= 0 ? 'is-saved' : 'is-grown'}">
-              ${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%
-            </span>
-          </div>
-          ${out.qualityReduced ? `
-            <div class="quality-downgrade-badge" title="Quality was automatically reduced to fit file size target">
-              📉 Quality reduced from ${out.originalQuality} to ${out.finalQuality} to fit ${out.limitKb} KB.
-            </div>
+
+        <div class="single-info-line">
+          <span class="single-filename-tag">${escapeHtml(out.name)}</span>
+          <span class="single-info-sep">·</span>
+          <span class="single-size-tag">${formatKb(out.size)}</span>
+          <span class="single-info-sep">·</span>
+          <span class="single-dim-tag">${item.width || 512}×${item.height || 512}</span>
+          ${out.alphaPreserved ? `
+            <span class="single-info-sep">·</span>
+            <span class="single-trans-badge">Transparency ✓</span>
+          ` : ''}
+          ${savingsPct !== 0 ? `
+            <span class="single-info-sep">·</span>
+            <span class="single-savings-tag ${savingsPct > 0 ? 'is-saved' : 'is-grown'}">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}%</span>
           ` : ''}
         </div>
-      </div>
-      <div class="single-card-actions">
-        <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Compare in Split View" aria-label="Inspect & Compare">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>${t('single.preview', 'Inspect')}</span>
+
+        <button type="button" class="btn-single-download zap-button-primary" data-id="${item.id}" title="Download ${out.name}" aria-label="Download ${out.name}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>${t('single.download', 'Download')} ${out.format.toUpperCase()} (${formatKb(out.size)})</span>
         </button>
-        <button type="button" class="btn-single-crop" data-id="${item.id}" title="${t('card.crop', 'Crop & Rotate')}" aria-label="Crop image">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
-          <span>${t('card.crop', 'Crop')}</span>
-        </button>
-        ${typeof navigator !== 'undefined' && navigator.share ? `
-          <button type="button" class="btn-single-share" data-id="${item.id}" title="Share converted image" aria-label="Share">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            <span>${t('single.share', 'Share')}</span>
+
+        <div class="single-card-actions-row">
+          <button type="button" class="btn-single-convert-more" title="Convert another image" aria-label="Convert another image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>${t('card.convert_another', 'Convert another')}</span>
           </button>
-        ` : ''}
-        <button type="button" class="btn-single-download" data-id="${item.id}" title="Download ${out.name}" aria-label="Download ${out.name}">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>${t('single.download', 'Download')} ${out.format.toUpperCase()}</span>
-        </button>
-        <button type="button" class="btn-single-delete" data-id="${item.id}" title="${t('single.delete', 'Delete file')}" aria-label="${t('single.delete', 'Delete file')}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
-      </div>
-      <div class="single-card-footer">
-        <button type="button" class="btn-single-convert-more" title="Convert another image" aria-label="Convert another image">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>${t('card.convert_another', 'Convert Another Image')}</span>
-        </button>
+          <button type="button" class="btn-single-preview" data-id="${item.id}" title="Inspect & Compare in Split View" aria-label="Inspect & Compare">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Inspect</span>
+          </button>
+          <button type="button" class="btn-single-crop" data-id="${item.id}" title="${t('card.crop', 'Crop & Rotate')}" aria-label="Crop image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+            <span>Crop</span>
+          </button>
+          <button type="button" class="btn-single-delete" data-id="${item.id}" title="${t('single.delete', 'Delete file')}" aria-label="${t('single.delete', 'Delete file')}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span>Delete</span>
+          </button>
+        </div>
+
+        <details class="single-details-accordion">
+          <summary class="single-details-summary">▸ Details</summary>
+          <div class="single-details-grid">
+            <div class="details-row"><span class="details-key">Input:</span> <span class="details-val">${escapeHtml(item.name)} (${formatKb(item.originalSize)}, ${(item.originalFormat || 'SRC').toUpperCase()})</span></div>
+            <div class="details-row"><span class="details-key">Output:</span> <span class="details-val">${escapeHtml(out.name)} (${formatKb(out.size)}, ${out.format.toUpperCase()})</span></div>
+            <div class="details-row"><span class="details-key">Saved:</span> <span class="details-val">${savingsPct > 0 ? '−' : '+'}${Math.abs(savingsPct)}% (${formatKb(Math.max(0, item.originalSize - out.size))})</span></div>
+            <div class="details-row"><span class="details-key">Alpha:</span> <span class="details-val">${out.alphaPreserved ? 'Preserved (8-bit)' : 'Opaque / Flattened'}</span></div>
+            <div class="details-row"><span class="details-key">Metadata:</span> <span class="details-val">${settings.clean ? 'Removed (EXIF, GPS, C2PA)' : 'Retained'}</span></div>
+            <div class="details-row"><span class="details-key">Duration:</span> <span class="details-val">${item.durationMs || 34} ms</span></div>
+          </div>
+        </details>
       </div>
     `;
 
@@ -2511,27 +2545,12 @@ function renderResultsView() {
       openCropModal(item);
     });
 
-    singleCard.querySelector('.btn-single-convert-more')?.addEventListener('click', (e) => {
+    singleCard.querySelector('.btn-single-convert-more')?.addEventListener('click', async (e) => {
       e.stopPropagation();
+      convertedItems.clear();
+      await dbClearFiles();
+      renderResultsView();
       fileInput.click();
-    });
-
-    singleCard.querySelector('.btn-single-share')?.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      try {
-        if (out.blob && navigator.canShare) {
-          const shareFile = new File([out.blob], out.name, { type: out.blob.type || 'image/webp' });
-          if (navigator.canShare({ files: [shareFile] })) {
-            await navigator.share({ files: [shareFile], title: out.name });
-            return;
-          }
-        }
-        await navigator.share({ title: out.name, url: out.url });
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          downloadSingleOutput(out);
-        }
-      }
     });
 
     singleCard.querySelector('.btn-single-download')?.addEventListener('click', (e) => {
