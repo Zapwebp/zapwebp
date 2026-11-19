@@ -2,7 +2,7 @@
   "name": "zapwebp-vscode",
   "displayName": "Zapwebp",
   "description": "Convert images correctly in VS Code. Transparency preserved, metadata stripped, no uploads.",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "publisher": "ebula",
   "license": "MIT",
   "engines": {
