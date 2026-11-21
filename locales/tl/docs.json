@@ -71,5 +71,9 @@
   "title.Performance Reports": "Mga Ulat sa Bilis at Carbon",
   "title.AI Integration": "Integrasyon ng AI",
   "title.Plugin Scaffolding": "Paggawa ng Plugin (Scaffolding)",
-  "title.Reliability": "Maaasahan (Reliability)"
+  "title.Reliability": "Maaasahan (Reliability)",
+  "title.Limits & Rate Controls": "Limitasyon ng File at Bilis",
+  "title.Docs Delivery Engine": "Makina ng Dokumentasyon (Docs Engine)",
+  "title.Target Lock Plugin": "Plugin para sa Target Lock",
+  "title.File Deletion": "Pagbura ng File (Opt-In)"
 }

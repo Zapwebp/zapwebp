@@ -24,6 +24,8 @@
     "build": "node scripts/build-llms.js",
     "build:ui": "node scripts/build-ui.js",
     "build:docs": "node scripts/build-docs.js",
+    "docs:build": "node packages/docs/bin/zapwebp-docs.js build",
+    "docs:serve": "node packages/docs/bin/zapwebp-docs.js serve",
     "build:llms": "node scripts/build-llms.js",
     "bench": "node bench/runner.js",
     "validate-locales": "node scripts/validate-locales.js",
@@ -38,6 +40,7 @@
   "dependencies": {
     "@zapwebp/api": "workspace:*",
     "@zapwebp/core": "workspace:*",
+    "@zapwebp/lock": "workspace:*",
     "@zapwebp/shared": "workspace:*",
     "express": "^4.21.2",
     "fflate": "^0.8.3",

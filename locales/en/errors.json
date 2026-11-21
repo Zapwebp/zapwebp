@@ -31,5 +31,10 @@
   "E_UNKNOWN": "An unexpected conversion error occurred: {{message}}",
   "E_FILE_CONFLICT": "Target output file '{{path}}' already exists.",
   "E_INVALID_SCALE": "Multiplier scale {{scale}} is invalid. Must be between 0.1 and 10.",
-  "E_VERIFICATION_FAILED": "Output byte verification failed: generated SHA-256 does not match expected hash."
+  "E_VERIFICATION_FAILED": "Output byte verification failed: generated SHA-256 does not match expected hash.",
+  "E_TOO_MANY_FILES": "Batch exceeds the allowed file count limit of {{limit}}.",
+  "E_REQUEST_TOO_LARGE": "Batch total size exceeds the allowed limit of {{limit}}.",
+  "E_SESSION_LIMIT_EXCEEDED": "Session file limit of {{limit}} has been reached.",
+  "E_USER_LIMIT_EXCEEDED": "User file limit of {{limit}} has been reached.",
+  "E_CONCURRENCY_LIMIT_EXCEEDED": "Too many concurrent conversions. Max concurrency is {{limit}}."
 }

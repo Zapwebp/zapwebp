@@ -20,6 +20,7 @@
   "E_CORRUPT_CONTAINER": "Hindi na mabasa ang container ng file pagkatapos tanggalin ang metadata.",
   "E_INPUT_TOO_LARGE": "Lumampas ang input file sa pinakamataas na pinapayagang limitasyon na {{maxBytes}} bytes.",
   "E_OUTPUT_TOO_LARGE": "Hindi mai-compress ang imahe nang mas mababa sa target na limitasyon na {{maxBytes}} bytes.",
+  "E_TARGET_UNREACHABLE": "Hindi maipasok sa target na laki na {{targetBytes}} bytes kahit may downscaling.",
   "E_FORMAT_REJECTED": "Tinanggihan ang format ng imahe ng allowlist o denylist ng patakaran sa conversion.",
   "E_UNSUPPORTED_LOCALE": "Ang hiniling na wika na '{{locale}}' ay hindi suportado.",
   "E_CROP_EMPTY": "Nagbunga ng 0×0 walang-lamang imahe ang mga coordinate ng pag-crop.",
@@ -29,5 +30,11 @@
   "E_NETWORK_ERROR": "Hindi makipag-ugnayan sa serbisyo ng pag-convert.",
   "E_UNKNOWN": "May hindi inaasahang error sa pag-convert na naganap: {{message}}",
   "E_FILE_CONFLICT": "Umiiral na ang target na output file na '{{path}}'.",
-  "E_INVALID_SCALE": "Hindi wasto ang multiplier scale na {{scale}}. Dapat itong nasa pagitan ng 0.1 at 10."
+  "E_INVALID_SCALE": "Hindi wasto ang multiplier scale na {{scale}}. Dapat itong nasa pagitan ng 0.1 at 10.",
+  "E_VERIFICATION_FAILED": "Nabigo ang beripikasyon ng byte: ang nabuong SHA-256 ay hindi tugma sa inaasahang hash.",
+  "E_TOO_MANY_FILES": "Lumampas ang batch sa pinapayagang limitasyon ng bilang ng file na {{limit}}.",
+  "E_REQUEST_TOO_LARGE": "Lumampas ang kabuuang sukat ng batch sa pinapayagang limitasyon na {{limit}}.",
+  "E_SESSION_LIMIT_EXCEEDED": "Naabot na ang limitasyon ng mga file sa session na {{limit}}.",
+  "E_USER_LIMIT_EXCEEDED": "Naabot na ang limitasyon ng mga file ng user na {{limit}}.",
+  "E_CONCURRENCY_LIMIT_EXCEEDED": "Masyadong maraming sabay-sabay na conversion. Ang limitasyon ay {{limit}}."
 }

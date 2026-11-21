@@ -5,6 +5,19 @@ All notable changes to `zapwebp-vscode` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-11-21
+
+### Added
+- Configurable conversion limits: respects workspace `.zapwebp/config.json` limit bounds (`maxFilesPerRequest`, `maxBytesPerRequest`, and `concurrency`).
+- Target locking & idempotency awareness: skips redundant conversions when cryptographic conversion lock is verified.
+- Intelligent size reduction and byte ceiling integration with deterministic binary search.
+- Updated documentation links pointing to the universal documentation engine.
+
+## [1.2.4] - 2026-11-19
+
+### Added
+- Multi-scale retina generation improvements and updated error reporting.
+
 ## [1.2.3] - 2026-11-16
 
 ### Added

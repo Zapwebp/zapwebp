@@ -129,6 +129,7 @@ function resolveConfig(rawOptions = {}) {
     onConflict,
     include,
     exclude,
+    lock: options.lock !== undefined ? options.lock : { enabled: true, invalidateOnEngineChange: true },
   };
 }
 

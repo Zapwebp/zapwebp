@@ -50,8 +50,9 @@
   },
   "dependencies": {
     "@zapwebp/core": "workspace:*",
-    "@zapwebp/shared": "workspace:*",
-    "@zapwebp/crop": "workspace:*"
+    "@zapwebp/crop": "workspace:*",
+    "@zapwebp/lock": "workspace:*",
+    "@zapwebp/shared": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

@@ -113,6 +113,15 @@ export const DOC_ROUTES: DocRoute[] = [
     keywords: ['smart', 'optimization', 'heuristics', 'edge detection', 'profiles', 'automatic', 'quality']
   },
   {
+    path: '/limits',
+    file: 'limits',
+    title: 'Limits & Rate Controls',
+    category: 'Core',
+    badge: 'v2.28',
+    description: 'Configurable file counts, request byte sizes, session persistence, multi-tier concurrency, and atomic multi-instance rate limiting.',
+    keywords: ['limits', 'rate limit', 'maxFiles', 'session', 'concurrency', 'fileRateLimitStore', 'throughput']
+  },
+  {
     path: '/lossless',
     file: 'lossless',
     title: 'Lossless',
@@ -252,6 +261,24 @@ export const DOC_ROUTES: DocRoute[] = [
     badge: 'Compression',
     description: 'Intelligent size reduction plugin with deterministic binary search quality optimization and adaptive downscaling.',
     keywords: ['compressor', 'compression', 'targetBytes', 'downscaling', 'binary search', 'size', 'plugin']
+  },
+  {
+    path: '/plugins/lock',
+    file: 'plugins/lock',
+    title: 'Lock Plugin',
+    category: 'Plugins',
+    badge: 'Idempotency',
+    description: 'Idempotent conversion lock plugin with cryptographic fingerprinting, zero generational loss, and pipeline skip logic.',
+    keywords: ['lock', 'idempotent', 'fingerprint', 'skip', 'hash', 'generational loss', 'sha256', 'plugin']
+  },
+  {
+    path: '/plugins/docs',
+    file: 'plugins/docs',
+    title: 'Docs Delivery Engine',
+    category: 'Plugins',
+    badge: 'v1.0',
+    description: 'Universal documentation delivery engine generating static HTML, byte-exact .md mirrors, llms.txt, sitemaps, robots.txt, and agent.json.',
+    keywords: ['docs', 'documentation', 'markdown', 'static site', 'llms.txt', 'agent.json', 'sitemap', 'plugin']
   },
 
   // Developers

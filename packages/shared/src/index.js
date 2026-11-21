@@ -87,6 +87,28 @@ function getCanonicalUrl(routePath = '') {
   return `${APP_ORIGIN}${cleaned}`;
 }
 
+const {
+  DEFAULT_LIMITS,
+  resolveLimits,
+  formatBytes,
+  evaluateLimits,
+  createLimitsMetadata,
+  RateLimiter,
+  RateLimitStore,
+  MemoryRateLimitStore,
+  FileRateLimitStore,
+  ConcurrencyLimiter,
+} = require('./limits');
+
+const {
+  generateSessionId,
+  SessionState,
+  SessionManager,
+  MemorySessionStore,
+  FileSessionStore,
+  WebSessionStore,
+} = require('./session');
+
 module.exports = {
   APP_ORIGIN,
   DEFAULT_PORT,
@@ -99,6 +121,22 @@ module.exports = {
   ZAPWEBP_USER_AGENT,
   DEFAULT_OPTIONS,
   DEFAULT_CONVERSION_POLICY,
+  DEFAULT_LIMITS,
+  resolveLimits,
+  formatBytes,
+  evaluateLimits,
+  createLimitsMetadata,
+  RateLimiter,
+  RateLimitStore,
+  MemoryRateLimitStore,
+  FileRateLimitStore,
+  ConcurrencyLimiter,
+  generateSessionId,
+  SessionState,
+  SessionManager,
+  MemorySessionStore,
+  FileSessionStore,
+  WebSessionStore,
   ERROR_CATALOG,
   ZapwebpError,
   i18n,

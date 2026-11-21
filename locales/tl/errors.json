@@ -31,5 +31,10 @@
   "E_UNKNOWN": "May hindi inaasahang error sa pag-convert na naganap: {{message}}",
   "E_FILE_CONFLICT": "Umiiral na ang target na output file na '{{path}}'.",
   "E_INVALID_SCALE": "Hindi wasto ang multiplier scale na {{scale}}. Dapat itong nasa pagitan ng 0.1 at 10.",
-  "E_VERIFICATION_FAILED": "Nabigo ang beripikasyon ng byte: ang nabuong SHA-256 ay hindi tugma sa inaasahang hash."
+  "E_VERIFICATION_FAILED": "Nabigo ang beripikasyon ng byte: ang nabuong SHA-256 ay hindi tugma sa inaasahang hash.",
+  "E_TOO_MANY_FILES": "Lumampas ang batch sa pinapayagang limitasyon ng bilang ng file na {{limit}}.",
+  "E_REQUEST_TOO_LARGE": "Lumampas ang kabuuang sukat ng batch sa pinapayagang limitasyon na {{limit}}.",
+  "E_SESSION_LIMIT_EXCEEDED": "Naabot na ang limitasyon ng mga file sa session na {{limit}}.",
+  "E_USER_LIMIT_EXCEEDED": "Naabot na ang limitasyon ng mga file ng user na {{limit}}.",
+  "E_CONCURRENCY_LIMIT_EXCEEDED": "Masyadong maraming sabay-sabay na conversion. Ang limitasyon ay {{limit}}."
 }

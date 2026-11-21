@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@zapwebp/core": "workspace:*",
+    "@zapwebp/lock": "workspace:*",
     "@zapwebp/shared": "workspace:*",
     "fflate": "^0.8.3",
     "ignore": "^7.0.14"

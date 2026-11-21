@@ -71,5 +71,9 @@
   "title.Performance Reports": "Performance Reports",
   "title.AI Integration": "AI Integration",
   "title.Plugin Scaffolding": "Plugin Scaffolding",
-  "title.Reliability": "Reliability"
+  "title.Reliability": "Reliability",
+  "title.Limits & Rate Controls": "Limits & Rate Controls",
+  "title.Docs Delivery Engine": "Docs Delivery Engine",
+  "title.Target Lock Plugin": "Target Lock Plugin",
+  "title.File Deletion": "File Deletion"
 }

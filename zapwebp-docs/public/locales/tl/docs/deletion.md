@@ -6,7 +6,7 @@ Hindi saklaw: pag-scrub ng metadata o paglilinis ng SVG. Tingnan ang [Clean Mode
 
 Naaangkop sa: Zapwebp CLI, MCP server, VS Code extension, at SDK v2.26.0 at mas bago.
 
-## Mabilis na pagsisimula
+## Quick start
 
 ```bash
 npx zapwebp icon.png --to webp --delete-original
@@ -20,7 +20,7 @@ Upang bawiin at ibalik ang mga naburang file:
 npx zapwebp undo
 ```
 
-## Ang ginagawa nito
+## What it does
 
 Ang pagbura ng orihinal na file ang pinakamapanganib na operasyon na magagawa ng isang tool sa imahe. Ipinapatupad ng Zapwebp ang garantiyang zero-data-loss sa lahat ng surface:
 
@@ -41,7 +41,7 @@ Ang pagbura ng orihinal na file ang pinakamapanganib na operasyon na magagawa ng
 | `--no-delete-original` | `boolean` | `true` | Tinitiyak na mapapanatili ang mga source asset anuman ang configuration. |
 | `--yes`, `-y` | `boolean` | `false` | Nilalaktawan ang interactive na kumpirmasyon kapag ginamit ang `--delete-original`. |
 
-## Mga Error
+## Errors
 
 | Code | Dahilan | Solusyon |
 |---|---|---|

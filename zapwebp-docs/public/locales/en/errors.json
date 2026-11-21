@@ -20,6 +20,7 @@
   "E_CORRUPT_CONTAINER": "File container became unreadable after metadata stripping.",
   "E_INPUT_TOO_LARGE": "Input file exceeds maximum allowed bytes limit of {{maxBytes}}.",
   "E_OUTPUT_TOO_LARGE": "Could not compress image below target output bytes limit of {{maxBytes}}.",
+  "E_TARGET_UNREACHABLE": "Cannot fit under target size of {{targetBytes}} bytes even with downscaling.",
   "E_FORMAT_REJECTED": "Image format is rejected by conversion policy allowlist or denylist.",
   "E_UNSUPPORTED_LOCALE": "Requested locale '{{locale}}' is not supported.",
   "E_CROP_EMPTY": "Crop coordinates produced a 0×0 empty image.",
@@ -29,5 +30,11 @@
   "E_NETWORK_ERROR": "Could not communicate with the conversion service.",
   "E_UNKNOWN": "An unexpected conversion error occurred: {{message}}",
   "E_FILE_CONFLICT": "Target output file '{{path}}' already exists.",
-  "E_INVALID_SCALE": "Multiplier scale {{scale}} is invalid. Must be between 0.1 and 10."
+  "E_INVALID_SCALE": "Multiplier scale {{scale}} is invalid. Must be between 0.1 and 10.",
+  "E_VERIFICATION_FAILED": "Output byte verification failed: generated SHA-256 does not match expected hash.",
+  "E_TOO_MANY_FILES": "Batch exceeds the allowed file count limit of {{limit}}.",
+  "E_REQUEST_TOO_LARGE": "Batch total size exceeds the allowed limit of {{limit}}.",
+  "E_SESSION_LIMIT_EXCEEDED": "Session file limit of {{limit}} has been reached.",
+  "E_USER_LIMIT_EXCEEDED": "User file limit of {{limit}} has been reached.",
+  "E_CONCURRENCY_LIMIT_EXCEEDED": "Too many concurrent conversions. Max concurrency is {{limit}}."
 }

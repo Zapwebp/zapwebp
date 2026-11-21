@@ -14,6 +14,9 @@ importers:
       '@zapwebp/core':
         specifier: workspace:*
         version: link:packages/core
+      '@zapwebp/lock':
+        specifier: workspace:*
+        version: link:packages/lock
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:packages/shared
@@ -67,6 +70,9 @@ importers:
       '@zapwebp/core':
         specifier: workspace:*
         version: link:../core
+      '@zapwebp/lock':
+        specifier: workspace:*
+        version: link:../lock
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:../shared
@@ -110,6 +116,12 @@ importers:
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/docs:
+    dependencies:
+      marked:
+        specifier: ^18.1.2
+        version: 18.1.2
 
   packages/edge:
     dependencies:
@@ -161,6 +173,12 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/lock:
+    dependencies:
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/mcp:
     dependencies:
       '@modelcontextprotocol/server':
@@ -169,6 +187,9 @@ importers:
       '@zapwebp/core':
         specifier: workspace:*
         version: link:../core
+      '@zapwebp/lock':
+        specifier: workspace:*
+        version: link:../lock
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:../shared
@@ -219,6 +240,9 @@ importers:
       '@zapwebp/crop':
         specifier: workspace:*
         version: link:../crop
+      '@zapwebp/lock':
+        specifier: workspace:*
+        version: link:../lock
       '@zapwebp/shared':
         specifier: workspace:*
         version: link:../shared

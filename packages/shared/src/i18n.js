@@ -1,6 +1,10 @@
 'use strict';
 
-const SUPPORTED_LOCALES = Object.freeze(['en', 'tl']);
+const fs = require('node:fs');
+const path = require('node:path');
+
+const DEFAULT_LOCALES = ['en', 'tl'];
+const supportedLocalesSet = new Set(DEFAULT_LOCALES);
 let activeLocale = 'en';
 
 /** @type {Map<string, Record<string, string>>} */
@@ -40,13 +44,85 @@ localeCache.set('tl', {
 });
 
 /**
+ * Automatically discovers and loads translation catalogs from the /locales directory.
+ */
+function loadFilesystemCatalogs() {
+  try {
+    const candidates = [
+      path.resolve(__dirname, '../../../locales'),
+      path.resolve(__dirname, '../../locales'),
+      path.resolve(process.cwd(), 'locales'),
+    ];
+
+    let localesDir = null;
+    for (const c of candidates) {
+      if (fs.existsSync(c)) {
+        localesDir = c;
+        break;
+      }
+    }
+
+    if (!localesDir) return;
+
+    const entries = fs.readdirSync(localesDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+        const locale = entry.name.toLowerCase();
+        supportedLocalesSet.add(locale);
+        const subDir = path.join(localesDir, entry.name);
+        const jsonFiles = fs.readdirSync(subDir).filter((f) => f.endsWith('.json'));
+
+        for (const jf of jsonFiles) {
+          try {
+            const raw = fs.readFileSync(path.join(subDir, jf), 'utf8');
+            const data = JSON.parse(raw);
+            if (data && typeof data === 'object') {
+              registerTranslations(locale, data);
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch {}
+}
+
+loadFilesystemCatalogs();
+
+/**
+ * Proxy array providing dynamic supported locales list.
+ */
+const SUPPORTED_LOCALES = new Proxy(DEFAULT_LOCALES, {
+  get(target, prop) {
+    const list = Array.from(supportedLocalesSet);
+    if (prop === 'includes') {
+      return (val) => supportedLocalesSet.has(String(val).toLowerCase());
+    }
+    if (prop === 'length') {
+      return list.length;
+    }
+    if (typeof prop === 'string' && !isNaN(Number(prop))) {
+      return list[Number(prop)];
+    }
+    return Reflect.get(list, prop);
+  },
+});
+
+/**
+ * Returns array of all active supported locale codes.
+ * @returns {string[]}
+ */
+function getSupportedLocales() {
+  return Array.from(supportedLocalesSet);
+}
+
+/**
  * Sets the active locale.
- * @param {string} locale - e.g. 'en', 'tl'
+ * @param {string} locale - e.g. 'en', 'tl', or any registered community locale
  */
 function setLocale(locale) {
   if (!locale) return;
   const normalized = String(locale).toLowerCase().split(/[-_]/)[0];
-  if (SUPPORTED_LOCALES.includes(normalized)) {
+  if (supportedLocalesSet.has(normalized)) {
     activeLocale = normalized;
   }
 }
@@ -60,14 +136,16 @@ function getLocale() {
 }
 
 /**
- * Loads translations into cache for a given locale.
+ * Loads translations into cache for a given locale and dynamically enables the locale.
  * @param {string} locale
  * @param {Record<string, string>} strings
  */
 function registerTranslations(locale, strings) {
   if (!locale || !strings || typeof strings !== 'object') return;
-  const current = localeCache.get(locale) || {};
-  localeCache.set(locale, { ...current, ...strings });
+  const normalized = String(locale).toLowerCase().split(/[-_]/)[0];
+  supportedLocalesSet.add(normalized);
+  const current = localeCache.get(normalized) || {};
+  localeCache.set(normalized, { ...current, ...strings });
 }
 
 /**
@@ -92,6 +170,7 @@ function t(key, vars = {}) {
 
 module.exports = {
   SUPPORTED_LOCALES,
+  getSupportedLocales,
   setLocale,
   getLocale,
   registerTranslations,

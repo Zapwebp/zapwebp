@@ -579,6 +579,10 @@
               <p class="drop-subtitle" data-i18n="dropzone.subtitle">
                 SVG · PNG · JPG · WebP · AVIF · HEIC
               </p>
+
+              <p class="drop-limits-badge" id="drop-limits-badge">
+                Max 20 files · Max 100 MB total
+              </p>
             </div>
 
             <!-- Converting Progress State -->
@@ -1424,7 +1428,7 @@
           <!-- Section 3: Collapsible Advanced -->
           <details class="setting-accordion" id="setting-advanced-accordion">
             <summary class="setting-accordion-summary">
-              <span>Advanced</span>
+              <span data-i18n="settings.advanced">Advanced</span>
               <span class="accordion-arrow">▾</span>
             </summary>
             <div class="setting-accordion-content">
@@ -1557,6 +1561,20 @@
                 </div>
               </div>
 
+              <!-- Idempotent Conversion Lock Toggle -->
+              <div class="setting-group setting-row-toggle" id="setting-lock-group">
+                <div class="setting-meta-text">
+                  <span class="setting-group-label">Write Conversion Lock</span>
+                  <p class="setting-hint">Embeds cryptographic fingerprint to prevent redundant pipeline re-encodes</p>
+                </div>
+                <label class="setting-switch" title="Write conversion lock to output">
+                  <input type="checkbox" id="setting-write-lock-toggle" />
+                  <span class="setting-switch-pill" aria-hidden="true">
+                    <span class="setting-switch-thumb"></span>
+                  </span>
+                </label>
+              </div>
+
               <input type="number" id="setting-min-output-input" value="0" style="display: none;" />
               <input type="number" id="setting-input-limit-input" value="50" style="display: none;" />
             </div>
@@ -1564,7 +1582,7 @@
 
           <!-- Section 4: Theme -->
           <div class="setting-drawer-section">
-            <h3 class="setting-section-title">Theme</h3>
+            <h3 class="setting-section-title" data-i18n="settings.theme">Theme</h3>
             <div class="setting-radios-row" id="setting-theme-radios" role="radiogroup" aria-label="Interface theme">
               <label class="setting-radio-item">
                 <input type="radio" name="setting-theme" value="auto" checked />
@@ -1583,7 +1601,7 @@
 
           <!-- Section 5: Language -->
           <div class="setting-drawer-section">
-            <h3 class="setting-section-title">Language</h3>
+            <h3 class="setting-section-title" data-i18n="settings.language">Language</h3>
             <div class="setting-radios-row" id="drawer-lang-options-group" role="radiogroup" aria-label="Interface language">
               <label class="setting-radio-item">
                 <input type="radio" name="drawer-lang" value="en" checked />
@@ -1598,7 +1616,7 @@
 
           <!-- Section 6: Quick Links -->
           <div class="setting-drawer-section">
-            <h3 class="setting-section-title">Quick Links</h3>
+            <h3 class="setting-section-title" data-i18n="settings.quick_links">Quick Links</h3>
             <div class="drawer-quick-links">
               <a href="https://zapwebp-docs.vercel.app" target="_blank" rel="noopener noreferrer" class="drawer-link">Docs ↗</a>
               <a href="https://zapwebp-docs.vercel.app/cli" target="_blank" rel="noopener noreferrer" class="drawer-link">CLI ↗</a>
@@ -1609,7 +1627,7 @@
 
           <!-- Section 7: Reset to defaults -->
           <div class="setting-drawer-footer">
-            <button type="button" class="btn-reset-defaults" id="btn-reset-defaults">
+            <button type="button" class="btn-reset-defaults" id="btn-reset-defaults" data-i18n="settings.reset_defaults">
               Reset to defaults
             </button>
           </div>

@@ -1,0 +1,42 @@
+{
+  "name": "@zapwebp/docs",
+  "version": "1.0.0",
+  "description": "Universal zero-dependency documentation delivery engine producing static HTML, Markdown mirrors, llms.txt, sitemaps, and agent.json.",
+  "bin": {
+    "zapwebp-docs": "bin/zapwebp-docs.js",
+    "docs": "bin/zapwebp-docs.js"
+  },
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "build": "node bin/zapwebp-docs.js build"
+  },
+  "dependencies": {
+    "marked": "^18.1.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp-docs.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/zapwebp.git",
+    "directory": "packages/docs"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/zapwebp/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

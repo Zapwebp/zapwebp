@@ -555,6 +555,12 @@ function syncSettingsSlideoverUI() {
   if (settingMinOutputInput) {
     settingMinOutputInput.value = Math.round((settings.minOutputBytes || 0) / 1024);
   }
+
+  // Idempotent conversion lock toggle
+  const settingWriteLockToggle = document.querySelector('#setting-write-lock-toggle');
+  if (settingWriteLockToggle) {
+    settingWriteLockToggle.checked = Boolean(settings.writeLock);
+  }
 }
 
 if (settingsBtn) settingsBtn.addEventListener('click', openSettingsSlideover);
@@ -562,6 +568,15 @@ if (settingsSlideoverClose) settingsSlideoverClose.addEventListener('click', clo
 if (settingsSlideover) {
   settingsSlideover.addEventListener('click', (e) => {
     if (e.target === settingsSlideover) closeSettingsSlideover();
+  });
+}
+
+// Idempotent conversion lock handler
+const settingWriteLockToggle = document.querySelector('#setting-write-lock-toggle');
+if (settingWriteLockToggle) {
+  settingWriteLockToggle.addEventListener('change', () => {
+    settings.writeLock = Boolean(settingWriteLockToggle.checked);
+    persistSettings();
   });
 }
 
@@ -809,8 +824,8 @@ if (btnResetDefaults) {
 const drawerLangRadios = document.querySelectorAll('input[name="drawer-lang"]');
 drawerLangRadios.forEach((radio) => {
   radio.addEventListener('change', () => {
-    if (radio.checked && typeof setLocale === 'function') {
-      setLocale(radio.value);
+    if (radio.checked) {
+      applyTranslations(radio.value);
     }
   });
 });
@@ -1108,6 +1123,11 @@ const I18N_DICTIONARIES = {
     'footer.license': 'MIT License',
     'footer.copyright': '© 2026 Zapwebp. Maintained by <strong>Eldrex Delos Reyes Bula</strong>. Republic of the Philippines.',
     'footer.full_docs': 'Full Docs Portal ↗',
+    'settings.theme': 'Theme',
+    'settings.language': 'Language',
+    'settings.quick_links': 'Quick Links',
+    'settings.reset_defaults': 'Reset to Defaults',
+    'settings.advanced': 'Advanced',
   },
   tl: {
     'nav.docs': 'Mga Gabay',
@@ -1193,6 +1213,11 @@ const I18N_DICTIONARIES = {
     'footer.license': 'Lisensyang MIT',
     'footer.copyright': '© 2026 Zapwebp. Pinapanatili ni <strong>Eldrex Delos Reyes Bula</strong>. Republika ng Pilipinas.',
     'footer.full_docs': 'Buong Portal ng Docs ↗',
+    'settings.theme': 'Tema',
+    'settings.language': 'Wika',
+    'settings.quick_links': 'Mabilisang Link',
+    'settings.reset_defaults': 'Ibalik sa Default',
+    'settings.advanced': 'Mas Malalim na Setting',
   }
 };
 
@@ -1200,6 +1225,10 @@ function getActiveLanguage() {
   return localStorage.getItem('zapwebp_lang')
     || localStorage.getItem('zapwebp:lang')
     || (navigator.language?.startsWith('tl') ? 'tl' : 'en');
+}
+
+function setLocale(lang) {
+  applyTranslations(lang);
 }
 
 function t(key, defaultVal) {
@@ -1212,6 +1241,12 @@ function applyTranslations(lang) {
   document.documentElement.lang = activeLang;
   localStorage.setItem('zapwebp_lang', activeLang);
   localStorage.setItem('zapwebp:lang', activeLang);
+
+  // Synchronize settings drawer radios & footer select
+  const drawerRadio = document.querySelector(`input[name="drawer-lang"][value="${activeLang}"]`);
+  if (drawerRadio) drawerRadio.checked = true;
+  const langSelect = document.querySelector('#lang-select');
+  if (langSelect) langSelect.value = activeLang;
 
   // Update footer button
   const footerLangLabel = document.querySelector('#footer-lang-label');
@@ -2967,7 +3002,79 @@ if (previewCloseBtn && previewDialog) {
   });
 }
 
-function showError(msg) {
+function formatBytes(bytes, decimals = 1) {
+  if (!bytes || bytes <= 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
+}
+
+const WEB_SESSION_STORAGE_KEY = 'zapwebp_session_v1';
+
+function getSessionState() {
+  try {
+    const raw = sessionStorage.getItem(WEB_SESSION_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch {}
+
+  const fallbackCount = getLegacySessionCount();
+  const session = {
+    sessionId: `zap-sess-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`,
+    surface: 'web',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    expiresAt: null,
+    filesProcessed: fallbackCount,
+    bytesProcessed: 0,
+    requestsCount: 0,
+  };
+  try {
+    sessionStorage.setItem(WEB_SESSION_STORAGE_KEY, JSON.stringify(session));
+  } catch {}
+  return session;
+}
+
+function getLegacySessionCount() {
+  try {
+    const val = Number(sessionStorage.getItem('zapwebp_session_files_count'));
+    return Number.isFinite(val) && val >= 0 ? val : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getSessionCount() {
+  const session = getSessionState();
+  return session.filesProcessed || 0;
+}
+
+function recordSessionCount(count, bytes = 0) {
+  try {
+    const session = getSessionState();
+    session.filesProcessed = (session.filesProcessed || 0) + count;
+    session.bytesProcessed = (session.bytesProcessed || 0) + bytes;
+    session.requestsCount = (session.requestsCount || 0) + 1;
+    session.updatedAt = new Date().toISOString();
+    sessionStorage.setItem(WEB_SESSION_STORAGE_KEY, JSON.stringify(session));
+    sessionStorage.setItem('zapwebp_session_files_count', String(session.filesProcessed));
+  } catch {}
+}
+
+function showError(err) {
+  const code = err?.code;
+  let msg = typeof err === 'string'
+    ? err
+    : (err.message + (err.fix ? `\n\nFix: ${err.fix}` : ''));
+  if (code && typeof t === 'function') {
+    const localized = t(code);
+    if (localized && localized !== code) {
+      msg = localized + (err.fix ? `\n\nFix: ${err.fix}` : '');
+    }
+  }
   if (errorDetail && errorDialog) {
     errorDetail.textContent = msg;
     errorDialog.showModal();
@@ -2997,6 +3104,42 @@ if (btnCancelBatch) {
 async function handleFiles(files) {
   if (!files?.length) return;
 
+  const limits = settings.limits || {
+    maxFilesPerRequest: 20,
+    maxFilesPerSession: 100,
+    maxBytesPerRequest: 104857600, // 100 MB
+    maxConcurrent: 4,
+  };
+
+  if (limits.maxFilesPerRequest !== null && files.length > limits.maxFilesPerRequest) {
+    showError({
+      code: 'E_TOO_MANY_FILES',
+      message: `This batch has ${files.length} files. The limit is ${limits.maxFilesPerRequest}.`,
+      fix: `Drop ${limits.maxFilesPerRequest} or fewer files, or raise the limit in settings.`,
+    });
+    return;
+  }
+
+  const totalInputBytes = Array.from(files).reduce((sum, f) => sum + (f.size || 0), 0);
+  if (limits.maxBytesPerRequest !== null && totalInputBytes > limits.maxBytesPerRequest) {
+    showError({
+      code: 'E_REQUEST_TOO_LARGE',
+      message: `This batch is ${formatBytes(totalInputBytes)}. The limit is ${formatBytes(limits.maxBytesPerRequest)}.`,
+      fix: 'Reduce the batch size, or raise the limit in settings.',
+    });
+    return;
+  }
+
+  const sessionProcessed = getSessionCount();
+  if (limits.maxFilesPerSession !== null && sessionProcessed + files.length > limits.maxFilesPerSession) {
+    showError({
+      code: 'E_SESSION_LIMIT_EXCEEDED',
+      message: `Session limit of ${limits.maxFilesPerSession} files reached. Processed ${sessionProcessed + files.length} files in this session.`,
+      fix: 'Close and re-open the tab to start a new session, or raise the limit in settings.',
+    });
+    return;
+  }
+
   const validFiles = [];
   const maxBytes = (settings.inputSizeLimitMb || 50) * 1024 * 1024;
   for (const f of files) {
@@ -3013,6 +3156,8 @@ async function handleFiles(files) {
     showError('None of the selected files match supported image formats (SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF).');
     return;
   }
+
+  recordSessionCount(validFiles.length);
 
   // Check lossless conflict before starting conversion
   checkLosslessConflict();
@@ -3833,8 +3978,7 @@ if (langSelect) {
 
   langSelect.addEventListener('change', () => {
     const chosen = langSelect.value;
-    document.documentElement.lang = chosen;
-    localStorage.setItem('zapwebp_lang', chosen);
+    applyTranslations(chosen);
   });
 }
 

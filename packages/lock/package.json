@@ -1,0 +1,36 @@
+{
+  "name": "@zapwebp/lock",
+  "version": "1.0.0",
+  "description": "Idempotent conversion lock plugin for Zapwebp with cryptographic fingerprinting, zero generational loss, and pipeline skip logic.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "agent.json"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@zapwebp/shared": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://zapwebp.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zapwebp/lock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zapwebp/lock/issues"
+  },
+  "author": "Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>"
+}

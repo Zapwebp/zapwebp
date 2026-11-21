@@ -9,7 +9,13 @@ const {
   generateSrcset,
   scaleSuffix,
 } = require('@zapwebp/core');
-const { getMimeType } = require('@zapwebp/shared');
+const {
+  getMimeType,
+  resolveLimits,
+  evaluateLimits,
+  createLimitsMetadata,
+  RateLimiter,
+} = require('@zapwebp/shared');
 const { resolveOptions } = require('./options');
 const {
   validateStoragePath,
@@ -82,6 +88,8 @@ function withZapwebp(adapter, options) {
   }
 
   const resolved = resolveOptions(options);
+  const userUsageMap = new Map();
+  const rateLimiter = resolved.limits?.rateLimit ? new RateLimiter(resolved.limits.rateLimit) : null;
 
   /**
    * Converts and uploads a single image asset across all configured scale multipliers.
@@ -258,34 +266,68 @@ function withZapwebp(adapter, options) {
       const targetPath = dir ? `${dir}/${outFileName}` : outFileName;
 
       let result;
-      try {
-        result = await convertImage(bytes, {
-          to: targetFormat,
-          width,
-          quality: resolved.quality,
-          lossless: resolved.lossless,
-          clean: resolved.clean,
-          stripMetadata: resolved.clean,
-          background: resolved.background,
-          targetBytes: uploadOptions.targetBytes !== undefined ? uploadOptions.targetBytes : resolved.targetBytes,
-          minQuality: uploadOptions.minQuality !== undefined ? uploadOptions.minQuality : resolved.minQuality,
-          allowDownscale: uploadOptions.allowDownscale !== undefined ? uploadOptions.allowDownscale : resolved.allowDownscale,
-          transforms: uploadOptions.transforms || resolved.transforms,
-          assertAlpha: false,
-          policy: uploadOptions.policy || resolved.policy,
-        });
-      } catch (err) {
-        if (err.message && err.message.includes('JPEG cannot store transparency')) {
-          throw new Error(`E_ALPHA_NOT_REPRESENTABLE: ${stripCredentials(err.message)}`);
+      let finalData = null;
+      let skippedByLock = false;
+
+      const targetOptions = {
+        to: targetFormat,
+        width,
+        quality: resolved.quality,
+        lossless: resolved.lossless,
+        clean: resolved.clean,
+        background: resolved.background,
+      };
+
+      if (resolved.useLock !== false && !uploadOptions.force) {
+        try {
+          const { readLock, verifyLock } = require('@zapwebp/lock');
+          const existingLock = readLock(bytes);
+          if (existingLock && format === targetFormat) {
+            const verification = verifyLock(bytes, null, targetOptions, { force: uploadOptions.force });
+            if (verification.match) {
+              finalData = bytes;
+              skippedByLock = true;
+            }
+          }
+        } catch {}
+      }
+
+      if (!skippedByLock) {
+        try {
+          result = await convertImage(bytes, {
+            to: targetFormat,
+            width,
+            quality: resolved.quality,
+            lossless: resolved.lossless,
+            clean: resolved.clean,
+            stripMetadata: resolved.clean,
+            background: resolved.background,
+            targetBytes: uploadOptions.targetBytes !== undefined ? uploadOptions.targetBytes : resolved.targetBytes,
+            minQuality: uploadOptions.minQuality !== undefined ? uploadOptions.minQuality : resolved.minQuality,
+            allowDownscale: uploadOptions.allowDownscale !== undefined ? uploadOptions.allowDownscale : resolved.allowDownscale,
+            transforms: uploadOptions.transforms || resolved.transforms,
+            assertAlpha: false,
+            policy: uploadOptions.policy || resolved.policy,
+          });
+          finalData = result.data;
+          if (resolved.useLock !== false) {
+            const { writeLock, createLockFingerprint } = require('@zapwebp/lock');
+            const fp = createLockFingerprint({ input: bytes, options: targetOptions });
+            finalData = writeLock(finalData, targetFormat, fp);
+          }
+        } catch (err) {
+          if (err.message && err.message.includes('JPEG cannot store transparency')) {
+            throw new Error(`E_ALPHA_NOT_REPRESENTABLE: ${stripCredentials(err.message)}`);
+          }
+          throw new Error(stripCredentials(err));
         }
-        throw new Error(stripCredentials(err));
       }
 
       const writeRes = await writeWithRetry(
         adapter,
         bucket,
         targetPath,
-        result.data,
+        finalData,
         {
           contentType: mimeForFormat,
           cacheControl: 'public, max-age=31536000, immutable',
@@ -366,6 +408,11 @@ function withZapwebp(adapter, options) {
       targetFormat,
       targetLockEnforced,
       targetLockBypassed,
+      limits: createLimitsMetadata({
+        filesCount: 1,
+        totalBytes: byteLength,
+        limits: resolved.limits,
+      }),
     };
   }
 
@@ -383,7 +430,45 @@ function withZapwebp(adapter, options) {
       throw new TypeError('files must be an array of { path, bytes } objects.');
     }
 
-    const concurrency = Math.max(1, Math.min(16, Number(batchOptions.concurrency) || 4));
+    const activeLimits = resolveLimits({ ...resolved.limits, ...batchOptions.limits });
+
+    // Calculate initial total bytes
+    let initialTotalBytes = 0;
+    for (const f of files) {
+      if (f && f.bytes) {
+        initialTotalBytes += f.bytes.length || 0;
+      } else if (Buffer.isBuffer(f) || f instanceof Uint8Array) {
+        initialTotalBytes += f.length;
+      }
+    }
+
+    // Resolve user ID for per-user limit tracking
+    let userId = batchOptions.userId;
+    if (!userId && adapter && typeof adapter.getUser === 'function') {
+      try {
+        const u = await adapter.getUser();
+        userId = u?.id || u?.user?.id;
+      } catch {}
+    }
+    if (!userId) userId = 'anonymous';
+
+    // Rate limit check
+    if (activeLimits.rateLimit) {
+      const limiter = batchOptions.rateLimiter || rateLimiter || new RateLimiter(activeLimits.rateLimit);
+      limiter.record(userId, files.length);
+    }
+
+    // User limit check
+    const currentUsage = userUsageMap.get(userId) || 0;
+
+    evaluateLimits({
+      filesCount: files.length,
+      totalBytes: initialTotalBytes,
+      userCount: currentUsage,
+      limits: activeLimits,
+    });
+
+    const concurrency = Math.max(1, Math.min(16, Number(batchOptions.concurrency) || activeLimits.maxConcurrent || 4));
     const reports = new Array(files.length);
     let totalBytesIn = 0;
     let totalBytesOut = 0;
@@ -407,6 +492,8 @@ function withZapwebp(adapter, options) {
     const workers = Array.from({ length: Math.min(concurrency, files.length) }, () => worker());
     await Promise.all(workers);
 
+    userUsageMap.set(userId, currentUsage + files.length);
+
     const savedBytes = Math.max(0, totalBytesIn - totalBytesOut);
     const savedPercent = totalBytesIn > 0 ? Math.round((savedBytes / totalBytesIn) * 100) : 0;
 
@@ -419,6 +506,11 @@ function withZapwebp(adapter, options) {
         saved: savedPercent,
       },
       reports,
+      limits: createLimitsMetadata({
+        filesCount: files.length,
+        totalBytes: totalBytesIn,
+        limits: activeLimits,
+      }),
       manifest: {
         generatedAt: new Date().toISOString(),
         totalFiles: reports.length,

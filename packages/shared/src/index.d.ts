@@ -1,3 +1,63 @@
+export interface ZapwebpLimits {
+  maxFilesPerRequest: number | null;
+  maxFilesPerSession: number | null;
+  maxFilesPerUser: number | null;
+  maxBytesPerRequest: number | null;
+  maxConcurrent: number;
+  rateLimit: {
+    maxRequests: number;
+    windowMs: number;
+  } | null;
+}
+
+export interface LimitsMetadata {
+  filesProcessed: number;
+  filesRemaining: number | null;
+  bytesProcessed: number;
+  bytesRemaining: number | null;
+  maxFilesPerRequest: number | null;
+  usedFiles: number;
+  remainingFiles: number | null;
+  maxBytesPerRequest: number | null;
+  usedBytes: number;
+  remainingBytes: number | null;
+  maxConcurrent: number;
+  rateLimit?: {
+    remaining: number;
+    resetIn: number;
+  };
+  session: {
+    maxFilesPerSession: number | null;
+    usedFiles: number;
+    remainingFiles: number | null;
+  };
+}
+
+export const DEFAULT_LIMITS: Readonly<ZapwebpLimits>;
+export function resolveLimits(userLimits?: Partial<ZapwebpLimits> | Record<string, any>): ZapwebpLimits;
+export function formatBytes(bytes: number, decimals?: number): string;
+export function evaluateLimits(params: {
+  filesCount?: number;
+  totalBytes?: number;
+  sessionCount?: number;
+  userCount?: number;
+  limits?: ZapwebpLimits | Record<string, any>;
+}): void;
+export function createLimitsMetadata(params?: {
+  filesCount?: number;
+  totalBytes?: number;
+  sessionCount?: number;
+  limits?: ZapwebpLimits | Record<string, any>;
+}): LimitsMetadata;
+
+export class RateLimiter {
+  constructor(options?: { maxRequests?: number; windowMs?: number });
+  check(key?: string): boolean;
+  record(key?: string, count?: number): void;
+  remaining(key?: string): number;
+  resetIn(key?: string): number;
+}
+
 export const APP_ORIGIN: string;
 export const DEFAULT_PORT: number;
 export const DEFAULT_TIMEOUT_MS: number;
@@ -137,4 +197,166 @@ export namespace reliability {
   export const RELIABILITY_METRICS: readonly ReliabilityMetric[];
   export function getReliabilitySummary(): { totalIntegrations: number; totalRuns: number; averageUptime: number; activeIncidents: number; allPassing: boolean };
   export function formatReliabilityTable(): string;
+}
+
+export interface LimitsConfig {
+  maxFilesPerRequest?: number | null | 'unlimited';
+  maxFilesPerSession?: number | null | 'unlimited';
+  maxFilesPerUser?: number | null | 'unlimited';
+  maxBytesPerRequest?: number | null | 'unlimited';
+  maxConcurrent?: number | null | 'unlimited';
+  concurrency?: {
+    perRequest?: number | null | 'unlimited';
+    perUser?: number | null | 'unlimited';
+    global?: number | null | 'unlimited';
+  };
+  rateLimit?: {
+    maxRequests?: number;
+    windowMs?: number;
+  } | null | 'unlimited' | false;
+}
+
+export interface ResolvedLimits {
+  maxFilesPerRequest: number | null;
+  maxFilesPerSession: number | null;
+  maxFilesPerUser: number | null;
+  maxBytesPerRequest: number | null;
+  maxConcurrent: number;
+  concurrency: {
+    perRequest: number;
+    perUser: number | null;
+    global: number | null;
+  };
+  rateLimit: {
+    maxRequests: number;
+    windowMs: number;
+  } | null;
+}
+
+export const DEFAULT_LIMITS: ResolvedLimits;
+export function resolveLimits(userLimits?: LimitsConfig): ResolvedLimits;
+export function formatBytes(bytes: number, decimals?: number): string;
+export function evaluateLimits(params: {
+  filesCount: number;
+  totalBytes?: number;
+  sessionCount?: number;
+  userCount?: number;
+  limits?: LimitsConfig | ResolvedLimits;
+}): void;
+
+export function createLimitsMetadata(params: {
+  filesCount?: number;
+  totalBytes?: number;
+  sessionCount?: number;
+  limits?: LimitsConfig | ResolvedLimits;
+  rateLimit?: any;
+  concurrencyStatus?: any;
+}): Record<string, any>;
+
+export abstract class RateLimitStore {
+  abstract get(key: string, windowMs: number): { count: number; windowStart: number } | null | Promise<{ count: number; windowStart: number } | null>;
+  abstract increment(key: string, count: number, windowMs: number): { count: number; windowStart: number } | Promise<{ count: number; windowStart: number }>;
+  abstract clear(key?: string): void | Promise<void>;
+}
+
+export class MemoryRateLimitStore extends RateLimitStore {
+  get(key: string, windowMs: number): { count: number; windowStart: number } | null;
+  increment(key: string, count: number, windowMs: number): { count: number; windowStart: number };
+  clear(key?: string): void;
+}
+
+export class FileRateLimitStore extends RateLimitStore {
+  constructor(options?: { filePath?: string });
+  get(key: string, windowMs: number): { count: number; windowStart: number } | null;
+  increment(key: string, count: number, windowMs: number): { count: number; windowStart: number };
+  clear(key?: string): void;
+}
+
+export class RateLimiter {
+  constructor(options?: {
+    maxRequests?: number;
+    windowMs?: number;
+    store?: RateLimitStore;
+    keyPrefix?: string;
+  });
+  check(key?: string): boolean;
+  checkAsync(key?: string): Promise<boolean>;
+  record(key?: string, count?: number): void;
+  recordAsync(key?: string, count?: number): Promise<void>;
+  remaining(key?: string): number;
+  remainingAsync(key?: string): Promise<number>;
+  resetIn(key?: string): number;
+  resetInAsync(key?: string): Promise<number>;
+  clear(key?: string): void;
+  clearAsync(key?: string): Promise<void>;
+}
+
+export class ConcurrencyLimiter {
+  constructor(options?: {
+    perRequest?: number | null;
+    perUser?: number | null;
+    global?: number | null;
+    concurrency?: {
+      perRequest?: number | null;
+      perUser?: number | null;
+      global?: number | null;
+    };
+  });
+  acquire(params?: { userId?: string; count?: number }): { release: () => void };
+  release(params?: { userId?: string; count?: number }): void;
+  run<T>(taskFn: () => Promise<T>, params?: { userId?: string; count?: number }): Promise<T>;
+  getStatus(params?: { userId?: string }): {
+    activeGlobal: number;
+    maxGlobal: number | null;
+    activeUser: number;
+    maxUser: number | null;
+    perRequest: number;
+  };
+}
+
+export function generateSessionId(): string;
+
+export class SessionState {
+  sessionId: string;
+  surface: string;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string | null;
+  filesProcessed: number;
+  bytesProcessed: number;
+  requestsCount: number;
+  constructor(params?: Partial<SessionState>);
+  toJSON(): Record<string, any>;
+}
+
+export class MemorySessionStore {
+  load(): SessionState | null;
+  save(session: SessionState): void;
+  clear(): void;
+}
+
+export class FileSessionStore {
+  constructor(options?: { filePath?: string });
+  load(): SessionState | null;
+  save(session: SessionState): void;
+  clear(): void;
+}
+
+export class WebSessionStore {
+  constructor(options?: { storageKey?: string });
+  load(): SessionState | null;
+  save(session: SessionState): void;
+  clear(): void;
+}
+
+export class SessionManager {
+  constructor(options?: {
+    surface?: string;
+    store?: any;
+    ttlMs?: number | null;
+  });
+  getSession(): SessionState;
+  canProcess(count?: number, maxFilesPerSession?: number | null): boolean;
+  record(params?: { filesCount?: number; bytesCount?: number; maxFilesPerSession?: number | null }): SessionState;
+  reset(): SessionState;
 }

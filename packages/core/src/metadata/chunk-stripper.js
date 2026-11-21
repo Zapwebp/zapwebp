@@ -58,9 +58,14 @@ function stripJpegMetadata(buf, { keepIcc = false } = {}) {
     else if (marker === 0xed) {
       drop = true;
     }
-    // COM (Comment)
+    // COM (Comment) - preserve zapwebp engine metadata (lock / custom)
     else if (marker === 0xfe) {
-      drop = true;
+      const payload = buf.subarray(offset + 2, segEnd).toString('utf8');
+      if (payload.startsWith('zapwebp:lock:') || payload.startsWith('zapwebp:custom:')) {
+        drop = false;
+      } else {
+        drop = true;
+      }
     }
 
     if (!drop) {
@@ -156,14 +161,20 @@ function stripPngMetadata(buf, { keepIcc = false } = {}) {
 
     if (
       type === 'eXIf' ||
-      type === 'tEXt' ||
-      type === 'iTXt' ||
       type === 'zTXt' ||
       type === 'tIME' ||
       type === 'pHYs' ||
       (type === 'iCCP' && !keepIcc)
     ) {
       // Drop metadata chunk
+    } else if (type === 'tEXt' || type === 'iTXt') {
+      const chunkData = buf.subarray(offset + 8, chunkEnd);
+      const nullIdx = chunkData.indexOf(0x00);
+      const keyword = nullIdx !== -1 ? chunkData.subarray(0, nullIdx).toString('latin1') : '';
+      if (keyword === 'zapwebp:lock' || keyword === 'zapwebp:custom') {
+        kept.push(buf.subarray(offset, chunkEnd));
+      }
+      // other non-engine text chunks dropped
     } else {
       kept.push(buf.subarray(offset, chunkEnd));
     }
@@ -186,7 +197,7 @@ function stripSvgMetadata(buf) {
   if (!str.includes('<svg')) return buf;
 
   const cleaned = str
-    .replace(/<metadata[\s\S]*?<\/metadata>/gi, '')
+    .replace(/<metadata(?!\s+id="zapwebp-(?:lock|custom)")[\s\S]*?<\/metadata>/gi, '')
     .replace(/<rdf:RDF[\s\S]*?<\/rdf:RDF>/gi, '');
 
   return Buffer.from(cleaned, 'utf8');

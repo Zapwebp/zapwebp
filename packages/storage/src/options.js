@@ -1,7 +1,7 @@
 'use strict';
 
 const { parseScales } = require('@zapwebp/core');
-const { OUTPUT_FORMATS } = require('@zapwebp/shared');
+const { OUTPUT_FORMATS, DEFAULT_LIMITS, resolveLimits } = require('@zapwebp/shared');
 const { validateAdapterContract } = require('./sanitize');
 
 const DEFAULT_OPTIONS = Object.freeze({
@@ -14,6 +14,8 @@ const DEFAULT_OPTIONS = Object.freeze({
   keepOriginal: false,
   deleteOriginal: false,
   allowDeleteOriginal: false,
+  useLock: true,
+  force: false,
   outPrefix: '',
   onConflict: 'skip',
   emitManifest: true,
@@ -22,6 +24,7 @@ const DEFAULT_OPTIONS = Object.freeze({
   targetFormat: 'webp',
   strict: true,
   concurrency: 4,
+  limits: DEFAULT_LIMITS,
 });
 
 const VALID_CONFLICT_STRATEGIES = new Set(['overwrite', 'skip', 'error']);
@@ -146,6 +149,7 @@ function resolveOptions(userOptions = {}) {
     targetFormat,
     strict,
     concurrency,
+    limits: resolveLimits(raw.limits),
     targetBytes: raw.targetBytes !== undefined ? raw.targetBytes : undefined,
     minQuality: raw.minQuality !== undefined ? raw.minQuality : undefined,
     allowDownscale: raw.allowDownscale !== undefined ? raw.allowDownscale : undefined,

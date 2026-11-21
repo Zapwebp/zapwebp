@@ -36,6 +36,7 @@
 - `@zapwebp/storage` — First-party cloud storage adapters (Supabase, Firebase, Neocities) providing pre-upload conversion, alpha safety, delete cascades, and multi-scale generation.
 - `@zapwebp/crop` — Pure transform crop plugin providing auto-crop (aspect ratios, gravity anchors, face detection), manual coordinate slicing, cover/contain fits, and named platform presets.
 - `@zapwebp/compressor` — Intelligent size reduction plugin providing deterministic binary search quality optimization, adaptive Lanczos3 downscaling, human size parsing, and CompressionHandler contracts.
+- `@zapwebp/docs` — Universal zero-dependency documentation delivery engine producing static HTML, byte-exact .md mirrors, llms.txt, sitemaps, robots.txt, and agent.json.
 - `@zapwebp/edge` — High-performance edge runtime and fetch handler for serverless and edge networks (Cloudflare Workers, Vercel Edge) enforcing target lock ingestion contracts.
 - `@zapwebp/lens` — Read-only image inspection suite with chunk analysis, alpha mask inspection, and browser-based checkerboard viewer.
 - `fflate` (^0.8.3) — Ultra-fast, lightweight streaming ZIP compression and decompression for in-browser client-side downloads and CLI export archives.
@@ -51,9 +52,14 @@
   - `ConversionOptions`: Quality (0–100), effort (0–9), width/height bounds, fit mode, lossless flag, background color.
   - `ConversionResult`: Encoded Buffer, format, output width/height, byte size, and alpha preservation flag.
   - `CleanCertificate`: Cryptographic JSON receipt containing input/output SHA-256 hashes, stripped metadata categories, and timestamp.
+  - `LimitsContract`: Throughput boundaries (maxFilesPerRequest, maxFilesPerSession, maxFilesPerUser, maxBytesPerRequest, maxConcurrent, rateLimit).
+  - `LimitsMetadata`: Standardized response metadata (filesProcessed, filesRemaining, bytesProcessed, bytesRemaining, rateLimit: { remaining, resetIn }).
 - **Business Rules**:
   - Alpha preservation is mandatory on alpha-capable outputs (`webp`, `png`, `avif`).
   - Flattening transparent images to JPEG requires an explicit background color (default `#ffffff`); implicit alpha dropping is forbidden (`E_ALPHA_NOT_REPRESENTABLE`).
+  - Ingestion limits must be validated before conversion or upload begins across all surfaces.
+  - If any limit is exceeded, return structured ZapwebpError with suggestedFix and human-readable guidance.
+  - Cumulative session files are persisted in `.zapwebp/session.json` and reset with `zap --reset-session`.
   - SVG active scripts (`<script>`, inline `on*`), external resources (`href`, `src`, `url()`), and DOCTYPE/entities are strictly rejected.
   - Maximum image resolution is bounded at 4096 × 4096 pixels (16M pixels) to prevent pixel-flood DoS.
   - Output file writing must be atomic via temporary UUID files.

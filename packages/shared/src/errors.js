@@ -264,7 +264,32 @@ const ERROR_CATALOG = Object.freeze({
   E_RATE_LIMIT: {
     code: 'E_RATE_LIMIT',
     message: 'Too many requests. Rate limit threshold exceeded.',
-    fix: 'Wait a few moments before submitting additional requests.',
+    fix: 'Wait a few moments before submitting additional requests, or raise the rate limit.',
+  },
+  E_TOO_MANY_FILES: {
+    code: 'E_TOO_MANY_FILES',
+    message: 'This batch has exceeded the maximum allowed number of files.',
+    fix: 'Drop fewer files, or raise the maxFilesPerRequest limit.',
+  },
+  E_REQUEST_TOO_LARGE: {
+    code: 'E_REQUEST_TOO_LARGE',
+    message: 'This batch has exceeded the maximum allowed byte size.',
+    fix: 'Reduce the batch size, or raise the maxBytesPerRequest limit.',
+  },
+  E_SESSION_LIMIT_EXCEEDED: {
+    code: 'E_SESSION_LIMIT_EXCEEDED',
+    message: 'The current session has reached its maximum file processing limit.',
+    fix: 'Start a new session or raise maxFilesPerSession.',
+  },
+  E_USER_LIMIT_EXCEEDED: {
+    code: 'E_USER_LIMIT_EXCEEDED',
+    message: 'The user account has exceeded its allocated file limit for this period.',
+    fix: 'Wait for the quota reset period or raise maxFilesPerUser.',
+  },
+  E_CONCURRENCY_LIMIT_EXCEEDED: {
+    code: 'E_CONCURRENCY_LIMIT_EXCEEDED',
+    message: 'Concurrency limit exceeded. Too many conversions are active simultaneously.',
+    fix: 'Wait for active conversions to complete, reduce concurrency, or raise maxConcurrent settings.',
   },
   E_AUTH: {
     code: 'E_AUTH',

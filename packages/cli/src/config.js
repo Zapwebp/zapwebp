@@ -1,6 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { DEFAULT_OPTIONS } from '@zapwebp/shared';
+import { DEFAULT_OPTIONS, DEFAULT_LIMITS, resolveLimits } from '@zapwebp/shared';
 
 export const CONFIG_FILENAMES = [
   path.join('.zapwebp', 'config.json'),
@@ -31,6 +31,7 @@ export const DEFAULT_CONFIG = {
     outputs: 'auto',
     journal: 'auto',
   },
+  limits: DEFAULT_LIMITS,
 };
 
 /**
@@ -135,6 +136,27 @@ export function resolveConfigPrecedence({ cliOptions = {}, fileConfig = {}, env 
       origins[field] = 'default';
     }
   }
+
+  const baseLimits = fileConfig.limits || {};
+  const resolvedLimits = { ...baseLimits };
+  if (cliOptions.unlimited) {
+    resolvedLimits.maxFilesPerRequest = null;
+    resolvedLimits.maxFilesPerSession = null;
+    resolvedLimits.maxBytesPerRequest = null;
+  }
+  if (cliOptions.maxFiles !== undefined) {
+    resolvedLimits.maxFilesPerRequest = cliOptions.maxFiles === 0 ? null : cliOptions.maxFiles;
+  }
+  if (cliOptions.maxBytes !== undefined) {
+    resolvedLimits.maxBytesPerRequest = cliOptions.maxBytes === 0 ? null : cliOptions.maxBytes;
+  }
+  if (cliOptions.concurrency !== undefined) {
+    resolvedLimits.maxConcurrent = cliOptions.concurrency;
+  }
+  resolved.limits = resolveLimits(resolvedLimits);
+  origins.limits = (cliOptions.unlimited || cliOptions.maxFiles !== undefined || cliOptions.maxBytes !== undefined || cliOptions.concurrency !== undefined)
+    ? 'cli_flag'
+    : (fileConfig.limits !== undefined ? 'config_file' : 'default');
 
   return { resolved, origins };
 }

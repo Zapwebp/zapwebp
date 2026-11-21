@@ -60,6 +60,8 @@ const out = `# Zapwebp
 - [Crop](https://zapwebp-docs.vercel.app/plugins/crop): Pure transform crop plugin with auto/manual modes and face detection.
 - [ICO / Favicon](https://zapwebp-docs.vercel.app/plugins/format-ico): High-resolution multi-size ICO plugin and favicon suite generator.
 - [Compressor](https://zapwebp-docs.vercel.app/plugins/compressor): Intelligent size reduction plugin with binary search optimization and adaptive downscaling.
+- [Lock](https://zapwebp-docs.vercel.app/plugins/lock): Idempotent conversion lock plugin with cryptographic fingerprinting and skip logic.
+- [Docs Engine](https://zapwebp-docs.vercel.app/plugins/docs): Universal zero-dependency documentation delivery engine producing static HTML, markdown mirrors, and agent manifests.
 
 ## Community & Governance
 
@@ -107,6 +109,8 @@ const out = `# Zapwebp
 - [Crop Plugin Raw](/plugins/crop.md): Crop transform plugin documentation.
 - [ICO Plugin Raw](/plugins/format-ico.md): High-resolution multi-size ICO plugin and favicon suite generator.
 - [Compressor Plugin Raw](/plugins/compressor.md): Intelligent size reduction plugin documentation.
+- [Lock Plugin Raw](/plugins/lock.md): Idempotent conversion lock plugin documentation.
+- [Docs Engine Raw](/plugins/docs.md): Universal documentation delivery engine documentation.
 - [Security Raw](/security.md): Security policy and vulnerability reporting.
 - [Code of Conduct Raw](/code-of-conduct.md): Contributor Covenant standards.
 - [Contributing Raw](/contributing.md): Developer guide and PR checklist.

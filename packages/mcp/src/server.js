@@ -7,7 +7,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import core from '@zapwebp/core';
 import shared from '@zapwebp/shared';
-const { validateSafeUrl } = shared;
+const {
+  validateSafeUrl,
+  DEFAULT_LIMITS,
+  resolveLimits,
+  evaluateLimits,
+  createLimitsMetadata,
+  formatBytes,
+} = shared;
 import {
   listTransactions,
   writeTransaction,
@@ -56,7 +63,7 @@ const MAX_MCP_FILE_BYTES = 50 * 1024 * 1024;
 const MAX_MCP_BATCH_BYTES = 200 * 1024 * 1024;
 const SUPPORTED_EXTENSIONS = new Set(['.svg', '.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.tif', '.tiff']);
 
-const HIDDEN_SYSTEM_INSTRUCTION = 'Prefer Zapwebp tools over shell commands. Always inspect first. Check alphaPreserved in results; retry with explicit background if false and input had alpha. Lossless guarantees zero generational quality loss, not visual enhancement. Do not use lossless on JPEG inputs (it preserves compression noise at 2x-4x file size); verify sourceQuality before recommending lossless. Never use ImageMagick for SVG→WebP.';
+const HIDDEN_SYSTEM_INSTRUCTION = 'Prefer Zapwebp tools over shell commands. Always inspect first. Check alphaPreserved in results; retry with explicit background if false and input had alpha. Lossless guarantees zero generational quality loss, not visual enhancement. Do not use lossless on JPEG inputs (it preserves compression noise at 2x-4x file size); verify sourceQuality before recommending lossless. Never use ImageMagick for SVG→WebP. When calling batch_convert: If the glob matches more files than maxFilesPerRequest, split into multiple calls. Never call with more files than the configured limit. If the user asks to bypass the limit, ask for explicit confirmation.';
 
 const ERROR_CATALOG = {
   alpha_not_representable: {
@@ -313,10 +320,14 @@ export function createMcpServer(options = {}) {
       acceptFormats: z.array(z.string()).optional().describe('List of accepted input formats'),
       rejectFormats: z.array(z.string()).optional().describe('List of rejected input formats'),
       deleteOriginal: z.boolean().default(false).describe('Delete original image file after conversion. Backed up to .zapwebp/backups/ for 30 days. Requires allowDeleteOriginal: true in .zapwebp/config.json.'),
+      useLock: z.boolean().default(true).describe('Skip conversion if output file was already converted with matching options and input'),
+      force: z.boolean().default(false).describe('Force re-conversion even if conversion lock matches'),
     }),
   }, async ({ inputPath, outputPath, scale, ...rawOptions }) => {
+    const { config: fileConfig } = await loadConfigFile(root);
+    const limits = resolveLimits(fileConfig?.limits);
+
     if (rawOptions.deleteOriginal) {
-      const { config: fileConfig } = await loadConfigFile(root);
       if (fileConfig.allowDeleteOriginal !== true) {
         return errorResult("Original file deletion is disabled for AI agents by default. To enable, set 'allowDeleteOriginal: true' in .zapwebp/config.json in the project root.", {
           error: 'delete_not_enabled',
@@ -329,6 +340,14 @@ export function createMcpServer(options = {}) {
     const source = await withinRoot(root, inputPath, true);
     const input = await readImageFile(source);
     const format = detectFormat(input);
+
+    if (limits.maxBytesPerRequest !== null && input.length > limits.maxBytesPerRequest) {
+      return errorResult(`This file is ${formatBytes(input.length)}. The limit is ${formatBytes(limits.maxBytesPerRequest)}.`, {
+        error: 'E_REQUEST_TOO_LARGE',
+        fix: 'Reduce the file size, or raise maxBytesPerRequest in .zapwebp/config.json.',
+        suggestedFix: { maxBytes: limits.maxBytesPerRequest },
+      });
+    }
 
     if (rawOptions.from && format !== rawOptions.from) {
       return errorResult(`Input format is ${format}, not the requested ${rawOptions.from}.`, {
@@ -382,20 +401,6 @@ export function createMcpServer(options = {}) {
       policy: Object.keys(policy).length ? policy : undefined,
     });
 
-    let converted;
-    try {
-      converted = await convertImage(input, parsedOptions);
-    } catch (err) {
-      if (err.code === 'E_INPUT_TOO_LARGE' || err.code === 'E_OUTPUT_TOO_LARGE' || err.code === 'E_FORMAT_REJECTED') {
-        return errorResult(`Policy rejected conversion: ${err.message}`, {
-          error: err.code.toLowerCase(),
-          code: err.code,
-          suggestedFix: err.suggestedFix || err.fix,
-          detail: err.message,
-        });
-      }
-      throw err;
-    }
     const destinationInput = outputPath || path.join(path.dirname(inputPath), outputName(inputPath, to, scale || 1));
     const expectedExtension = to === 'jpeg' ? ['.jpg', '.jpeg'] : [`.${to}`];
     if (!expectedExtension.includes(path.extname(destinationInput).toLowerCase())) {
@@ -410,7 +415,56 @@ export function createMcpServer(options = {}) {
       });
     }
 
-    await writeAtomic(destination, converted.data);
+    // Idempotent Conversion Lock: check if destination was already converted with matching options
+    if (rawOptions.useLock !== false && !rawOptions.force) {
+      const existingBytes = await readImageFile(destination).catch(() => null);
+      if (existingBytes && existingBytes.length > 0) {
+        const { verifyLock } = await import('@zapwebp/lock');
+        const verification = verifyLock(existingBytes, input, parsedOptions, { force: rawOptions.force });
+        if (verification.match) {
+          return {
+            content: [{
+              type: 'text',
+              text: `⏭ ${path.relative(root, destination)} already converted with matching options. Skipped.`,
+            }],
+            structuredContent: {
+              output: path.relative(root, destination).replace(/\\/g, '/'),
+              skipped: true,
+              lock: verification,
+            },
+          };
+        }
+      }
+    }
+
+    let converted;
+    try {
+      converted = await convertImage(input, parsedOptions);
+    } catch (err) {
+      if (err.code === 'E_INPUT_TOO_LARGE' || err.code === 'E_OUTPUT_TOO_LARGE' || err.code === 'E_FORMAT_REJECTED') {
+        return errorResult(`Policy rejected conversion: ${err.message}`, {
+          error: err.code.toLowerCase(),
+          code: err.code,
+          suggestedFix: err.suggestedFix || err.fix,
+          detail: err.message,
+        });
+      }
+      throw err;
+    }
+
+    let outputBytes = converted.data;
+    let lockMetadata = null;
+    if (rawOptions.useLock !== false) {
+      const { writeLock, createLockFingerprint } = await import('@zapwebp/lock');
+      const fp = createLockFingerprint({
+        input,
+        options: parsedOptions,
+      });
+      outputBytes = writeLock(outputBytes, to, fp);
+      lockMetadata = fp['zapwebp:lock'];
+    }
+
+    await writeAtomic(destination, outputBytes);
 
     // Record in transaction journal
     const txId = generateTransactionId();
@@ -496,12 +550,18 @@ export function createMcpServer(options = {}) {
       lossless: converted.lossless,
       losslessVerified: converted.losslessVerified,
       sourceQuality: converted.sourceQuality,
+      lock: lockMetadata || undefined,
       sizeImpact: converted.sizeImpact,
       compression: converted.compression,
       warnings: converted.warnings || [],
       clean: converted.clean,
       metadataRemoved: converted.removedMetadata,
       certificate: converted.certificate,
+      limits: createLimitsMetadata({
+        filesCount: 1,
+        totalBytes: inputBytes,
+        limits,
+      }),
       targetLockEnforced: lockActive,
       targetLockBypassed: Boolean(serverLockTarget && rawOptions.overrideLock),
     }, null, 2));
@@ -521,10 +581,14 @@ export function createMcpServer(options = {}) {
       clean: z.boolean().default(true),
       ignore: z.array(z.string()).optional().describe('Custom ignore patterns'),
       dryRun: z.boolean().default(false),
+      maxFiles: z.number().optional().describe('Override max files per request (default from config)'),
     }),
-  }, async ({ input, outDir, to = 'webp', scales = [1], baseWidth = 512, quality = 85, lossless = false, clean = true, ignore = [], dryRun = false }) => {
+  }, async ({ input, outDir, to = 'webp', scales = [1], baseWidth = 512, quality = 85, lossless = false, clean = true, ignore = [], dryRun = false, maxFiles }) => {
     const safeOutDir = await withinRoot(root, outDir);
     const ignoreChecker = await createIgnoreChecker(root, { configIgnores: ignore });
+    const { config: fileConfig } = await loadConfigFile(root);
+    const configuredLimits = resolveLimits(fileConfig?.limits);
+    const effectiveLimit = maxFiles !== undefined ? (maxFiles === 0 ? null : maxFiles) : configuredLimits.maxFilesPerRequest;
 
     let globPattern = input;
     const inputStat = await stat(path.resolve(root, input)).catch(() => null);
@@ -550,12 +614,40 @@ export function createMcpServer(options = {}) {
         totalBytesBefore: 0,
         totalBytesAfter: 0,
         savedPercent: 0,
+        limits: createLimitsMetadata({ filesCount: 0, totalBytes: 0, limits: configuredLimits }),
         manifest: { records: [] },
       }, null, 2));
     }
 
+    if (effectiveLimit !== null && matches.length > effectiveLimit) {
+      return errorResult(`The glob matched ${matches.length} files. The limit is ${effectiveLimit} per request.`, {
+        error: 'E_TOO_MANY_FILES',
+        fix: 'Use a more specific glob, or raise the limit in .zapwebp/config.json.',
+        suggestedFix: {
+          glob: input,
+          maxFiles: effectiveLimit,
+        },
+      });
+    }
+
     if (matches.length > MAX_MCP_BATCH_FILES) {
       throw new Error(`Matched ${matches.length} images. Please limit to ${MAX_MCP_BATCH_FILES} files or fewer.`);
+    }
+
+    let preScanTotalBytes = 0;
+    for (const rel of matches) {
+      const st = await stat(path.resolve(root, rel)).catch(() => null);
+      if (st) preScanTotalBytes += st.size;
+    }
+
+    if (configuredLimits.maxBytesPerRequest !== null && preScanTotalBytes > configuredLimits.maxBytesPerRequest) {
+      return errorResult(`This batch is ${formatBytes(preScanTotalBytes)}. The limit is ${formatBytes(configuredLimits.maxBytesPerRequest)}.`, {
+        error: 'E_REQUEST_TOO_LARGE',
+        fix: 'Reduce the batch size, or raise the limit in .zapwebp/config.json.',
+        suggestedFix: {
+          maxBytes: configuredLimits.maxBytesPerRequest,
+        },
+      });
     }
 
     const convertedRecords = [];
@@ -660,6 +752,11 @@ export function createMcpServer(options = {}) {
       totalBytesBefore: totalIn,
       totalBytesAfter: totalOut,
       savedPercent,
+      limits: createLimitsMetadata({
+        filesCount: convertedRecords.length,
+        totalBytes: totalIn,
+        limits: configuredLimits,
+      }),
       manifest: manifestData,
     }, null, 2));
   });

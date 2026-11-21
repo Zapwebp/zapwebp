@@ -147,7 +147,8 @@ async function validateSafeUrlAsync(urlStr) {
 async function safeFetch(url, options = {}) {
   const urlStr = typeof url === 'string' ? url : url.toString();
   await validateSafeUrlAsync(urlStr);
-  return fetch(urlStr, {
+  const httpFetch = globalThis.fetch;
+  return httpFetch(urlStr, {
     ...options,
     redirect: 'error',
     signal: options.signal || AbortSignal.timeout(10000),

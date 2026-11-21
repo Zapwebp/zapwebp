@@ -4,7 +4,15 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const core = require('@zapwebp/core');
-const { validateSafeUrl, ZapwebpError } = require('@zapwebp/shared');
+const {
+  validateSafeUrl,
+  ZapwebpError,
+  DEFAULT_LIMITS,
+  resolveLimits,
+  evaluateLimits,
+  createLimitsMetadata,
+  RateLimiter,
+} = require('@zapwebp/shared');
 
 const {
   convertImage,
@@ -139,6 +147,8 @@ class Zapwebp {
     this.apiKey = options.apiKey || process.env.ZAPWEBP_API_KEY || process.env.ZAP_API_KEY || null;
     this.baseUrl = options.baseUrl ? options.baseUrl.replace(/\/$/, '') : null;
     this.isOffline = !this.baseUrl && !this.apiKey;
+    this.limits = resolveLimits(options.limits);
+    this.rateLimiter = this.limits.rateLimit ? new RateLimiter(this.limits.rateLimit) : null;
     this.operationsCount = 0;
     this.bytesProcessed = 0;
   }
@@ -209,6 +219,26 @@ class Zapwebp {
     }
 
     const { buffer } = await resolveInput(rawInput);
+    const activeLimits = options.limits ? resolveLimits(options.limits) : this.limits;
+    evaluateLimits({
+      filesCount: 1,
+      totalBytes: buffer.length,
+      limits: activeLimits,
+    });
+    if (this.rateLimiter) {
+      this.rateLimiter.record('sdk');
+    }
+
+    const limitsMeta = createLimitsMetadata({
+      filesCount: 1,
+      totalBytes: buffer.length,
+      limits: activeLimits,
+      rateLimit: this.rateLimiter ? {
+        remaining: this.rateLimiter.remaining('sdk'),
+        resetIn: this.rateLimiter.resetIn('sdk'),
+      } : null,
+    });
+
     const targets = Array.isArray(options.to) ? options.to : null;
 
     if (targets && targets.length > 0) {
@@ -285,6 +315,7 @@ class Zapwebp {
         outBuf.backupPath = backupPath;
       }
 
+      outBuf.limits = limitsMeta;
       return outBuf;
     }
 
@@ -344,6 +375,7 @@ class Zapwebp {
       reason: 'Verify the output has no residual metadata remaining.',
     };
 
+    outBuf.limits = limitsMeta;
     return outBuf;
   }
 
@@ -376,14 +408,22 @@ class Zapwebp {
       });
     }
 
+    const activeLimits = options.limits ? resolveLimits(options.limits) : this.limits;
+    evaluateLimits({
+      filesCount: inputs.length,
+      limits: activeLimits,
+    });
+
     const results = [];
     let success = 0;
     let failed = 0;
+    let totalBytes = 0;
 
     for (const item of inputs) {
       try {
         const out = await this.convert(item, options);
         results.push({ success: true, output: out });
+        totalBytes += out.length || 0;
         success++;
       } catch (err) {
         results.push({ success: false, error: err });
@@ -396,6 +436,15 @@ class Zapwebp {
       success,
       failed,
       results,
+      limits: createLimitsMetadata({
+        filesCount: inputs.length,
+        totalBytes,
+        limits: activeLimits,
+        rateLimit: this.rateLimiter ? {
+          remaining: this.rateLimiter.remaining('sdk'),
+          resetIn: this.rateLimiter.resetIn('sdk'),
+        } : null,
+      }),
       nextAction: {
         tool: 'optimize_assets',
         arguments: {},

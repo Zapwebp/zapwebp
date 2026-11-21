@@ -5,7 +5,17 @@ import { randomUUID } from 'node:crypto';
 import { zipSync } from 'fflate';
 import core from '@zapwebp/core';
 import shared from '@zapwebp/shared';
-const { DEFAULT_OPTIONS, ZapwebpError, setLocale, t } = shared;
+const {
+  DEFAULT_OPTIONS,
+  DEFAULT_LIMITS,
+  evaluateLimits,
+  createLimitsMetadata,
+  formatBytes,
+  ZapwebpError,
+  setLocale,
+  t,
+} = shared;
+import { loadSession, recordSession, resetSession } from './session.js';
 import { writeSafe, resolveSafePath, getPlatformConcurrency } from './fs.js';
 import {
   evaluateGateChain,
@@ -58,95 +68,112 @@ const {
   OUTPUT_FORMATS,
 } = core;
 
-const HELP = `zapwebp — SVG → WebP, safe, reversible, and scoped.
+function getHelpText() {
+  return `${t('cli.description')}
 
 USAGE
-  zap [paths...] [options]
+  ${t('cli.usage')}
   zap <command> [options]
 
-COMMANDS
-  init              Set up config, ignore rules, and .gitignore (--team for policy)
-  watch             Convert on change (undoable)
-  report [path]     Show aggregate performance savings report
-  policy <cmd>      Manage team governance policy (validate, status)
-  audit             Dry-run + safety audit report or command linter
-  check             CI mode: exit 1 if any conversion is needed
-  explain <file>    Explain why a file will or won't convert
-  ignored [dir]     Explain why files are skipped by ignore rules
-  history           List past conversion transactions
-  undo [id|step]    Revert the last run (or a specific transaction)
-  redo [id]         Reapply the last undone transaction
-  show <id>         Inspect a transaction's operations
-  gc                Prune old journal logs and backups
-  gitignore <subcmd> Manage .gitignore block (show, add, remove)
-  config show       Display resolved configuration and origins
-  doctor            Verify system environment and dependencies
-  inspect <image>   Analyze image container and metadata chunks
-  explain-black-bg  Explain ImageMagick black background bugs
+${t('cli.commands_header')}
+  init              ${t('cmd.init')} (--team for policy)
+  watch             ${t('cmd.watch')}
+  report [path]     ${t('cmd.report')}
+  policy <cmd>      ${t('cmd.policy')}
+  audit             ${t('cmd.audit')}
+  check             ${t('cmd.check')}
+  explain <file>    ${t('cmd.explain')}
+  ignored [dir]     ${t('cmd.ignored')}
+  history           ${t('cmd.history')}
+  undo [id|step]    ${t('cmd.undo')}
+  redo [id]         ${t('cmd.redo')}
+  show <id>         ${t('cmd.show')}
+  gc                ${t('cmd.gc')}
+  gitignore <subcmd> ${t('cmd.gitignore')}
+  config show       ${t('cmd.config')}
+  doctor            ${t('cmd.doctor')}
+  inspect <image>   ${t('cmd.inspect')}
+  explain-black-bg  ${t('cmd.explain_black_bg')}
 
-OPTIONS
-  -o, --output <file>     Output file (single input) or .zip archive
-      --out-dir <dir>     Destination folder for converted outputs
-      --to <formats>      Target format(s), comma-separated (default: webp)
-      --from <format>     Restrict input format filter
-      --smart             Deterministic pixel analysis to recommend/apply best format
-      --explain           Explain smart optimization decision
-      --since <period>    Filter report by timeframe (e.g. "30 days ago", "7d")
-      --team              Initialize team governance policy (zap init --team)
-      --scale <scales>    Multiplier scales, e.g. 1,2,3 (default: 1)
-      --base-width <px>   Base pixel width for scale 1x (default: 512)
-      --width <px>        Explicit output width (max 4096)
-      --height <px>       Explicit output height (max 4096)
-      --fit <mode>        contain, cover, fill, inside, outside
-      --quality <0-100>   Compression quality (default: 85)
-      --lossless          Encode losslessly where supported
-      --effort <0-9>      Encoding effort
-      --background <col>  Flatten color for JPEG output
-      --clean             Strip AI provenance and metadata (default: true)
-      --no-clean          Preserve container metadata
-      --verify <hash>     Verify output SHA-256 matches expected hash before writing
-      --verify-clean      Enforce 0 metadata chunks and Clean Certificate
-      --assert-alpha      Strictly fail if transparent input loses alpha
-      --lock-target <fmt> Enforce many-to-one conversion to specified format
-      --strict            Strictly fail on unconvertible inputs (default when locked)
-      --no-strict         Pass through unconvertible files unchanged
-      --same-format <mod> Action when input matches target: passthrough (default), reencode, reject
-      --size-mode <mode>  Size contract enforcement: compress (default), strict, flexible
-      --flexible          Alias for --size-mode flexible (warn only, never reject or degrade)
-      --min-input <bytes> Reject inputs smaller than minimum byte limit (e.g. 500B, 10KB)
-      --max-input <bytes> Reject inputs larger than maximum byte limit (e.g. 15MB)
-      --min-output <byte> Validate output meets minimum byte size
-      --max-output <byte> Compress or validate output under maximum byte size
-      --target <size>     Target maximum output size with adaptive compression (e.g. 500kb, 1mb)
-      --min-quality <q>   Minimum quality floor before downscaling (default: 10)
-      --no-downscale      Disallow downscaling to meet target size
-      --override-lock     Explicit opt-in to bypass configured target lock
-      --zip               Bundle outputs into a single ZIP archive
-      --srcset            Print responsive <img srcset> HTML tags
-      --changed           Only convert files modified vs HEAD (git)
-      --staged            Only convert files in git staging area
-      --include-ignored   Bypass .zapwebpignore and config ignores
-      --include-all       Bypass all ignore layers including built-ins
-      --follow-symlinks   Follow symbolic links (disabled by default)
-      --allow-outside     Allow paths outside current workspace
-      --allow-unsafe      Permit SVGs with minor safety warnings
-      --force             Force conversion of up-to-date files
-      --force-undo        Force undo even if outputs were modified
-      --commit-outputs    Do not add outDir to .gitignore
-      --gitignore=off     Disable automatic .gitignore management
-      --stdin             Read image from standard input
-      --manifest          Write manifest.json
-      --dry-run           Plan conversion without writing files or journal
-      --json              Emit machine-readable JSON output
-      --config <file>     Explicit path to configuration file
-  -h, --help              Show this help
+${t('cli.options_header')}
+  -o, --output <file>     ${t('flag.output')}
+      --out-dir <dir>     ${t('flag.out_dir')}
+      --to <formats>      ${t('flag.to')}
+      --from <format>     ${t('flag.from')}
+      --smart             ${t('flag.smart')}
+      --explain           ${t('flag.explain')}
+      --since <period>    ${t('flag.since')}
+      --team              ${t('flag.team')}
+      --scale <scales>    ${t('flag.scale')}
+      --base-width <px>   ${t('flag.base_width')}
+      --width <px>        ${t('flag.width')}
+      --height <px>       ${t('flag.height')}
+      --fit <mode>        ${t('flag.fit')}
+  -q, --quality <0-100>   ${t('flag.quality')}
+      --lossless          ${t('flag.lossless')}
+      --effort <0-9>      ${t('flag.effort')}
+      --background <col>  ${t('flag.background')}
+      --clean             ${t('flag.clean')}
+      --no-clean          ${t('flag.no_clean')}
+      --verify <hash>     ${t('flag.verify')}
+      --verify-clean      ${t('flag.verify_clean')}
+      --assert-alpha      ${t('flag.assert_alpha')}
+      --lock-target <fmt> ${t('flag.lock_target')}
+      --strict            ${t('flag.strict')}
+      --no-strict         ${t('flag.no_strict')}
+      --same-format <mod> ${t('flag.same_format')}
+      --size-mode <mode>  ${t('flag.size_mode')}
+      --flexible          ${t('flag.flexible')}
+      --min-input <bytes> ${t('flag.min_input')}
+      --max-input <bytes> ${t('flag.max_input')}
+      --min-output <byte> ${t('flag.min_output')}
+      --max-output <byte> ${t('flag.max_output')}
+      --target <size>     ${t('flag.target')}
+      --min-quality <q>   ${t('flag.min_quality')}
+      --no-downscale      ${t('flag.no_downscale')}
+      --no-lock           ${t('flag.no_lock')}
+      --lock-status       ${t('flag.lock_status')}
+      --override-lock     ${t('flag.override_lock')}
+      --zip               ${t('flag.zip')}
+      --srcset            ${t('flag.srcset')}
+      --changed           ${t('flag.changed')}
+      --staged            ${t('flag.staged')}
+      --include-ignored   ${t('flag.include_ignored')}
+      --include-all       ${t('flag.include_all')}
+      --follow-symlinks   ${t('flag.follow_symlinks')}
+      --allow-outside     ${t('flag.allow_outside')}
+      --allow-unsafe      ${t('flag.allow_unsafe')}
+  -f, --force             ${t('flag.force')}
+      --force-undo        ${t('flag.force_undo')}
+      --commit-outputs    ${t('flag.commit_outputs')}
+      --gitignore=off     ${t('flag.gitignore')}
+      --stdin             ${t('flag.stdin')}
+      --manifest          ${t('flag.manifest')}
+      --dry-run           ${t('flag.dry_run')}
+      --json              ${t('flag.json')}
+      --config <file>     ${t('flag.config')}
+      --max-files <n>     ${t('flag.max_files')}
+      --unlimited         ${t('flag.unlimited')}
+      --concurrency <n>   ${t('flag.concurrency')}
+      --max-bytes <size>  ${t('flag.max_bytes')}
+      --reset-session     ${t('flag.reset_session')}
+      --lang <code>       ${t('flag.lang')}
+  -h, --help              ${t('flag.help')}
 
-SAFETY & PRIVACY
-  • Zero telemetry. Zero network calls. Files never leave your machine.
-  • Reversible: every run creates an undoable journal in .zapwebp/journal/.
-  • TOCTOU safe: files are re-verified immediately before writing.
-  • Atomic writes: tmp -> rename ensures no half-written files.
+${t('cli.safety_header')}
+  • ${t('cli.safety_telemetry')}
+  • ${t('cli.safety_reversible')}
+  • ${t('cli.safety_toctou')}
+  • ${t('cli.safety_atomic')}
+
+${t('cli.exit_codes_header')}
+  0   ${t('exit.0')}
+  1   ${t('exit.1')}
+  2   ${t('exit.2')}
 `;
+}
+
+const HELP = getHelpText();
 
 function parseByteSize(val) {
   if (typeof val === 'number') return val;
@@ -260,6 +287,15 @@ function parseArgs(argv) {
     }
     else if (arg === '--clean') parsed.options.clean = true;
     else if (arg === '--no-clean') parsed.options.clean = false;
+    else if (arg === '--force' || arg === '-f') {
+      parsed.force = true;
+      parsed.options.force = true;
+    } else if (arg === '--no-lock') {
+      parsed.noLock = true;
+      parsed.options.noLock = true;
+    } else if (arg === '--lock-status') {
+      parsed.lockStatus = true;
+    }
     else if (arg === '--delete-original') {
       parsed.deleteOriginal = true;
       parsed.options.keepOriginal = false;
@@ -332,6 +368,27 @@ function parseArgs(argv) {
     else if (arg === '--commit-outputs') parsed.commitOutputs = true;
     else if (arg === '--gitignore=off') parsed.gitignoreOff = true;
     else if (arg === '--hook') parsed.hook = true;
+    else if (arg === '--max-files') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a number.`);
+      parsed.maxFiles = Number(value);
+      parsed.options.maxFiles = Number(value);
+    } else if (arg === '--unlimited') {
+      parsed.unlimited = true;
+      parsed.options.unlimited = true;
+    } else if (arg === '--concurrency') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a number.`);
+      parsed.concurrency = Number(value);
+      parsed.options.concurrency = Number(value);
+    } else if (arg === '--max-bytes') {
+      const value = argv[++i];
+      if (!value) throw new Error(`${arg} requires a byte size (e.g. 100MB).`);
+      parsed.maxBytes = parseByteSize(value);
+      parsed.options.maxBytes = parseByteSize(value);
+    } else if (arg === '--reset-session') {
+      parsed.resetSession = true;
+    }
     else if (arg === '--scale' || arg === '--scales') {
       const value = argv[++i];
       if (!value) throw new Error(`${arg} needs a multiplier value, e.g. 1,2,3`);
@@ -421,7 +478,52 @@ function outputFor(input, inputs, output, outDir, inputRoot, target, scale = 1) 
 async function main() {
   const rootDir = process.cwd();
   const args = parseArgs(process.argv.slice(2));
-  if (args.help) { process.stdout.write(HELP); return; }
+  const locale = args.lang || process.env.ZAPWEBP_LANG || (process.env.LANG ? process.env.LANG.split(/[-_.@]/)[0].toLowerCase() : 'en');
+  setLocale(locale);
+  if (args.help) { process.stdout.write(getHelpText()); return; }
+
+  // Subcommand / flag: --lock-status
+  if (args.lockStatus) {
+    const targetFile = args.inputs[0];
+    if (!targetFile) {
+      process.stderr.write('Error: --lock-status requires a target file path.\n');
+      process.exitCode = 1;
+      return;
+    }
+    const fullPath = path.resolve(rootDir, targetFile);
+    const fileBytes = await readFile(fullPath).catch(() => null);
+    if (!fileBytes) {
+      process.stderr.write(`Error: Cannot read file: ${targetFile}\n`);
+      process.exitCode = 1;
+      return;
+    }
+    const { readLock } = await import('@zapwebp/lock');
+    const lock = readLock(fileBytes);
+    if (!lock) {
+      process.stdout.write('Lock: not present (file has not been locked by Zapwebp)\n');
+      return;
+    }
+    process.stdout.write('Lock: present\n');
+    process.stdout.write(`  Input SHA-256:    ${lock.inputSha256 || 'n/a'}\n`);
+    process.stdout.write(`  Options SHA-256:  ${lock.optionsSha256 || 'n/a'}\n`);
+    process.stdout.write(`  Engine version:   ${lock.engineVersion || 'n/a'}\n`);
+    process.stdout.write(`  Converted at:     ${lock.convertedAt || 'n/a'}\n`);
+    if (lock.optionsSummary) {
+      const summaryList = Object.entries(lock.optionsSummary)
+        .filter(([, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${k} ${v}`)
+        .join(', ');
+      process.stdout.write(`  Options:          ${summaryList}\n`);
+    }
+    return;
+  }
+
+  // Handle --reset-session
+  if (args.resetSession) {
+    await resetSession(rootDir);
+    process.stdout.write('✓ Session reset. Processed files count is now 0.\n');
+    return;
+  }
 
   // 1. Subcommand: init
   if (args.inputs[0] === 'init') {
@@ -1028,6 +1130,27 @@ async function main() {
     if (!args.watch) return;
   }
 
+  // Enforce Configurable Limits & Rate Controls
+  const session = await loadSession(rootDir);
+  let totalInputBytes = 0;
+  for (const fileItem of inScopeFiles) {
+    totalInputBytes += fileItem.size || 0;
+  }
+
+  evaluateLimits({
+    filesCount: inScopeFiles.length,
+    totalBytes: totalInputBytes,
+    sessionCount: session.filesProcessed,
+    limits: options.limits || DEFAULT_LIMITS,
+  });
+
+  const limitsMetadata = createLimitsMetadata({
+    filesCount: inScopeFiles.length,
+    totalBytes: totalInputBytes,
+    sessionCount: session.filesProcessed,
+    limits: options.limits || DEFAULT_LIMITS,
+  });
+
   // Team Policy Enforcement
   const policyFile = path.join(rootDir, 'zapwebp.policy.json');
   let teamPolicy = null;
@@ -1163,6 +1286,16 @@ async function main() {
           continue;
         }
 
+        // Idempotent Conversion Lock: skip if existing output matches input, options, and engine
+        if (!args.force && !args.noLock && existingOutput && existingOutput.length > 0) {
+          const { verifyLock } = await import('@zapwebp/lock');
+          const verification = verifyLock(existingOutput, currentBytes, targetOptions, { force: args.force });
+          if (verification.match) {
+            process.stdout.write(`⏭  ${path.relative(rootDir, dest)} already converted with matching options. Skipped. Use --force to re-convert.\n`);
+            continue;
+          }
+        }
+
         let converted;
         try {
           converted = await convertImage(currentBytes, targetOptions);
@@ -1175,18 +1308,17 @@ async function main() {
           throw err;
         }
 
-        if (args.verifyHash && args.verifyHash !== 'true') {
-          const actualHash = sha256(converted.data);
-          if (actualHash.toLowerCase() !== args.verifyHash.toLowerCase()) {
-            throw new ZapwebpError({
-              code: 'E_VERIFICATION_FAILED',
-              message: `E_VERIFICATION_FAILED: Converted output SHA-256 (${actualHash}) does not match expected hash (${args.verifyHash})`,
-              fix: 'Verify the expected hash or check engine version determinism.',
-            });
-          }
-        }
-
         if (converted.passedThrough) {
+          if (args.verifyHash && args.verifyHash !== 'true') {
+            const actualHash = sha256(converted.data);
+            if (actualHash.toLowerCase() !== args.verifyHash.toLowerCase()) {
+              throw new ZapwebpError({
+                code: 'E_VERIFICATION_FAILED',
+                message: `E_VERIFICATION_FAILED: Converted output SHA-256 (${actualHash}) does not match expected hash (${args.verifyHash})`,
+                fix: 'Verify the expected hash or check engine version determinism.',
+              });
+            }
+          }
           await writeAtomic(dest, converted.data);
           operations.push({
             type: 'create',
@@ -1214,13 +1346,34 @@ async function main() {
           continue;
         }
 
-        await writeAtomic(dest, converted.data);
+        let outputData = converted.data;
+        if (!args.noLock) {
+          const { writeLock, createLockFingerprint } = await import('@zapwebp/lock');
+          const fp = createLockFingerprint({
+            input: currentBytes,
+            options: targetOptions,
+          });
+          outputData = writeLock(outputData, converted.targetFormat || target, fp);
+        }
+
+        if (args.verifyHash && args.verifyHash !== 'true') {
+          const actualHash = sha256(outputData);
+          if (actualHash.toLowerCase() !== args.verifyHash.toLowerCase()) {
+            throw new ZapwebpError({
+              code: 'E_VERIFICATION_FAILED',
+              message: `E_VERIFICATION_FAILED: Converted output SHA-256 (${actualHash}) does not match expected hash (${args.verifyHash})`,
+              fix: 'Verify the expected hash or check engine version determinism.',
+            });
+          }
+        }
+
+        await writeAtomic(dest, outputData);
 
         operations.push({
           type: 'create',
           path: path.relative(rootDir, dest).replace(/\\/g, '/'),
-          sha256: sha256(converted.data),
-          bytes: converted.size,
+          sha256: sha256(outputData),
+          bytes: outputData.length,
           inputPath: path.relative(rootDir, fileItem.path).replace(/\\/g, '/'),
           inputBytes: currentBytes.length,
           format: target,
@@ -1249,6 +1402,7 @@ async function main() {
           sourceQuality: converted.sourceQuality,
           sizeImpact: converted.sizeImpact,
           compression: converted.compression,
+          limits: limitsMetadata,
         });
       }
     }
@@ -1358,6 +1512,10 @@ async function main() {
 
     const retentionDays = options.deleteBackupRetentionDays || fileConfig.deleteBackupRetentionDays || 30;
     await pruneJournal(rootDir, 50, retentionDays).catch(() => {});
+  }
+
+  if (!args.dryRun && !args.check && records.length > 0) {
+    await recordSession(rootDir, inScopeFiles.length);
   }
 
   // Synchronize .gitignore

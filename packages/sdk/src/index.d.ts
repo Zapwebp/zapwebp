@@ -1,5 +1,5 @@
-import type { ZapwebpError } from '@zapwebp/shared';
-export { ZapwebpError };
+import type { ZapwebpError, ZapwebpLimits, LimitsMetadata } from '@zapwebp/shared';
+export { ZapwebpError, ZapwebpLimits, LimitsMetadata };
 
 export type ImageInput = Uint8Array | Buffer | ArrayBuffer | Blob | string;
 
@@ -34,6 +34,7 @@ export interface ConvertResult {
   bytes: number;
   alphaPreserved: boolean;
   metadataRemoved?: string[];
+  limits?: LimitsMetadata;
   nextAction?: NextAction;
 }
 
@@ -43,6 +44,7 @@ export interface BatchConvertOptions {
   to?: string;
   quality?: number;
   clean?: boolean;
+  limits?: Partial<ZapwebpLimits>;
   [key: string]: any;
 }
 
@@ -51,6 +53,7 @@ export interface BatchConvertResult {
   success: number;
   failed: number;
   results: Array<{ success: boolean; output?: ConvertResult; error?: any }>;
+  limits?: LimitsMetadata;
   nextAction?: NextAction;
 }
 
@@ -120,8 +123,9 @@ export class Zapwebp {
   readonly apiKey: string | null;
   readonly baseUrl: string | null;
   readonly isOffline: boolean;
+  readonly limits: ZapwebpLimits;
 
-  constructor(options?: { apiKey?: string; baseUrl?: string });
+  constructor(options?: { apiKey?: string; baseUrl?: string; limits?: Partial<ZapwebpLimits> });
 
   convert(opts: ConvertOptions): Promise<Buffer & ConvertResult>;
   convert(input: ImageInput, options?: ConvertOptions): Promise<Buffer & ConvertResult>;

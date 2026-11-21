@@ -2,6 +2,91 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [2.28.0] - 2026-11-21
+
+### Added
+
+- **Comprehensive Internationalization (i18n) & Localization Overhaul**:
+  - **100% Documentation Parity**: Authored `locales/tl/docs/plugins/docs.md` with complete Tagalog technical translation, achieving 54/54 documents (100% parity) verified by `validate-locales.js` and `test/locales-docs.test.js`.
+  - **Open Community Contribution Enablement**: Upgraded `@zapwebp/shared/src/i18n.js` with dynamic `loadFilesystemCatalogs()` to discover and load any community translation catalogs (`/locales/<locale>/*.json`) automatically on boot. Added `registerTranslations(locale, catalog)` and dynamic `getSupportedLocales()` APIs.
+  - **CLI Internationalization (`packages/cli`)**: Wired `--lang`, `setLocale()`, and `t()` in `packages/cli/src/index.js` to render fully localized CLI help screens (`getHelpText()`), commands, options, and error diagnostics in both Tagalog (`--lang tl`) and English.
+  - **Web Application Accessibility & Localization (`public/app.js`, `public/index.html`)**: Tagged settings drawer sections with `data-i18n` (`settings.theme`, `settings.language`, `settings.quick_links`, `settings.reset_defaults`, `settings.advanced`), fixed drawer radio click handler to call `applyTranslations()`, synchronized `#lang-select` and radio states across the UI, and wired `showError()` to localized error code messages.
+  - **Complete Error Catalog Parity**: Added full Tagalog translations for limits and concurrency errors (`E_TOO_MANY_FILES`, `E_REQUEST_TOO_LARGE`, `E_SESSION_LIMIT_EXCEEDED`, `E_USER_LIMIT_EXCEEDED`, `E_CONCURRENCY_LIMIT_EXCEEDED`) across `locales/en/errors.json` and `locales/tl/errors.json`.
+- **VS Code Extension (`zapwebp-vscode` v1.3.0)**:
+  - Upgraded extension to v1.3.0.
+  - Integrated configurable limits and target locking controls.
+  - Packaged `zapwebp-vscode-1.3.0.vsix` and published to Open VSX Registry (`ebula.zapwebp-vscode`).
+- **Standalone Documentation Site (`zapwebp-docs`)**:
+  - Synchronized `/limits`, `/plugins/docs`, and `/plugins/lock` routes with full bilingual navigation.
+  - Rebuilt static distribution assets (`npm run build --prefix zapwebp-docs`).
+- **Multi-Instance Rate Limiting & Pluggable Stores (`@zapwebp/shared`)**:
+  - `RateLimitStore` abstract base interface supporting synchronous and asynchronous storage backends.
+  - `MemoryRateLimitStore`: High-speed in-memory sliding window store for standalone tools and test suites.
+  - `FileRateLimitStore`: Atomic file-backed store (`.zapwebp/ratelimit.json`) using temporary file renaming and lock retries to coordinate rate limits across multiple Node processes, PM2 cluster workers, and container instances mounting shared volumes without external databases.
+  - `RateLimiter`: Enhanced constructor accepting `{ maxRequests, windowMs, store, keyPrefix }` with both synchronous and asynchronous operations (`checkAsync`, `recordAsync`, `remainingAsync`, `resetInAsync`, `clearAsync`).
+- **Multi-Tier Concurrency Architecture & Enforcement (`@zapwebp/shared`)**:
+  - Unambiguous concurrency scopes in `DEFAULT_LIMITS` and `resolveLimits()`:
+    - `concurrency.perRequest`: Worker pool size for a single batch conversion (defaults to 4).
+    - `concurrency.perUser`: Maximum active concurrent conversion requests per authenticated user/tenant (defaults to 4).
+    - `concurrency.global`: Server-wide concurrency ceiling across all active requests combined (defaults to 16).
+  - Backward-compatible `maxConcurrent` alias automatically mapped to `concurrency.perRequest`.
+  - `ConcurrencyLimiter`: Semaphore managing `acquire()`, `release()`, and `run(taskFn)` with structured error `E_CONCURRENCY_LIMIT_EXCEEDED` and `getStatus()` reporting.
+- **Universal Session Model Across Browser, CLI, MCP, and SDK (`@zapwebp/shared`)**:
+  - Unified `SessionState` contract: `{ sessionId: "zap-sess-...", surface, createdAt, updatedAt, expiresAt, filesProcessed, bytesProcessed, requestsCount }`.
+  - Dedicated storage adapters: `MemorySessionStore`, `FileSessionStore` (`.zapwebp/session.json`), and `WebSessionStore` (`sessionStorage`).
+  - `SessionManager`: Manages rolling 24-hour TTL, `canProcess()`, `record()`, and `reset()`.
+  - Integrated into CLI (`packages/cli/src/session.js`), Web App (`public/app.js`), and SDK.
+- **Complete Finalization of `@zapwebp/docs` Engine**:
+  - Fully decoupled and zero-hardcoding: configurable `lang` attribute, custom `<head>` injections, custom icons/favicons (`theme.icon`, `theme.favicon`), custom search placeholder (`theme.searchPlaceholder`), and user assets directory copying (`assets.dir`).
+  - Generalized sitemap priorities engine supporting frontmatter `priority` overrides, configuration priority maps, and standard route hierarchies without project-specific hardcoding.
+- **Configurable File Limits & Rate Controls Across All Surfaces**:
+  - **Single Contract & Schema (`@zapwebp/shared`)**:
+    - Centralized `DEFAULT_LIMITS`: `maxFilesPerRequest: 20`, `maxFilesPerSession: 100`, `maxFilesPerUser: null`, `maxBytesPerRequest: 104857600` (100 MB), `maxConcurrent: 4`, `rateLimit: { maxRequests: 100, windowMs: 60000 }`.
+    - `resolveLimits()`: Unified parser supporting positive numbers, `null`, and `"unlimited"`.
+    - `evaluateLimits()`: Standardized assertion engine throwing deterministic `ZapwebpError` instances (`E_TOO_MANY_FILES`, `E_REQUEST_TOO_LARGE`, `E_SESSION_LIMIT_EXCEEDED`, `E_USER_LIMIT_EXCEEDED`).
+    - `createLimitsMetadata()`: Constructs uniform response metadata blocks with `filesProcessed`, `filesRemaining`, `bytesProcessed`, `bytesRemaining`, and `rateLimit: { remaining, resetIn }`.
+    - `RateLimiter`: Zero-dependency sliding window rate limiter with per-key tracking, remaining counts, and seconds until reset.
+  - **MCP AI Agent Protocol (`@zapwebp/mcp`)**:
+    - Tool schema update: `batch_convert` accepts `maxFiles: z.number().optional()`.
+    - Pre-scans glob matches against project limits and returns structured `E_TOO_MANY_FILES` with `suggestedFix: { glob, maxFiles }`.
+    - Added hidden system instructions preventing AI agents from exceeding batch thresholds and requiring explicit user confirmation before bypass.
+    - Attached `limits` metadata block to all tool responses.
+  - **Developer CLI (`packages/cli`)**:
+    - New flags: `--max-files <n>`, `--unlimited`, `--concurrency <n>`, `--max-bytes <size>`, `--reset-session`.
+    - Cumulative session file tracking persisted in `.zapwebp/session.json`.
+    - Throws `E_SESSION_LIMIT_EXCEEDED` when session ceiling is reached, directing maintainers to `zap --reset-session`.
+    - Appends `limits` metadata block to all JSON record outputs.
+  - **Official Client SDK (`@zapwebp/sdk`)**:
+    - Constructor accepts custom limits: `new Zapwebp({ limits: { maxFilesPerRequest: 10 } })`.
+    - Enforces batch count and byte boundaries in `convert()` and `convertBatch()`.
+    - Attaches `limits` metadata block to converted Buffer instances and batch reports.
+  - **Storage Adapters (`@zapwebp/storage`)**:
+    - Pre-upload limit evaluation across Supabase, Firebase, and Neocities.
+    - Integrated per-user quota ceilings (`maxFilesPerUser`) mapped to authenticated IDs (`auth.getUser()`).
+    - Sliding window rate limiting defending against storage flood attempts.
+  - **Universal Web Application (`public/app.js`, `public/index.html`)**:
+    - Added visible dropzone limit badge (`Max 20 files · Max 100 MB total`).
+    - Pre-conversion file drop evaluation blocking oversized payloads and session threshold breaches before memory allocation.
+    - Integrated session counter using browser `sessionStorage`.
+  - **Universal Documentation & Locale Parity**:
+    - Authored `content/limits.md`, `zapwebp-docs/content/limits.md`, and Tagalog translation `locales/tl/docs/limits.md`.
+    - Added route to `test/docs.test.js` and `public/llms.txt`.
+    - 26 tests across 5 packages (`@zapwebp/shared`, `@zapwebp/storage`, `@zapwebp/mcp`, `zapwebp` CLI, and `@zapwebp/sdk`).
+
+## [2.27.0] - 2026-11-20
+
+### Added
+
+- **Universal Documentation Delivery Engine (`@zapwebp/docs`)**:
+  - **Zero-Framework, Zero-Runtime Architecture**: Built a self-contained, MIT-licensed documentation delivery engine that transforms Markdown files into static, bot-crawlable, AI-discoverable, and human-readable documentation sites from a single build step.
+  - **Triple-Audience Output Delivery**:
+    - **Humans**: Semantic, fast, responsive documentation (< 20KB HTML, first paint < 500ms) with zero client JavaScript required to read, dark/light theme switching respecting `prefers-color-scheme`, and instant client-side search dialog.
+    - **Search Engines**: 100% static HTML per page, Open Graph & Twitter meta tags, Schema.org `TechArticle` JSON-LD structured data, clean URLs, and XML sitemaps.
+    - **AI Crawlers & Agents**: Byte-for-byte `.md` mirrors for raw context reading, standardized `llms.txt` and `llms-full.txt` catalogs, explicit `robots.txt` crawler allow-listing (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended), and machine-readable `agent.json` route directories.
+  - **Zero Dependencies**: Requires only `marked` (^18.1.2) for Markdown parsing; all file operations, HTTP preview serving, frontmatter extraction, and asset management run on standard Node.js built-ins.
+  - **CLI & Programmatic Suite**: Provides `zapwebp-docs` and `docs` CLI binaries with `build`, `serve` (zero-dependency static preview server), and `init` commands, alongside full programmatic TypeScript definitions in `src/index.d.ts`.
+  - **Comprehensive Verification**: 23 unit and integration tests covering config normalization, frontmatter fallback inference, alert blockquotes, permalink slugs, static HTML generation, manifest creation, and HTTP server routing.
+
 ## [2.26.0] - 2026-11-19
 
 ### Added

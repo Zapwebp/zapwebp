@@ -123,6 +123,7 @@ function resolveConfig(rawOptions = {}) {
     emitManifest,
     respectNextImage,
     onConflict,
+    lock: options.lock !== undefined ? options.lock : { enabled: true, invalidateOnEngineChange: true },
   };
 }
 
