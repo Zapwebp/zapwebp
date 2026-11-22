@@ -1,67 +1,32 @@
-# Code of Conduct
+# Alituntunin sa Pag-uugali ng Komunidad
 
-Covers: Pangako sa pakikilahok sa komunidad, mga inaasahang pamantayan, hindi katanggap-tanggap na pag-uugali, mga alituntunin sa pagpapatupad, at mga paraan ng pag-uulat.
+Ang Zapwebp ay nakatuon sa pagbibigay ng isang bukas, magiliw, at ligtas na kapaligiran para sa lahat ng nakikilahok sa aming komunidad, mga repository, talakayan, at mga kaugnay na channel. Inaasahan namin na ang bawat miyembro ay makikipagtulungan nang may empatiya, propesyonalismo, at paggalang.
 
-Does not cover: Teknikal na istilo ng code at arkitektura ng API. Tingnan ang [Contributing](/contributing) at [Developers](/developers).
+---
 
-Applies to: Lahat ng espasyo ng komunidad ng Zapwebp, mga repository, issue tracker, talakayan, at pull request.
+## 1. Mga Pamantayan ng Komunidad
 
-## Quick start
+### Mga Positibong Pag-uugali
+- Pagpapakita ng empatiya at kabaitan sa kapwa kalahok.
+- Paggalang sa iba't ibang pananaw, opinyon, at antas ng karanasan.
+- Pagbibigay at magalang na pagtanggap ng nakabubuting puna.
+- Pag-ako ng pananagutan kapag nagkamali at pakikipagtulungan upang maitama ito.
 
-```bash
-# Tingnan ang mga alituntunin ng komunidad online
-open https://zapwebp-docs.vercel.app/code-of-conduct
-```
+### Mga Hindi Katanggap-tanggap na Pag-uugali
+- Paggamit ng mapanlait, mapanghamak, o nakasasakit na pananalita.
+- Panggigipit, pambu-bully, o hindi nararapat na atensyon sa pampubliko o pribadong usapan.
+- Paglalathala ng pribadong impormasyon ng iba nang walang pahintulot.
+- Paulit-ulit na pag-abala sa mga teknikal na talakayan at pull request reviews.
 
-Iulat ang anumang paglabag nang direkta sa maintainer sa pamamagitan ng email: [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com).
+---
 
-## What it does
+## 2. Pagpapatupad at Pag-uulat
 
-Pinagtibay ng Zapwebp ang Contributor Covenant v2.1 upang magtaguyod ng isang bukas, magiliw, may pagkakaiba-iba, at inklusibong kapaligiran.
+Ang mga tagapamahala ng proyekto ay may karapatan at pananagutan na alisin o tanggihan ang mga komento, commit, o pull request na lumalabag sa mga alituntuning ito.
 
-### Aming Pamantayan
+Kung makaranas o makasaksi ka ng hindi katanggap-tanggap na pag-uugali, mangyaring iulat ito sa tagapamahala:
+- **Tagapamahala:** Eldrex Delos Reyes Bula
+- **Email:** `eldrexdelosreyesbula@gmail.com`
+- **Subject:** `[CODE OF CONDUCT REPORT]`
 
-Kabilang sa mga positibong kontribusyon ang:
-- Pagpapakita ng empatiya at kabaitan sa iba pang miyembro ng komunidad.
-- Paggalang sa magkakaibang opinyon, pananaw, at antas ng karanasan.
-- Pagbibigay at magandang pagtanggap ng nakabubuting puna.
-- Pagtanggap ng pananagutan at paghingi ng tawad sa mga naapektuhan ng pagkakamali.
-
-Kabilang sa hindi katanggap-tanggap na pag-uugali ang:
-- Paggamit ng sekswal na wika, imahe, o hindi nararapat na atensyon.
-- Trolling, mapanlait, mapanghamak na komento, at personal o pulitikal na pag-atake.
-- Pampubliko o pribadong panliligalig (harassment).
-- Paglalathala ng pribadong impormasyon ng iba nang walang malinaw na pahintulot.
-
-## Enforcement Guidelines
-
-Ang mga pinuno ng komunidad ay may tungkuling magsiyasat ng mga ulat ng hindi katanggap-tanggap na pag-uugali at magsagawa ng nararapat na aksyon:
-
-| Antas ng Aksyon | Deskripsyon | Bunga |
-|---|---|---|
-| **1. Pagwawasto** | Pribadong paalala para sa maliit na paglabag | Nakasulat na patnubay sa mga pamantayan ng komunidad |
-| **2. Babala** | Babala para sa paulit-ulit o seryosong paglabag | Patuloy na pagsubaybay sa mga kontribusyon |
-| **3. Pansamantalang Pagpapahinto** | Pagsuspinde mula sa pakikipag-ugnayan sa komunidad | Pansamantalang pag-block mula sa repository at talakayan |
-| **4. Permanenteng Pagpapalayas** | Paulit-ulit na panliligalig o matinding paglabag | Permanenteng pag-ban mula sa lahat ng espasyo ng proyekto |
-
-## Errors
-
-| Code | Dahilan | Solusyon |
-|---|---|---|
-| `coc_report_pending` | Ang isyu sa pagkilos ay naiulat at kasalukuyang sinusuri | Maghintay ng tugon mula sa maintainer |
-
-## For agents
-
-```json
-{
-  "covenant": "Contributor Covenant v2.1",
-  "contact": "eldrexdelosreyesbula@gmail.com",
-  "scope": "All community channels, GitHub repositories, and PRs",
-  "enforcement": "Zero tolerance for harassment"
-}
-```
-
-## Related
-
-- [Contributing](/contributing): Daloy ng trabaho sa pag-develop at checklist ng PR.
-- [About](/about): Doktrina ng proyekto at mga pangunahing tagapamahala.
+Lahat ng ulat ay susuriin nang kumpidensyal at patas.

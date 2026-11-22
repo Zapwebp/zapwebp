@@ -15,6 +15,7 @@ function getTargetOptions(sourceFormat) {
         { value: 'webp', label: 'WebP (Recommended)', isDefault: true },
         { value: 'avif', label: 'AVIF' },
         { value: 'png', label: 'PNG' },
+        { value: 'ico', label: 'ICO' },
         { value: 'jpeg', label: 'JPEG (Flatten)' },
         { value: 'skip', label: '— Skip this format —' },
       ];
@@ -22,6 +23,7 @@ function getTargetOptions(sourceFormat) {
       return [
         { value: 'webp', label: 'WebP (Recommended)', isDefault: true },
         { value: 'avif', label: 'AVIF' },
+        { value: 'ico', label: 'ICO' },
         { value: 'jpeg', label: 'JPEG' },
         { value: 'skip', label: '— Skip this format —' },
       ];
@@ -57,6 +59,20 @@ function getTargetOptions(sourceFormat) {
         { value: 'webp', label: 'WebP (Recommended)', isDefault: true },
         { value: 'png', label: 'PNG' },
         { value: 'jpeg', label: 'JPEG' },
+        { value: 'skip', label: '— Skip this format —' },
+      ];
+    case 'ico':
+      return [
+        { value: 'png', label: 'PNG (Recommended)', isDefault: true },
+        { value: 'webp', label: 'WebP' },
+        { value: 'avif', label: 'AVIF' },
+        { value: 'skip', label: '— Skip this format —' },
+      ];
+    case 'cur':
+      return [
+        { value: 'png', label: 'PNG (Recommended)', isDefault: true },
+        { value: 'ico', label: 'ICO' },
+        { value: 'webp', label: 'WebP' },
         { value: 'skip', label: '— Skip this format —' },
       ];
     default:

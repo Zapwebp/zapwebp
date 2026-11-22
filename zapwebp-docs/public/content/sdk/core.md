@@ -2,7 +2,7 @@
 
 Covers: The core WASM and native image conversion engine. Alpha preservation, format support, safety checks, and metadata stripping.
 Does not cover: CLI binaries, HTTP server routing, or third-party bundler plugins.
-Applies to: `@zapwebp/core` v1.0.0+.
+Applies to: `@zapwebp/core` v1.1.0 and later.
 
 ## Quick start
 

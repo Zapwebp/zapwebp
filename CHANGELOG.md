@@ -2,10 +2,41 @@
 
 This changelog records the changes included in each Zapwebp version.
 
+## [Unreleased]
+
+### Added
+
+- **Automated Documentation CI Regression Guards & Synchronization Validation**:
+  - **Structure Guard (`scripts/validate-docs-structure.js`)**: Validates that all 47 technical documents strictly include `Covers:`, `Does not cover:`, and `Applies to:` in lines 1–10 and an H1 title, while asserting that the 7 legal and informational documents (`about.md`, `privacy.md`, `terms.md`, `security.md`, `code-of-conduct.md`, `contributing.md`, `translators.md`) do not contain technical metadata headers.
+  - **Link Guard (`scripts/validate-docs-links.js`)**: Scans all 162 documentation files across content and mirror trees, extracting 700+ internal links and failing the build if any link targets a raw `.md` extension instead of clean SPA route slugs.
+  - **Mirror Synchronization Guard (`scripts/validate-docs-sync.js`)**: Asserts 100% SHA-256 byte-for-byte exact synchronization across `content/`, `zapwebp-docs/content/`, `zapwebp-docs/public/content/`, `locales/tl/docs/`, `zapwebp-docs/public/locales/tl/docs/`, and `public/locales/tl/docs/`.
+  - **CI Workflow Integration (`.github/workflows/ci.yml`)**: Added dedicated pre-build steps ensuring any documentation structural drift, raw markdown link, or mirror disparity immediately fails the build.
+  - **Developer Tooling (`package.json`)**: Added npm scripts `pnpm run validate:docs`, `pnpm run validate:docs:structure`, `pnpm run validate:docs:links`, and `pnpm run validate:docs:sync`.
+- **VS Code Extension ICO/CUR Support & Full Platform Parity (`zapwebp-vscode` v1.4.0)**:
+  - **ICO/CUR Container Generation & Extraction**: Full integration of `@zapwebp/format-ico` into the VS Code extension. Enables converting vectors and rasters into multi-resolution `.ico` bundles (`16x16`, `32x32`, `48x48`, `64x64`, `128x128`, `256x256`, or custom user-specified sizes via QuickPick), and extracting individual or all frames from `.ico` and `.cur` containers into PNG or WebP. Added `zapwebp.convertToIco` command.
+  - **Target Lock Policy Enforcement**: Automatically detects `.zapwebp/config.json` in the workspace root, defaults the Zap menu to the locked target format, rejects non-compliant conversion requests with `E_FORMAT_REJECTED`, and displays a persistent status bar indicator (e.g. `⚡ Zapwebp: WebP lock active`).
+  - **Target-Size Compressor**: Integrated `@zapwebp/compressor` via `zapwebp.convertCompress` ("Zap to specific size..."), prompting users for exact size budgets (e.g. "500 KB", "1.5 MB") and applying binary search quality optimization and adaptive downscaling with `E_TARGET_UNREACHABLE` handling.
+  - **Crop & Aspect Ratio Controls**: Added `zapwebp.convertWithOptions` ("Zap with options...") QuickPick workflow for aspect ratio cropping (`1:1` avatar, `16:9` hero, `4:3`, `3:2`) powered by `@zapwebp/crop`.
+  - **Idempotent Lock Verification**: Checks sibling destination files for embedded `zapwebp:lock` fingerprints before conversion; skips redundant identical conversions while allowing deliberate new derivative generation.
+  - **Folder Batching for ICO/CUR**: Enhanced `scanFolder` and `convertFolder` to discover and convert mixed folders containing `.ico` and `.cur` assets.
+  - **New Extension Configuration Settings**: Added `zapwebp.icoPreset`, `zapwebp.compressorEnabled`, `zapwebp.targetLockEnabled`, and `zapwebp.deleteOriginal`.
+
 ## [2.28.0] - 2026-11-21
 
 ### Added
 
+- **Intent-Aware Conversion Lock & Format Derivatives (`@zapwebp/lock`)**:
+  - **Intent-Aware Skip Logic (`shouldSkipConversion`)**: Refined the conversion lock engine to distinguish between redundant conversions (e.g. WebP → WebP with identical options) and deliberate new derivative creations (e.g. WebP → AVIF or WebP → PNG). Requests for a different format return `{ skip: false, reason: 'new_target_format_requested' }` instead of blocking re-conversion.
+  - **Explicit Format Storage (`targetFormat`)**: Updated `createLockFingerprint` and `LockMetadata` schema to explicitly persist `targetFormat` inside the container fingerprint with automatic fallback normalization for legacy locks.
+  - **Independent Locks & Zero Silent Overwrites**: Each derivative format maintains its own dedicated, non-conflicting lock, preventing multi-format responsive assets from interfering with or overwriting one another.
+  - **CLI & MCP User Feedback**: Integrated "New derivative created" notification feedback into CLI batch reporting and MCP tool responses when deliberate format derivations occur.
+  - **Comprehensive Verification Suite**: Added 12 package-level tests and end-to-end integration tests verifying format switching, identical skip logic, options mutation detection, and multi-format safety.
+- **Exhaustive Documentation Audit, Standardization & Legal Separation**:
+  - **Legal & Informational Document Segregation**: Formally separated 7 legal, policy, and informational documents (`about.md`, `privacy.md`, `terms.md`, `security.md`, `code-of-conduct.md`, `contributing.md`, `translators.md`) from technical developer templates (`Covers:`, `Does not cover:`, `Applies to:`, `## Quick start`, `## What it does`, `## Errors`, `## For agents`). Re-authored all 7 documents in structured, legally sound, and professional formats under Republic of the Philippines jurisdiction (R.A. 10173 DPA 2012) and ISO/IEC 27001/27017 security standards.
+  - **Comprehensive Project History**: Rewrote `about.md` to comprehensively detail the history and engineering evolution of Zapwebp from its inception solving the infamous SVG-to-WebP "black background bug" to its current multi-format image infrastructure suite.
+  - **Internal Link Cleanliness**: Converted all 45+ `.md` relative link endings across documentation files to SPA-compatible path slugs (e.g., `/convert` instead of `convert.md`), preventing raw markdown downloads during web navigation.
+  - **Complete Error Catalog Synchronization**: Fully synchronized `content/errors.md` and `locales/tl/docs/errors.md` with all 54 error codes defined in `@zapwebp/shared/src/errors.js`.
+  - **Full Mirror Parity**: Synchronized all 54 English and 54 Tagalog documents across `content/`, `locales/tl/docs/`, `zapwebp-docs/content/`, `zapwebp-docs/public/content/`, `zapwebp-docs/public/locales/tl/docs/`, and `public/locales/tl/docs/`.
 - **Comprehensive Internationalization (i18n) & Localization Overhaul**:
   - **100% Documentation Parity**: Authored `locales/tl/docs/plugins/docs.md` with complete Tagalog technical translation, achieving 54/54 documents (100% parity) verified by `validate-locales.js` and `test/locales-docs.test.js`.
   - **Open Community Contribution Enablement**: Upgraded `@zapwebp/shared/src/i18n.js` with dynamic `loadFilesystemCatalogs()` to discover and load any community translation catalogs (`/locales/<locale>/*.json`) automatically on boot. Added `registerTranslations(locale, catalog)` and dynamic `getSupportedLocales()` APIs.

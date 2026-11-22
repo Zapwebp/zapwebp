@@ -1,7 +1,7 @@
 # Plugin Scaffolding
 
 Covers: Scaffolding agent-native Zapwebp plugins, storage adapters, transforms, and metadata handlers using `create-zapwebp`, structured AGENTS.md and SKILLS.md context files, and TypeScript build harnesses.
-Does not cover: Low-level engine internals (see [Core SDK](/sdk/core.md)), runtime sandbox policy enforcement (see [Plugin SDK](/sdk/plugin.md)), or format compatibility tables (see [Formats](/formats.md)).
+Does not cover: Low-level engine internals (see [Core SDK](/sdk/core)), runtime sandbox policy enforcement (see [Plugin SDK](/sdk/plugin)), or format compatibility tables (see [Formats](/formats)).
 Applies to: `create-zapwebp`, `@zapwebp/plugin-sdk`, Antigravity, Cursor, and developer AI agent environments.
 
 ## Quick start
@@ -103,8 +103,8 @@ Every scaffolded project includes a `.zapwebp-scaffold.json` metadata file recor
 
 ## Related
 
-- [Plugin SDK & Sandboxing](/sdk/plugin.md)
-- [Core SDK Reference](/sdk/core.md)
-- [Format Compatibility Matrix](/formats.md)
-- [Developer Contributing Guide](/contributing.md)
-- [Error Dictionary](/errors.md)
+- [Plugin SDK & Sandboxing](/sdk/plugin)
+- [Core SDK Reference](/sdk/core)
+- [Format Compatibility Matrix](/formats)
+- [Developer Contributing Guide](/contributing)
+- [Error Dictionary](/errors)

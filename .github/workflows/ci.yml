@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test (${{ matrix.os }})
@@ -15,22 +18,61 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
-      - uses: actions/setup-node@v4
+          version: '11.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: node scripts/verify-lockfile.js
-      - run: node scripts/check-zero-telemetry.js
-      - run: pnpm run validate-locales
-      - run: pnpm test
-      - run: node -e "JSON.parse(require('node:fs').readFileSync('public/openapi.json', 'utf8'))"
-      - run: node --check server.js
-      - run: node --check packages/cli/src/index.js
-      - run: node --check packages/mcp/src/server.js
-      - run: node --check apps/vscode/src/extension.js
-      - run: pnpm build:vscode
+
+      - name: Verify lockfile synchronization
+        run: pnpm install --frozen-lockfile --lockfile-only
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify lockfile integrity
+        run: node scripts/verify-lockfile.js
+
+      - name: Check zero-telemetry compliance
+        run: node scripts/check-zero-telemetry.js
+
+      - name: Validate localization catalogs
+        run: pnpm run validate-locales
+
+      - name: Validate documentation structure & separation
+        run: node scripts/validate-docs-structure.js
+
+      - name: Validate documentation internal route links
+        run: node scripts/validate-docs-links.js
+
+      - name: Validate documentation mirror synchronization
+        run: node scripts/validate-docs-sync.js
+
+      - name: Run test suite
+        run: pnpm test
+
+      - name: Validate OpenAPI specification
+        run: node -e "JSON.parse(require('node:fs').readFileSync('public/openapi.json', 'utf8'))"
+
+      - name: Syntax check server
+        run: node --check server.js
+
+      - name: Syntax check CLI
+        run: node --check packages/cli/src/index.js
+
+      - name: Syntax check MCP server
+        run: node --check packages/mcp/src/server.js
+
+      - name: Syntax check VS Code extension
+        run: node --check apps/vscode/src/extension.js
+
+      - name: Build VS Code extension
+        run: pnpm build:vscode

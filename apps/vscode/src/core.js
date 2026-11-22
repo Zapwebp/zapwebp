@@ -49,54 +49,73 @@ function setupNativeResolution() {
 }
 setupNativeResolution();
 
+function resolvePackage(pkgName, relativeSubdir) {
+  try {
+    return require(pkgName);
+  } catch {}
+
+  try {
+    const vscode = require('vscode');
+    if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+      for (const folder of vscode.workspace.workspaceFolders) {
+        const root = folder.uri.fsPath;
+        const candidate = path.join(root, relativeSubdir);
+        if (fs.existsSync(candidate)) {
+          try {
+            return require(candidate);
+          } catch {}
+        }
+      }
+    }
+  } catch {}
+
+  const relCandidates = [
+    path.resolve(__dirname, '../../', relativeSubdir),
+    path.resolve(__dirname, '../../../', relativeSubdir),
+    path.resolve(__dirname, '../', relativeSubdir),
+  ];
+  for (const rel of relCandidates) {
+    if (fs.existsSync(rel)) {
+      try {
+        return require(rel);
+      } catch {}
+    }
+  }
+  return null;
+}
+
 let coreModule = null;
 let coreAttempted = false;
 
 function getCore() {
   if (coreAttempted) return coreModule;
   coreAttempted = true;
-
-  try {
-    coreModule = require('@zapwebp/core');
-  } catch {
-    coreModule = null;
-  }
-
-  if (!coreModule) {
-    try {
-      const vscode = require('vscode');
-      if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
-        for (const folder of vscode.workspace.workspaceFolders) {
-          const root = folder.uri.fsPath;
-          const pkgPath = path.join(root, 'packages/core');
-          if (fs.existsSync(pkgPath)) {
-            try {
-              coreModule = require(pkgPath);
-              if (coreModule) break;
-            } catch {}
-          }
-        }
-      }
-    } catch {}
-  }
-
-  if (!coreModule) {
-    const relCandidates = [
-      path.resolve(__dirname, '../../packages/core'),
-      path.resolve(__dirname, '../../../packages/core'),
-      path.resolve(__dirname, '../packages/core'),
-    ];
-    for (const rel of relCandidates) {
-      if (fs.existsSync(rel)) {
-        try {
-          coreModule = require(rel);
-          if (coreModule) break;
-        } catch {}
-      }
-    }
-  }
-
+  coreModule = resolvePackage('@zapwebp/core', 'packages/core');
   return coreModule;
+}
+
+let formatIcoModule = null;
+function getFormatIco() {
+  if (!formatIcoModule) formatIcoModule = resolvePackage('@zapwebp/format-ico', 'packages/format-ico');
+  return formatIcoModule;
+}
+
+let compressorModule = null;
+function getCompressor() {
+  if (!compressorModule) compressorModule = resolvePackage('@zapwebp/compressor', 'packages/compressor');
+  return compressorModule;
+}
+
+let cropModule = null;
+function getCrop() {
+  if (!cropModule) cropModule = resolvePackage('@zapwebp/crop', 'packages/crop');
+  return cropModule;
+}
+
+let lockModule = null;
+function getLock() {
+  if (!lockModule) lockModule = resolvePackage('@zapwebp/lock', 'packages/lock');
+  return lockModule;
 }
 
 let initialized = false;
@@ -106,13 +125,15 @@ let initialized = false;
  */
 class ZapError extends Error {
   /**
-   * @param {'E_UNSAFE_SVG'|'E_UNSUPPORTED_FORMAT'|'E_WRITE_FAILED'|'E_CONVERSION_FAILED'|'E_ENGINE_UNAVAILABLE'} code
+   * @param {string} code
    * @param {string} message
+   * @param {object} [meta]
    */
-  constructor(code, message) {
+  constructor(code, message, meta = {}) {
     super(message);
     this.name = 'ZapError';
     this.code = code;
+    Object.assign(this, meta);
   }
 }
 
@@ -182,6 +203,8 @@ function sniffInputExtension(bytes) {
   if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
       bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'webp';
   if (bytes.length >= 12 && bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) return 'avif';
+  if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00) return 'ico';
+  if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x02 && bytes[3] === 0x00) return 'cur';
   const head = bytes.slice(0, 100).toString('utf8').trim();
   if (head.startsWith('<svg') || head.startsWith('<?xml')) return 'svg';
   return 'png';
@@ -428,22 +451,260 @@ async function convertViaApi(bytes, format = 'webp', width = 512, quality = 85, 
   return Buffer.from(arrayBuffer);
 }
 
+function maybeWriteLock(outBuffer, inputBytes, outFormat, q, cl, background) {
+  const lockLib = getLock();
+  if (lockLib && typeof lockLib.writeLock === 'function' && ['webp', 'png', 'jpeg', 'svg'].includes(outFormat)) {
+    try {
+      const fingerprint = typeof lockLib.createLockFingerprint === 'function'
+        ? lockLib.createLockFingerprint({
+            input: inputBytes,
+            options: { to: outFormat, quality: q, clean: cl, background },
+          })
+        : { input: inputBytes, options: { to: outFormat, quality: q, clean: cl, background } };
+      return lockLib.writeLock(outBuffer, outFormat, fingerprint);
+    } catch {}
+  }
+  return outBuffer;
+}
+
 /**
- * Converts an image buffer with transparency preservation and metadata stripping.
+ * Checks whether an existing output buffer matches current conversion options and can be skipped.
+ * @param {Buffer|Uint8Array} existingBuffer
+ * @param {Buffer|Uint8Array} inBytes
+ * @param {object} [currentOptions={}]
+ * @param {object} [lockOptions={}]
+ * @returns {object}
+ */
+function checkLock(existingBuffer, inBytes, currentOptions = {}, lockOptions = {}) {
+  const lockLib = getLock();
+  if (!lockLib || typeof lockLib.verifyLock !== 'function') {
+    return { enabled: false, skipped: false };
+  }
+  return lockLib.verifyLock(existingBuffer, inBytes, currentOptions, lockOptions);
+}
+
+/**
+ * Converts an image buffer with transparency preservation, metadata stripping,
+ * format-ico container support, compressor optimization, and crop integration.
  * @param {Uint8Array|Buffer} bytes - Input image bytes or SVG string buffer.
- * @param {'webp'|'png'|'avif'|'jpeg'} [format='webp'] - Target format.
+ * @param {'webp'|'png'|'avif'|'jpeg'|'ico'|'cur'} [format='webp'] - Target format.
  * @param {number} [width=512] - Target pixel width.
  * @param {number} [quality=85] - Lossy quality level.
  * @param {boolean} [clean=true] - Whether to strip metadata.
  * @param {string} [background] - Optional background color for flattening (required for JPEG).
- * @returns {Promise<Buffer>} - Converted image byte buffer.
+ * @param {object} [options={}] - Extended options (crop, targetBytes, sizes, extractAll, etc.).
+ * @returns {Promise<Buffer|Array<{ width: number, height: number, data: Buffer }>>}
  * @throws {ZapError}
  */
-async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, clean = true, background = undefined) {
+async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, clean = true, background = undefined, options = {}) {
   await init();
   validateSvgSecurity(bytes);
 
+  // Policy: Target Lock rejection
+  if (options && Array.isArray(options.acceptFormats) && options.acceptFormats.length > 0) {
+    const targetNorm = format.toLowerCase();
+    if (!options.acceptFormats.includes(targetNorm)) {
+      throw new ZapError(
+        'E_FORMAT_REJECTED',
+        `Target format "${format}" is rejected by workspace Target Lock policy (allowed: ${options.acceptFormats.join(', ')}).`,
+        { target: format, allowed: options.acceptFormats }
+      );
+    }
+  }
+
   const bg = format === 'jpeg' ? (background || '#ffffff') : background;
+  const inExt = sniffInputExtension(bytes);
+
+  // 1. Ingestion: ICO / CUR extraction
+  if (inExt === 'ico' || inExt === 'cur') {
+    const icoLib = getFormatIco();
+    if (icoLib && typeof icoLib.decodeIco === 'function') {
+      const sharp = require('sharp');
+      const decodeOpts = {};
+      if (options.extractAll) decodeOpts.extractAll = true;
+      if (options.size || options.extractSize) decodeOpts.size = options.size || options.extractSize;
+
+      const decoded = await icoLib.decodeIco(bytes, decodeOpts);
+      if (options.extractAll && Array.isArray(decoded)) {
+        const outputs = [];
+        for (const frame of decoded) {
+          let pipeline = sharp(Buffer.from(frame.data.buffer, frame.data.byteOffset, frame.data.byteLength), {
+            raw: { width: frame.width, height: frame.height, channels: 4 },
+          });
+          if (format === 'jpeg') {
+            pipeline = pipeline.flatten({ background: bg || '#ffffff' }).jpeg({ quality });
+          } else if (format === 'png') {
+            pipeline = pipeline.png();
+          } else if (format === 'avif') {
+            pipeline = pipeline.avif({ quality });
+          } else {
+            pipeline = pipeline.webp({ quality });
+          }
+          const frameBuf = await pipeline.toBuffer();
+          outputs.push({
+            width: frame.width,
+            height: frame.height,
+            data: maybeWriteLock(frameBuf, bytes, format, quality, clean, bg),
+          });
+        }
+        return outputs;
+      }
+
+      const raw = Array.isArray(decoded) ? decoded[0] : decoded;
+      let pipeline = sharp(Buffer.from(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength), {
+        raw: { width: raw.width, height: raw.height, channels: 4 },
+      });
+      if (format === 'jpeg') {
+        pipeline = pipeline.flatten({ background: bg || '#ffffff' }).jpeg({ quality });
+      } else if (format === 'png') {
+        pipeline = pipeline.png();
+      } else if (format === 'avif') {
+        pipeline = pipeline.avif({ quality });
+      } else {
+        pipeline = pipeline.webp({ quality });
+      }
+      const singleOut = await pipeline.toBuffer();
+      return maybeWriteLock(singleOut, bytes, format, quality, clean, bg);
+    }
+  }
+
+  // 2. Output: ICO / CUR Generation
+  if (format === 'ico' || format === 'cur') {
+    const icoLib = getFormatIco();
+    if (icoLib && typeof icoLib.writeIco === 'function') {
+      let icoSizes = options.sizes;
+      if (!icoSizes && options.icoPreset && icoLib.PRESETS[options.icoPreset]) {
+        icoSizes = icoLib.PRESETS[options.icoPreset].sizes;
+      }
+      if (!icoSizes) {
+        icoSizes = icoLib.DEFAULT_ICO_SIZES;
+      }
+      return await icoLib.writeIco(bytes, {
+        sizes: icoSizes,
+        type: format,
+        background: bg,
+      });
+    }
+  }
+
+  // 3. Transform: Crop Image
+  if (options && options.crop) {
+    const cropLib = getCrop();
+    if (cropLib && typeof cropLib.cropImage === 'function') {
+      const sharp = require('sharp');
+      let rawBuf;
+      let rawWidth;
+      let rawHeight;
+      if (inExt === 'svg') {
+        const core = getCore();
+        const rendered = await core.convertImage(bytes, { to: 'png', width, clean: false });
+        const raw = await sharp(rendered.data).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        rawBuf = raw.data;
+        rawWidth = raw.info.width;
+        rawHeight = raw.info.height;
+      } else {
+        const raw = await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        rawBuf = raw.data;
+        rawWidth = raw.info.width;
+        rawHeight = raw.info.height;
+      }
+      const rawImage = {
+        data: new Uint8ClampedArray(rawBuf.buffer, rawBuf.byteOffset, rawBuf.byteLength),
+        width: rawWidth,
+        height: rawHeight,
+        channels: 4,
+      };
+      const cropOpts = typeof options.crop === 'string'
+        ? (cropLib.CROP_PRESETS[options.crop] || { mode: 'auto', aspectRatio: options.crop })
+        : options.crop;
+      const cropped = await cropLib.cropImage(rawImage, cropOpts);
+
+      if (options.targetBytes) {
+        const compLib = getCompressor();
+        if (compLib && typeof compLib.compress === 'function') {
+          const targetB = typeof options.targetBytes === 'string'
+            ? compLib.parseTargetBytes(options.targetBytes)
+            : options.targetBytes;
+          const targetWithHeadroom = targetB > 1024 ? targetB - 512 : targetB;
+          try {
+            const compRes = await compLib.compress(cropped, {
+              targetBytes: targetWithHeadroom,
+              format: format === 'jpeg' ? 'jpeg' : format,
+              minQuality: options.minQuality || 10,
+              maxQuality: quality || 100,
+              allowDownscale: options.allowDownscale ?? true,
+              throwOnUnreachable: true,
+            });
+            return maybeWriteLock(compRes.output, bytes, format, compRes.quality, clean, bg);
+          } catch (err) {
+            throw new ZapError(err.code || 'E_TARGET_UNREACHABLE', err.message, err);
+          }
+        }
+      }
+
+      let pipeline = sharp(Buffer.from(cropped.data.buffer, cropped.data.byteOffset, cropped.data.byteLength), {
+        raw: { width: cropped.width, height: cropped.height, channels: 4 },
+      });
+      if (format === 'jpeg') {
+        pipeline = pipeline.flatten({ background: bg || '#ffffff' }).jpeg({ quality });
+      } else if (format === 'png') {
+        pipeline = pipeline.png();
+      } else if (format === 'avif') {
+        pipeline = pipeline.avif({ quality });
+      } else {
+        pipeline = pipeline.webp({ quality });
+      }
+      const cropOut = await pipeline.toBuffer();
+      return maybeWriteLock(cropOut, bytes, format, quality, clean, bg);
+    }
+  }
+
+  // 4. Feature: Compressor (Target Bytes Optimization)
+  if (options && options.targetBytes) {
+    const compLib = getCompressor();
+    if (compLib && typeof compLib.compress === 'function') {
+      const sharp = require('sharp');
+      let rawBuf;
+      let rawWidth;
+      let rawHeight;
+      if (inExt === 'svg') {
+        const core = getCore();
+        const rendered = await core.convertImage(bytes, { to: 'png', width, clean: false });
+        const raw = await sharp(rendered.data).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        rawBuf = raw.data;
+        rawWidth = raw.info.width;
+        rawHeight = raw.info.height;
+      } else {
+        const raw = await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        rawBuf = raw.data;
+        rawWidth = raw.info.width;
+        rawHeight = raw.info.height;
+      }
+      const rawImage = {
+        data: new Uint8ClampedArray(rawBuf.buffer, rawBuf.byteOffset, rawBuf.byteLength),
+        width: rawWidth,
+        height: rawHeight,
+        channels: 4,
+      };
+      const targetB = typeof options.targetBytes === 'string'
+        ? compLib.parseTargetBytes(options.targetBytes)
+        : options.targetBytes;
+      const targetWithHeadroom = targetB > 1024 ? targetB - 512 : targetB;
+      try {
+        const compRes = await compLib.compress(rawImage, {
+          targetBytes: targetWithHeadroom,
+          format: format === 'jpeg' ? 'jpeg' : format,
+          minQuality: options.minQuality || 10,
+          maxQuality: quality || 100,
+          allowDownscale: options.allowDownscale ?? true,
+          throwOnUnreachable: true,
+        });
+        return maybeWriteLock(compRes.output, bytes, format, compRes.quality, clean, bg);
+      } catch (err) {
+        throw new ZapError(err.code || 'E_TARGET_UNREACHABLE', err.message, err);
+      }
+    }
+  }
 
   // Tier 1: In-process @zapwebp/core if sharp and resvg bindings are accessible
   const core = getCore();
@@ -457,7 +718,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
         background: bg,
         verify: true,
       });
-      return result.data;
+      return maybeWriteLock(result.data, bytes, format, quality, clean, bg);
     } catch (err) {
       const msg = err && err.message ? err.message : String(err);
       if (msg.includes('active content') || msg.includes('script') || msg.includes('unsafe')) {
@@ -475,7 +736,6 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
   // Tier 2: Local or self-bundled CLI execution via Node runner
   const tmpDir = os.tmpdir();
   const id = `zap_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const inExt = sniffInputExtension(bytes);
   const outExt = format === 'jpeg' ? 'jpg' : format;
   const inPath = path.join(tmpDir, `${id}.${inExt}`);
   const outPath = path.join(tmpDir, `${id}.${outExt}`);
@@ -487,7 +747,7 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
     if (fs.existsSync(outPath)) {
       const outBytes = await fs.promises.readFile(outPath);
       cliSuccess = true;
-      return outBytes;
+      return maybeWriteLock(outBytes, bytes, format, quality, clean, bg);
     }
   } catch {
     cliSuccess = false;
@@ -498,7 +758,8 @@ async function convertBuffer(bytes, format = 'webp', width = 512, quality = 85, 
 
   // Tier 3: Seamless cloud API conversion fallback via official Zapwebp endpoint
   try {
-    return await convertViaApi(bytes, format, width, quality, clean, bg);
+    const apiBytes = await convertViaApi(bytes, format, width, quality, clean, bg);
+    return maybeWriteLock(apiBytes, bytes, format, quality, clean, bg);
   } catch (apiErr) {
     if (apiErr.code === 'E_CONVERSION_FAILED' && apiErr.message.includes('400')) {
       throw apiErr;
@@ -564,4 +825,9 @@ module.exports = {
   outputName,
   scaleSuffix,
   ZapError,
+  checkLock,
+  getFormatIco,
+  getCompressor,
+  getCrop,
+  getLock,
 };

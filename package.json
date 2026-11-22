@@ -1,6 +1,6 @@
 {
   "name": "zapwebp-workspace",
-  "version": "2.14.0",
+  "version": "2.28.0",
   "private": true,
   "description": "Transparency-aware image conversion for web and developer workflows.",
   "engines": {
@@ -29,6 +29,10 @@
     "build:llms": "node scripts/build-llms.js",
     "bench": "node bench/runner.js",
     "validate-locales": "node scripts/validate-locales.js",
+    "validate:docs:structure": "node scripts/validate-docs-structure.js",
+    "validate:docs:links": "node scripts/validate-docs-links.js",
+    "validate:docs:sync": "node scripts/validate-docs-sync.js",
+    "validate:docs": "node scripts/validate-docs-structure.js && node scripts/validate-docs-links.js && node scripts/validate-docs-sync.js",
     "check:telemetry": "node scripts/check-zero-telemetry.js",
     "check:dts": "node scripts/check-dts-parity.js",
     "verify:lockfile": "node scripts/verify-lockfile.js",

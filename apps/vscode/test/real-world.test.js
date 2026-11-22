@@ -11,7 +11,9 @@ const { registerZapCommand } = require('../src/commands/zap');
 const { registerFolderCommands } = require('../src/commands/folder');
 const { registerHoverProvider } = require('../src/hover/provider');
 
-const FIXTURES_DIR = path.resolve(__dirname, '../../../test/fixtures');
+const FIXTURES_DIR = fs.existsSync(path.resolve(__dirname, 'fixtures'))
+  ? path.resolve(__dirname, 'fixtures')
+  : path.resolve(__dirname, '../../../test/fixtures');
 
 test.beforeEach(() => {
   resetMock();

@@ -1287,6 +1287,7 @@ async function main() {
         }
 
         // Idempotent Conversion Lock: skip if existing output matches input, options, and engine
+        let isNewDerivative = false;
         if (!args.force && !args.noLock && existingOutput && existingOutput.length > 0) {
           const { verifyLock } = await import('@zapwebp/lock');
           const verification = verifyLock(existingOutput, currentBytes, targetOptions, { force: args.force });
@@ -1294,6 +1295,35 @@ async function main() {
             process.stdout.write(`⏭  ${path.relative(rootDir, dest)} already converted with matching options. Skipped. Use --force to re-convert.\n`);
             continue;
           }
+          if (verification.reason === 'new_target_format_requested') {
+            isNewDerivative = true;
+          }
+        }
+
+        if (!isNewDerivative && !args.noLock) {
+          try {
+            const { readLock } = await import('@zapwebp/lock');
+            const inputLock = readLock(currentBytes);
+            if (inputLock && (inputLock.targetFormat || inputLock.optionsSummary?.to) !== target) {
+              isNewDerivative = true;
+            } else {
+              const commonFormats = ['webp', 'avif', 'png', 'jpeg', 'jpg'].filter((f) => f !== target);
+              const baseWithoutExt = path.join(path.dirname(dest), path.parse(fileItem.path).name);
+              for (const otherFmt of commonFormats) {
+                const siblingPath = `${baseWithoutExt}.${otherFmt}`;
+                if (siblingPath !== dest) {
+                  const siblingBytes = await readFile(siblingPath).catch(() => null);
+                  if (siblingBytes) {
+                    const sibLock = readLock(siblingBytes, otherFmt);
+                    if (sibLock && sibLock.inputSha256 === fileItem.sha256) {
+                      isNewDerivative = true;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          } catch {}
         }
 
         let converted;
@@ -1396,6 +1426,7 @@ async function main() {
           certificate: converted.certificate,
           removedMetadata: converted.removedMetadata,
           status: 'converted',
+          newDerivative: isNewDerivative,
           warnings: converted.warnings || [],
           lossless: converted.lossless,
           losslessVerified: converted.losslessVerified,
@@ -1535,7 +1566,8 @@ async function main() {
       const compTag = r.compression
         ? ` [target: ${r.compression.target} B | achieved: ${r.size} B${r.compression.downscaled ? ` (downscaled ${r.compression.downscaleCount}x)` : ''}]`
         : '';
-      process.stdout.write(`${prefix} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}${passTag}${compTag}\n`);
+      const derivativeTag = r.newDerivative ? ' · New derivative created' : '';
+      process.stdout.write(`${prefix} ${r.input} → ${r.output}${r.size ? ` (${r.size} bytes)` : ''}${passTag}${compTag}${derivativeTag}\n`);
       if (r.warnings && r.warnings.length) {
         for (const w of r.warnings) {
           process.stderr.write(`  ⚠️  Warning: ${w}\n`);

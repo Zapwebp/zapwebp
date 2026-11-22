@@ -49,12 +49,6 @@ Deleting original files is the most destructive operation an image tool can perf
 | `E_BACKUP_VERIFICATION_FAILED` | The backup file SHA-256 digest failed to match the original source file bytes prior to unlinking. | Check available disk space and filesystem write permissions in `.zapwebp/backups/`. |
 | `E_FORK_DELETE_FORBIDDEN` | GitHub Action detected `--delete-original` or `keep-original: false` on a pull request from a forked repository. | Remove deletion parameters from fork workflows to maintain repository security. |
 
-## Related
-
-- [CLI](/cli) — Command-line interface, flags, and transaction journal commands.
-- [MCP Agent](/mcp) — Model Context Protocol tools including `convert_image` and `undo_last`.
-- [VS Code Extension](/plugins/vscode) — In-editor conversion with context menu actions and undo support.
-
 ## For agents
 
 ```json
@@ -72,3 +66,9 @@ Deleting original files is the most destructive operation an image tool can perf
   ]
 }
 ```
+
+## Related
+
+- [CLI](/cli) — Command-line interface, flags, and transaction journal commands.
+- [MCP Agent](/mcp) — Model Context Protocol tools including `convert_image` and `undo_last`.
+- [VS Code Extension](/plugins/vscode) — In-editor conversion with context menu actions and undo support.

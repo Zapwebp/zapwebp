@@ -211,7 +211,7 @@ async function cachedSmartConvert(fileBytes, visionModel) {
 
 ## Related
 
-- [Core Engine API Reference](/sdk/core.md)
-- [Plugin Development & Sandboxing](/sdk/plugin.md)
-- [Crop Transform Plugin](/plugins/crop.md)
-- [Error Dictionary](/errors.md)
+- [Core Engine API Reference](/sdk/core)
+- [Plugin Development & Sandboxing](/sdk/plugin)
+- [Crop Transform Plugin](/plugins/crop)
+- [Error Dictionary](/errors)

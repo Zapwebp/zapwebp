@@ -1,57 +1,62 @@
-# Privacy Policy
+# Patakaran sa Privacy
 
-Covers: zero-telemetry commitment, kawalan ng remote file storage, memory-only execution, pagsunod sa Batas Republika Blg. 10173 ng Pilipinas, at proteksyon sa cloud storage adapters.
+**Petsa ng Pagpapatupad:** Nobyembre 1, 2025  
+**Huling Binago:** Nobyembre 21, 2026  
+**Jurisdiction:** Republika ng Pilipinas  
+**Batas na Sumasaklaw:** Batas Republika Blg. 10173 (Data Privacy Act of 2012)  
 
-Does not cover: mga panloob na patakaran ng network provider ng third-party. Tingnan ang [Storage Adapters](/plugins/storage).
+Ang Zapwebp ay may mahigpit na pangako sa arkitektura: **Zero Tracking, Memory-Only Execution**. Naniniwala kami na ang mga tool sa pag-convert ng imahe ay walang lehitimong dahilan upang mangalap ng personal na data, mag-imbak ng mga file sa remote server, o magsubaybay sa kilos ng user.
 
-Applies to: Lahat ng serbisyo at platform ng Zapwebp, web converter, CLI, MCP server, at storage adapters.
+---
 
-## Quick start
+## 1. Pangkalahatang Buod at Garantiyang Pang-arkitektura
 
-```bash
-curl -I https://zapwebp.vercel.app/
-```
+1. **100% Client-Side In-Browser Execution**: Ang pag-convert sa web application (`https://zapwebp.vercel.app`) ay tumatakbo nang buo sa loob ng browser tab gamit ang WebAssembly (WASM) at HTML5 Canvas. **Ang iyong mga imahe ay hindi kailanman ipinapadala sa alinmang Zapwebp server.**
+2. **Zero Telemetry at Walang Analytics**: Walang tracking scripts, web beacons, tracking pixels (tulad ng Google Analytics, Meta Pixel), at walang error beacons (tulad ng Sentry o LogRocket).
+3. **Walang Remote Asset Storage**: Hindi nagpapatakbo ang Zapwebp ng cloud databases o storage caches. Pagkasara ng browser tab, agarang binubura ang mga memory buffer.
+4. **Local-Only Terminal at Agent Workflows**: Ang CLI (`zapwebp`) at MCP server (`@zapwebp/mcp`) ay lokal na tumatakbo sa iyong workstation na walang palabas na network calls.
 
-Maintainer contact: [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com) · Republika ng Pilipinas.
+---
 
-## What it does
+## 2. Pagsunod sa Batas Republika Blg. 10173 (Data Privacy Act of 2012)
 
-Mahigpit na ipinapatupad ng Zapwebp ang Zero-Telemetry Policy:
-1. **100% In-Browser Conversion**: Ang pagproseso ng imahe sa web ay tumatakbo lamang sa memorya ng browser gamit ang HTML5 Canvas at WASM. Hindi ipinapadala ang iyong imahe sa anumang Zapwebp server.
-2. **Zero Telemetry**: Walang Google Analytics, Meta Pixel, cookies, tracking beacons, o browser fingerprinting.
-3. **Zero Asset Storage**: Walang gitnang database o imbakan ng mga imahe. Nabubura agad ang memory buffer sa pagsasara ng tab.
-4. **Pagsunod sa R.A. 10173 (Data Privacy Act ng 2012)**: Binuo at pinapanatili sa ilalim ng hurisdiksyon ng Republika ng Pilipinas alinsunod sa mga panuntunan ng National Privacy Commission (NPC) ukol sa Transparency, Legitimate Purpose, at Proportionality (data minimization).
+Ang Zapwebp ay pinapanatili ni Eldrex Delos Reyes Bula sa ilalim ng hurisdiksyon ng **Republika ng Pilipinas**. Mahigpit naming sinusunod ang mga probisyon ng **Batas Republika Blg. 10173 (Data Privacy Act of 2012 o DPA)** sa pangangasiwa ng **National Privacy Commission (NPC)**:
 
-## Cloud Storage Adapters at Privacy
+- **Prinsipyo ng Transparency**: Malinaw na ipinapaalam sa mga gumagamit na ang pagpoproseso ay nagaganap 100% sa lokal na memorya. Walang personal na datos ang kinokolekta.
+- **Prinsipyo ng Legitimate Purpose**: Kapag ginagamit ang `@zapwebp/storage`, ang pagpapadala ng file ay nagaganap lamang patungo sa sariling cloud storage bucket ng developer (tulad ng Supabase o Firebase).
+- **Prinsipyo ng Proportionality (Data Minimization)**: Sa pamamagitan ng **Clean Mode**, awtomatikong inaalis ang GPS coordinates, camera serial numbers, at EXIF metadata bago i-save ang imahe.
+- **Mga Karapatan ng Data Subject**: Kinikilala ng Zapwebp ang mga karapatan ng bawat indibidwal sa ilalim ng DPA, kabilang ang Karapatang Malaman (Right to be Informed) at Karapatang Magpabura (Right to Erasure).
 
-Sa paggamit ng `@zapwebp/storage`, sumusunod ang system sa Shared Responsibility Model:
-- **Supabase Storage**: Pribado o pampublikong bucket na pinamamahalaan ng developer gamit ang Row Level Security (RLS).
-- **Firebase Storage**: Google Cloud Storage bucket na pinamamahalaan sa ilalim ng Firebase Security Rules.
-- **Neocities**: Pampublikong static web host. Lahat ng file sa Neocities ay pampubliko at naitatala sa access logs nang hanggang 24 buwan. Huwag mag-upload ng pribado o kumpidensyal na personal data sa Neocities.
+---
 
-## Errors
+## 3. Impormasyong Hindi Namin Kinokolekta
 
-| Code | Dahilan | Solusyon |
-|---|---|---|
-| `E_RATE_LIMIT` | Naabot ang limitasyon sa pag-upload sa Neocities | Pabagalin ang bilis ng pag-upload ayon sa patakaran |
-| `privacy_telemetry_detected` | Na-inject na third-party script ng extension | Suriin ang mga naka-install na browser extension |
+| Kategorya | Katayuan | Paliwanag |
+|---|:---:|---|
+| **Pagkakakilanlan ng User** | **Hindi Kinokolekta** | Walang pangalan, email address, telepono, o tirahan. |
+| **Authentication Credentials** | **Hindi Kinokolekta** | Walang password, OAuth tokens, o login accounts. |
+| **Nilalaman ng Imahe** | **Hindi Kinokolekta** | Ang mga pixel buffer ay nananatili lamang sa volatile RAM. |
+| **Paggamit at Telemetry** | **Hindi Kinokolekta** | Walang click tracking o behavioral analysis. |
+| **Device at Network IP** | **Hindi Kinokolekta** | Walang IP address logging o fingerprinting. |
+| **Cookies** | **Hindi Kinokolekta** | Walang HTTP cookies o persistent tracking tokens. |
 
-## For agents
+---
 
-```json
-{
-  "telemetry": false,
-  "cookies": false,
-  "jurisdiction": "Republic of the Philippines",
-  "statute": "Republic Act No. 10173 (Data Privacy Act of 2012)",
-  "compliance": "NPC, GDPR, Enterprise Architecture Ready",
-  "contact": "eldrexdelosreyesbula@gmail.com"
-}
-```
+## 4. Cloud Storage Adapters at Shared Responsibility
 
-## Related
+Kapag ginagamit ang `@zapwebp/storage`, sumusunod ang developer at provider sa isang **Shared Responsibility Model**:
+- **Tungkulin ng Zapwebp**: Ligtas na pag-convert sa memory, pag-alis ng sensitibong metadata (Clean Mode), at pagtiyak na walang path traversal (`..`).
+- **Tungkulin ng Developer**: Ligtas na pamamahala ng sariling API keys at pagsasaayos ng storage bucket permissions (RLS policies).
 
-- [Clean](/clean): Paano tinatanggal ang metadata sa mga imahe.
-- [Security](/security): Pagsunod sa ISO 27001 at 27017.
-- [Terms of Service](/terms): Mga legal na kondisyon ng paggamit.
-- [Storage Adapters](/plugins/storage): Pre-upload conversion at cloud adapter security.
+---
+
+## 5. Pakikipag-ugnayan at National Privacy Commission
+
+Para sa mga katanungan tungkol sa patakarang ito, makipag-ugnayan sa maintainer:
+- **Data Controller:** Eldrex Delos Reyes Bula
+- **Email:** `eldrexdelosreyesbula@gmail.com`
+- **Lokasyon:** Republika ng Pilipinas
+
+Maaari ring sumangguni sa National Privacy Commission ng Pilipinas:
+- **Website:** [https://privacy.gov.ph](https://privacy.gov.ph)
+- **Email:** `complaints@privacy.gov.ph`

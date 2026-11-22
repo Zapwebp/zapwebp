@@ -51,6 +51,6 @@ $$\text{Naiwasang }\text{CO}_2\text{e (kg)} = \text{Natipid na Enerhiya (kWh)} \
 
 ## Related
 
-- [Patakaran ng Conversion (Policy Engine)](/policy.md) — Pamahalaan ang mga limitasyon at pinapayagang format.
-- [Malinis (Clean Mode)](/clean.md) — Tanggalin ang sensitibong metadata at patunayan ang sertipiko.
-- [Terminal (CLI)](/cli.md) — Kumpletong listahan ng mga flag sa terminal at utos sa journal.
+- [Patakaran ng Conversion (Policy Engine)](/policy) — Pamahalaan ang mga limitasyon at pinapayagang format.
+- [Malinis (Clean Mode)](/clean) — Tanggalin ang sensitibong metadata at patunayan ang sertipiko.
+- [Terminal (CLI)](/cli) — Kumpletong listahan ng mga flag sa terminal at utos sa journal.

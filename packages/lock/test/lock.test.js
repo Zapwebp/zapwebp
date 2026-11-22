@@ -9,6 +9,7 @@ const {
   writeLock,
   readLock,
   verifyLock,
+  shouldSkipConversion,
   createLockPlugin,
   ENGINE_VERSION,
   LOCK_VERSION,
@@ -37,6 +38,7 @@ test('L1: createLockFingerprint builds standard zapwebp:lock block', () => {
   assert.equal(lock.engineVersion, '2.26.0');
   assert.equal(lock.inputSha256, crypto.createHash('sha256').update(fakeInput).digest('hex'));
   assert.equal(lock.optionsSha256, computeOptionsHash({ to: 'png', quality: 90 }));
+  assert.equal(lock.targetFormat, 'png');
   assert.equal(lock.optionsSummary.to, 'png');
 });
 
@@ -152,4 +154,139 @@ test('L5: createLockPlugin lifecycle hooks beforeConvert and afterConvert', asyn
   });
   assert.equal(ctx.skipConversion, true);
   assert.equal(ctx.lock.match, true);
+});
+
+test('L2: shouldSkipConversion handles intentional format changes vs identical requests', () => {
+  const inputSha256 = 'abc123inputhash';
+  const existingLock = {
+    version: LOCK_VERSION,
+    inputSha256,
+    targetFormat: 'webp',
+    engineVersion: ENGINE_VERSION,
+    optionsSha256: computeOptionsHash({ to: 'webp', quality: 85 }),
+    convertedAt: '2026-11-22T00:00:00.000Z',
+    optionsSummary: { to: 'webp', quality: 85 },
+  };
+
+  // 1. Identical request -> skip
+  const resIdentical = shouldSkipConversion(existingLock, { to: 'webp', quality: 85 }, inputSha256);
+  assert.deepEqual(resIdentical, { skip: true, reason: 'identical_request' });
+
+  // 2. Intentional format change -> DO NOT skip (new derivative requested)
+  const resFormatChange = shouldSkipConversion(existingLock, { to: 'avif', quality: 85 }, inputSha256);
+  assert.deepEqual(resFormatChange, { skip: false, reason: 'new_target_format_requested' });
+
+  const resFormatChangePng = shouldSkipConversion(existingLock, { to: 'png' }, inputSha256);
+  assert.deepEqual(resFormatChangePng, { skip: false, reason: 'new_target_format_requested' });
+
+  // 3. Options changed (e.g. quality 85 -> 90) -> DO NOT skip
+  const resOptionsChange = shouldSkipConversion(existingLock, { to: 'webp', quality: 90 }, inputSha256);
+  assert.deepEqual(resOptionsChange, { skip: false, reason: 'options_changed' });
+
+  // 4. Input changed -> DO NOT skip
+  const resInputChanged = shouldSkipConversion(existingLock, { to: 'webp', quality: 85 }, 'differentinputhash');
+  assert.deepEqual(resInputChanged, { skip: false, reason: 'input_changed' });
+
+  // 5. Engine version mismatch with invalidation on -> DO NOT skip
+  const resEngineMismatch = shouldSkipConversion(
+    existingLock,
+    { to: 'webp', quality: 85 },
+    inputSha256,
+    { engineVersion: '99.0.0' }
+  );
+  assert.deepEqual(resEngineMismatch, { skip: false, reason: 'engine_version_changed' });
+
+  // 6. Force override -> DO NOT skip
+  const resForced = shouldSkipConversion(
+    existingLock,
+    { to: 'webp', quality: 85 },
+    inputSha256,
+    { force: true }
+  );
+  assert.deepEqual(resForced, { skip: false, reason: 'forced' });
+});
+
+test('L3: verifyLock reports new_target_format_requested and does not skip when format differs', () => {
+  const input = Buffer.from('test-logo-vector-or-raster');
+  const webpOptions = { to: 'webp', quality: 85 };
+  const fpWebp = createLockFingerprint({ input, options: webpOptions, engineVersion: ENGINE_VERSION });
+
+  const dummyWebp = Buffer.alloc(12);
+  dummyWebp.write('RIFF', 0, 4, 'ascii');
+  dummyWebp.write('WEBP', 8, 4, 'ascii');
+  const lockedWebp = writeLock(dummyWebp, 'webp', fpWebp);
+
+  // When asking for AVIF on an existing WebP lock:
+  const avifOptions = { to: 'avif', quality: 85 };
+  const verification = verifyLock(lockedWebp, input, avifOptions);
+
+  assert.equal(verification.match, false, 'Format change must not match old lock');
+  assert.equal(verification.skipped, false, 'Must not skip intentional format change');
+  assert.equal(verification.reason, 'new_target_format_requested');
+  assert.equal(verification.targetFormat, 'webp');
+  assert.equal(verification.requestedFormat, 'avif');
+});
+
+test('L5: Edge cases matrix - WebP, AVIF, quality, and edited source', () => {
+  const inputA = Buffer.from('logo-source-content-v1');
+  const inputB = Buffer.from('logo-source-content-v2-edited');
+
+  // Scenario 1: WebP -> WebP (same options) -> Skip (redundant)
+  const fpWebp85 = createLockFingerprint({ input: inputA, options: { to: 'webp', quality: 85 } });
+  const dummyWebp = Buffer.alloc(12);
+  dummyWebp.write('RIFF', 0, 4, 'ascii');
+  dummyWebp.write('WEBP', 8, 4, 'ascii');
+  const lockedWebp = writeLock(dummyWebp, 'webp', fpWebp85);
+
+  const res1 = verifyLock(lockedWebp, inputA, { to: 'webp', quality: 85 });
+  assert.equal(res1.match, true);
+  assert.equal(res1.skipped, true);
+
+  // Scenario 2: WebP -> WebP (new quality 92) -> Convert (options changed)
+  const res2 = verifyLock(lockedWebp, inputA, { to: 'webp', quality: 92 });
+  assert.equal(res2.match, false);
+  assert.equal(res2.skipped, false);
+  assert.equal(res2.reason, 'options_hash_mismatch');
+
+  // Scenario 3: WebP -> AVIF -> Convert (new derivative requested)
+  const res3 = verifyLock(lockedWebp, inputA, { to: 'avif', quality: 85 });
+  assert.equal(res3.match, false);
+  assert.equal(res3.skipped, false);
+  assert.equal(res3.reason, 'new_target_format_requested');
+
+  // Scenario 4: WebP -> AVIF (then later WebP again) -> WebP lock remains valid and skips
+  const res4 = verifyLock(lockedWebp, inputA, { to: 'webp', quality: 85 });
+  assert.equal(res4.match, true);
+  assert.equal(res4.skipped, true);
+
+  // Scenario 5: Source file edited, WebP -> AVIF -> Convert (input changed)
+  const res5 = verifyLock(lockedWebp, inputB, { to: 'avif', quality: 85 });
+  assert.equal(res5.match, false);
+  assert.equal(res5.skipped, false);
+  // When input is changed and format is changed, input hash mismatch takes precedence or format change
+  assert.ok(res5.reason === 'input_hash_mismatch' || res5.reason === 'new_target_format_requested');
+});
+
+test('L5: Multi-format derivatives have independent, non-conflicting locks', () => {
+  const sourceSvg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>');
+
+  // Create WebP derivative
+  const dummyWebp = Buffer.alloc(12);
+  dummyWebp.write('RIFF', 0, 4, 'ascii');
+  dummyWebp.write('WEBP', 8, 4, 'ascii');
+  const fpWebp = createLockFingerprint({ input: sourceSvg, options: { to: 'webp', quality: 85 } });
+  const lockedWebp = writeLock(dummyWebp, 'webp', fpWebp);
+
+  // Create AVIF derivative (simulated container)
+  const dummyAvif = Buffer.from([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66]);
+  const fpAvif = createLockFingerprint({ input: sourceSvg, options: { to: 'avif', quality: 75 } });
+  
+  assert.equal(fpWebp['zapwebp:lock'].targetFormat, 'webp');
+  assert.equal(fpAvif['zapwebp:lock'].targetFormat, 'avif');
+  assert.notEqual(fpWebp['zapwebp:lock'].optionsSha256, fpAvif['zapwebp:lock'].optionsSha256);
+
+  // Verify WebP output against WebP request -> match
+  assert.equal(verifyLock(lockedWebp, sourceSvg, { to: 'webp', quality: 85 }).match, true);
+  // Verify WebP output against AVIF request -> no match, new derivative
+  assert.equal(verifyLock(lockedWebp, sourceSvg, { to: 'avif', quality: 75 }).reason, 'new_target_format_requested');
 });

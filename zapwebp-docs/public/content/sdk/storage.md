@@ -2,7 +2,7 @@
 
 Covers: Cloud storage wrappers, pre-upload conversion, and target locking for Supabase, S3, Firebase, and Neocities.
 Does not cover: Local disk journaling or GUI components.
-Applies to: `@zapwebp/storage` v1.0.0+.
+Applies to: `@zapwebp/storage` v1.1.0 and later.
 
 ## Quick start
 

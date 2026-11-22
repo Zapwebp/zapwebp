@@ -1,65 +1,54 @@
-# Contributing
+# Gabay sa Pag-aambag sa Zapwebp
 
-Covers: Daloy ng pagbuo, pag-setup ng kapaligiran, pangunahing mga patakaran sa arkitektura, checklist ng pull request, at mga alituntunin sa pagsubok para sa mga kontribyutor.
+Salamat sa iyong interes na mag-ambag sa Zapwebp. Ang Zapwebp ay isang open-source na platform para sa pagpoproseso ng imahe na nakatuon sa transparency safety, zero telemetry, mataas na performance, at malinis na software engineering.
 
-Does not cover: Lokalisasyon ng wika at pagsasalin ng catalog. Tingnan ang [Translators](/translators).
+Inaasahan ang lahat ng nag-aambag na sundin ang aming [Alituntunin sa Pag-uugali](/code-of-conduct).
 
-Applies to: Lahat ng mga kontribyutor, nag-uulat ng isyu, at gumagawa ng pull request sa lahat ng package ng `@zapwebp`.
+---
 
-## Quick start
+## 1. Paghahanda ng Kapaligiran sa Pagbuo
 
+### Mga Kinakailangan
+- **Node.js**: Bersyon `>= 22.0.0` para sa lahat ng package.
+- **Package Manager**: `pnpm 11.9.0` para sa pamamahala ng monorepo.
+- **Git**: Para sa version control.
+
+### Unang Pag-setup
 ```bash
-# 1. I-clone at i-install ang mga dependency
 git clone https://github.com/Zapwebp/zapwebp.git
-cd zapwebp && pnpm install
-
-# 2. Patakbuhin ang mga suite ng pagsubok sa lahat ng package
-pnpm test
+cd zapwebp
+pnpm install
 ```
 
-## What it does
-
-Ang Zapwebp ay pinamamahalaan ng mahigpit na mga prinsipyo ng Enterprise Architecture upang matiyak ang madaling pagpapanatili, walang labis na dependencies, at ganap na kaligtasan sa aninag ng bawat conversion pipeline.
-
-### Ang Dalawang Pangunahing Patakaran sa Arkitektura
-
-1. **Pababang Direksyon Lamang ang Dependencies**:
-   - `apps/web` (Presentasyon) $\rightarrow$ `@zapwebp/features` $\rightarrow$ `@zapwebp/ui` $\rightarrow$ `@zapwebp/core` $\rightarrow$ `@zapwebp/shared` (Kontrata).
-   - Ang `@zapwebp/core` ay **hindi dapat** kailanman mag-import mula sa UI o feature layers.
-2. **Huwag Mag-hardcode ng Hex Color**:
-   - Ang estilo ng mga component ay dapat gumamit ng design tokens mula sa `@zapwebp/ui` (`tokens.css`). Ipinagbabawal ang paggamit ng hilaw na `#hex` na kulay sa presentasyon.
-
-### Daloy ng Trabaho sa Pag-develop
+### Mga Pangunahing Command
 
 | Gawain | Command | Deskripsyon |
 |---|---|---|
-| **Dev Server** | `pnpm dev` | Patakbuhin ang lokal na web server na may hot-reload sa port 3000 |
-| **Workspace Tests** | `pnpm test` | Isagawa ang test suites sa lahat ng 20 packages |
-| **Docs Bundle** | `pnpm run build:docs` | I-compile ang documentation SPA sa `public/docs.js` |
-| **LLMS Manifest** | `pnpm run build:llms` | Gumawa ng mga salamin sa `public/llms.txt` |
-| **Locale Validator** | `pnpm run validate-locales` | Patunayan ang parity ng catalog at alignment ng mga placeholder |
+| **Dev Server** | `pnpm dev` | Simulan ang local dev server sa port 3000. |
+| **Lahat ng Test** | `pnpm test` | Patakbuhin ang lahat ng unit at integration test suites. |
+| **Docs Test** | `node --test test/docs.test.js` | Suriin ang pagsunod ng mga documentation page. |
+| **Validate Locales** | `node scripts/validate-locales.js` | Suriin ang key parity sa mga translation catalog. |
+| **I-build ang Docs** | `pnpm run build:docs` | I-bundle ang docs application sa `public/docs.js`. |
+| **Gumawa ng Changeset** | `pnpm changeset` | I-dokumento ang mga pagbabago para sa release. |
 
-## Errors
+---
 
-| Code | Dahilan | Solusyon |
-|---|---|---|
-| `test_failure` | May natuklasang regression habang tumatakbo ang `pnpm test` | Ayusin ang mga assertion ng unit test bago magbukas ng PR |
-| `lint_failure` | May paglabag sa ESLint o patakaran sa arkitektura | Tiyaking pababa ang dependencies at gamitin ang tamang tokens |
+## 2. Mga Pangunahing Simulain sa Arkitektura
 
-## For agents
+1. **Pababang Daloy ng Dependency**:
+   $$\text{apps/*} \longrightarrow \text{packages/features} \longrightarrow \text{packages/core} \longrightarrow \text{packages/shared}$$
+   Hindi kailanman nag-iimport ang `@zapwebp/core` mula sa UI o feature layers.
+2. **Design Tokens Lamang**: Lahat ng kulay ay dapat magmula sa `public/tokens.css`. Bawal ang hardcoded hex colors sa component styles.
+3. **Zero Telemetry**: Bawal magdagdag ng analytics, tracking cookies, o phone-home network calls.
+4. **Fail Loudly**: Huwag kailanman tahimik na ibasura ang alpha transparency channel.
 
-```json
-{
-  "project": "Zapwebp",
-  "packageManager": "pnpm",
-  "monorepo": "pnpm-workspace",
-  "scripts": ["pnpm dev", "pnpm test", "pnpm run build:docs"],
-  "rules": ["dependencies-point-down", "tokenized-colors", "100-percent-tests"]
-}
-```
+---
 
-## Related
+## 3. Proseso ng Pull Request
 
-- [Developers Overview](/developers): Pagsisimula at paggawa ng pasadyang plugin.
-- [Code of Conduct](/code-of-conduct): Mga pamantayan sa pakikipag-ugnayan sa komunidad.
-- [Translators](/translators): Gabay sa pag-ambag ng pagsasalin ng wika.
+1. Gumawa ng branch gamit ang tamang prefix (`feat/`, `fix/`, `docs/`).
+2. Sumulat ng commit messages alinsunod sa Conventional Commits.
+3. Magdagdag ng changeset gamit ang `pnpm changeset` kapag may pagbabago sa code.
+4. Siguraduhing pumapasa ang lahat ng pagsusuri: `pnpm test`.
+
+Para sa mga tanong, sumali sa talakayan sa [GitHub Discussions](https://github.com/Zapwebp/zapwebp/discussions).

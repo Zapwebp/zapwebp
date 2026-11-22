@@ -1,10 +1,10 @@
 # Pagbura ng Orihinal na File
 
-Saklaw: boluntaryong pagbura ng orihinal na file pagkatapos ng conversion, mga kumpirmasyon sa unang paggamit, `.zapwebp/backups/` 30-araw na imbakan ng backup na maaaring ibalik, pagpapatunay ng SHA-256 bago magbura, pag-journal ng transaksyon, at `zapwebp undo`.
+Covers: boluntaryong pagbura ng orihinal na file pagkatapos ng conversion, mga kumpirmasyon sa unang paggamit, `.zapwebp/backups/` 30-araw na imbakan ng backup na maaaring ibalik, pagpapatunay ng SHA-256 bago magbura, pag-journal ng transaksyon, at `zapwebp undo`.
 
-Hindi saklaw: pag-scrub ng metadata o paglilinis ng SVG. Tingnan ang [Clean Mode](/clean) o [Kaligtasan](/safety).
+Does not cover: pag-scrub ng metadata o paglilinis ng SVG. Tingnan ang [Clean Mode](/clean) o [Kaligtasan](/safety).
 
-Naaangkop sa: Zapwebp CLI, MCP server, VS Code extension, at SDK v2.26.0 at mas bago.
+Applies to: Zapwebp CLI, MCP server, VS Code extension, at SDK v2.26.0 at mas bago.
 
 ## Quick start
 
@@ -49,13 +49,7 @@ Ang pagbura ng orihinal na file ang pinakamapanganib na operasyon na magagawa ng
 | `E_BACKUP_VERIFICATION_FAILED` | Nabigo ang pagtutugma ng SHA-256 hash ng backup bago burahin ang orihinal. | Suriin ang disk space at write permissions sa `.zapwebp/backups/`. |
 | `E_FORK_DELETE_FORBIDDEN` | Natukoy ng GitHub Action ang `--delete-original` o `keep-original: false` sa pull request mula sa isang fork. | Tanggalin ang mga parameter ng pagbura mula sa workflow ng fork. |
 
-## Kaugnay
-
-- [CLI](/cli) — Command-line interface, mga flag, at mga command sa journal ng transaksyon.
-- [MCP Agent](/mcp) — Mga tool ng Model Context Protocol kabilang ang `convert_image` at `undo_last`.
-- [VS Code Extension](/plugins/vscode) — In-editor conversion na may mga pagkilos sa context menu at suporta sa undo.
-
-## Para sa mga agent
+## For agents
 
 ```json
 {
@@ -72,3 +66,9 @@ Ang pagbura ng orihinal na file ang pinakamapanganib na operasyon na magagawa ng
   ]
 }
 ```
+
+## Related
+
+- [CLI](/cli) — Command-line interface, mga flag, at mga command sa journal ng transaksyon.
+- [MCP Agent](/mcp) — Mga tool ng Model Context Protocol kabilang ang `convert_image` at `undo_last`.
+- [VS Code Extension](/plugins/vscode) — In-editor conversion na may mga pagkilos sa context menu at suporta sa undo.

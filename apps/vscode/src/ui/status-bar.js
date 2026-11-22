@@ -15,6 +15,12 @@ function getTodayDate() {
   return `${year}-${month}-${day}`;
 }
 
+function formatDisplayName(fmt) {
+  if (!fmt) return '';
+  const map = { webp: 'WebP', avif: 'AVIF', png: 'PNG', jpeg: 'JPEG', jpg: 'JPEG', ico: 'ICO', cur: 'CUR', svg: 'SVG' };
+  return map[fmt.toLowerCase()] || fmt.toUpperCase();
+}
+
 class ZapStatusBar {
   constructor() {
     this.outputChannel = vscode.window.createOutputChannel('Zapwebp');
@@ -24,6 +30,7 @@ class ZapStatusBar {
     this.currentDate = getTodayDate();
     this.count = 0;
     this.bytesSaved = 0;
+    this.targetLock = null;
 
     this.refresh();
   }
@@ -33,7 +40,15 @@ class ZapStatusBar {
    */
   refresh() {
     this.checkDailyReset();
-    if (this.count === 0) {
+    if (this.targetLock) {
+      const lockName = formatDisplayName(this.targetLock);
+      this.item.text = `⚡ Zapwebp: ${lockName} lock active`;
+      if (this.count === 0) {
+        this.item.tooltip = `Zapwebp: Workspace Target Lock is active (${lockName}). Click to view logs.`;
+      } else {
+        this.item.tooltip = `Zapwebp: Workspace Target Lock is active (${lockName}). ${this.count} file${this.count === 1 ? '' : 's'} converted (${formatBytes(this.bytesSaved)} saved today). Click to view logs.`;
+      }
+    } else if (this.count === 0) {
       this.item.text = '⚡ Zapwebp';
       this.item.tooltip = 'Zapwebp: Ready to convert images. Click to view logs.';
     } else {
@@ -41,6 +56,15 @@ class ZapStatusBar {
       this.item.tooltip = `Zapwebp: ${this.count} file${this.count === 1 ? '' : 's'} converted (${formatBytes(this.bytesSaved)} saved today). Click to view logs.`;
     }
     this.item.show();
+  }
+
+  /**
+   * Updates the target lock format badge.
+   * @param {string|null} target
+   */
+  setTargetLock(target) {
+    this.targetLock = target ? String(target).toLowerCase() : null;
+    this.refresh();
   }
 
   /**
@@ -97,4 +121,5 @@ const statusBar = new ZapStatusBar();
 module.exports = {
   ZapStatusBar,
   statusBar,
+  formatDisplayName,
 };

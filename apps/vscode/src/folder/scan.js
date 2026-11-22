@@ -6,7 +6,7 @@ const vscode = require('vscode');
  * Standard supported image formats for Zapwebp conversion.
  * @type {readonly string[]}
  */
-const SUPPORTED_FORMATS = Object.freeze(['svg', 'png', 'jpeg', 'webp', 'avif', 'gif', 'tiff']);
+const SUPPORTED_FORMATS = Object.freeze(['svg', 'png', 'jpeg', 'webp', 'avif', 'gif', 'tiff', 'ico', 'cur']);
 
 /**
  * Maps common file extensions to canonical format identifiers.
@@ -22,6 +22,8 @@ const EXTENSION_TO_FORMAT = Object.freeze({
   gif: 'gif',
   tif: 'tiff',
   tiff: 'tiff',
+  ico: 'ico',
+  cur: 'cur',
 });
 
 /**

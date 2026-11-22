@@ -6,7 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const contentDir = path.resolve(__dirname, '../content');
-const pages = [
+
+const technicalPages = [
   'index',
   'convert',
   'cli',
@@ -23,17 +24,16 @@ const pages = [
   'errors',
   'api',
   'developers',
-  'about',
-  'privacy',
-  'terms',
-  'security',
-  'code-of-conduct',
-  'contributing',
-  'translators',
   'faq',
   'stability',
   'performance',
   'freeze',
+  'deletion',
+  'lossless',
+  'scaffolding',
+  'reliability',
+  'ai-integration',
+  'ui',
   'plugins/vite',
   'plugins/next',
   'plugins/github-action',
@@ -51,19 +51,24 @@ const pages = [
   'plugins/docs',
   'sdk/core',
   'sdk/plugin',
-  'ui',
   'sdk/ui',
   'sdk/cli',
   'sdk/storage',
   'sdk/edge',
-  'ai-integration',
-  'lossless',
-  'scaffolding',
-  'reliability',
 ];
 
-test('Agentic docs validation: all content pages follow the strict template', () => {
-  for (const page of pages) {
+const informationalPages = [
+  'about',
+  'privacy',
+  'terms',
+  'security',
+  'code-of-conduct',
+  'contributing',
+  'translators',
+];
+
+test('Agentic docs validation: all technical pages follow the strict technical template', () => {
+  for (const page of technicalPages) {
     const file = path.join(contentDir, `${page}.md`);
     assert.ok(fs.existsSync(file), `content/${page}.md must exist`);
     const md = fs.readFileSync(file, 'utf8');
@@ -91,6 +96,31 @@ test('Agentic docs validation: all content pages follow the strict template', ()
 
     // 7. Related
     assert.ok(md.includes('## Related'), `${page}.md must have ## Related`);
+  }
+});
+
+test('Legal, policy, and informational documents do NOT use the technical template and follow formal structure', () => {
+  for (const page of informationalPages) {
+    const file = path.join(contentDir, `${page}.md`);
+    assert.ok(fs.existsSync(file), `content/${page}.md must exist`);
+    const md = fs.readFileSync(file, 'utf8');
+
+    // 1. H1 title
+    assert.match(md, /^# [^\n]+/, `${page}.md must start with H1`);
+
+    // 2. Must NOT use the technical template scope block
+    assert.ok(!md.includes('Covers:'), `${page}.md must NOT declare Covers:`);
+    assert.ok(!md.includes('Does not cover:'), `${page}.md must NOT declare Does not cover:`);
+    assert.ok(!md.includes('Applies to:'), `${page}.md must NOT declare Applies to:`);
+
+    // 3. Must NOT have technical quick start
+    assert.ok(!md.includes('## Quick start'), `${page}.md must NOT have ## Quick start`);
+
+    // 4. Must NOT have technical errors block
+    assert.ok(!md.includes('## Errors'), `${page}.md must NOT have ## Errors`);
+
+    // 5. Must NOT have technical agent JSON block
+    assert.ok(!md.includes('## For agents'), `${page}.md must NOT have ## For agents`);
   }
 });
 

@@ -1,10 +1,10 @@
 # Common FAQs
 
-Covers: frequent questions regarding package naming, npm and npx 404 errors, Socket.dev dependency alerts, VS Code extension execution, alpha transparency preservation, defensive SVG sanitization, AI agent MCP integration, and framework adapters.
+Covers: frequent questions regarding package naming, npm and npx 404 errors, Socket.dev dependency alerts, VS Code extension execution, alpha transparency preservation, defensive SVG sanitization, AI agent MCP integration, framework adapters, configurable batch limits, original file deletion safety, favicon generation, target byte compression, conversion locking, and documentation delivery.
 
 Does not cover: low-level C and Rust native binding compilation or third-party cloud infrastructure hosting.
 
-Applies to: all Zapwebp surfaces (Web, CLI, MCP, VS Code, Laravel, Vite, Next.js, and SDKs).
+Applies to: All Zapwebp surfaces (Web, CLI, MCP, VS Code, Laravel, Vite, Next.js, and SDKs) v2.28.0 and later.
 
 ## Quick start
 
@@ -61,9 +61,17 @@ Here is the authoritative package name directory across registries:
 | **Laravel Package** | Packagist / Composer | `zapwebp/laravel` | `composer require zapwebp/laravel` |
 | **Vite Plugin** | npm | `zapwebp-vite` | `npm install -D zapwebp-vite` |
 | **Next.js Plugin** | npm | `zapwebp-next` | `npm install -D zapwebp-next` |
+| **GitHub Action** | GitHub Marketplace | `zapwebp-github-action` | `uses: zapwebp/zapwebp-github-action@v1` |
 | **Storage Adapters** | npm | `@zapwebp/storage` | `npm install @zapwebp/storage` |
 | **Lens Inspector** | npm | `zapwebp-lens` | `npx zapwebp-lens inspect <file>` |
 | **Crop Transform** | npm | `@zapwebp/crop` | `npm install @zapwebp/crop` |
+| **ICO / Favicon Plugin** | npm | `@zapwebp/format-ico` | `npm install @zapwebp/format-ico` |
+| **Compressor Plugin** | npm | `@zapwebp/compressor` | `npm install @zapwebp/compressor` |
+| **Lock Plugin** | npm | `@zapwebp/lock` | `npm install @zapwebp/lock` |
+| **Docs Delivery Engine** | npm | `@zapwebp/docs` | `npm install @zapwebp/docs` |
+| **Plugin Scaffolder** | npm | `create-zapwebp` | `pnpm create zapwebp` |
+| **Edge SDK** | npm | `@zapwebp/edge` | `npm install @zapwebp/edge` |
+| **Plugin SDK** | npm | `@zapwebp/plugin-sdk` | `npm install @zapwebp/plugin-sdk` |
 | **SDK Client** | npm | `@zapwebp/sdk` | `npm install @zapwebp/sdk` |
 
 ---
@@ -74,7 +82,7 @@ Here is the authoritative package name directory across registries:
 
 Older releases referenced upstream dependencies (`sharp@0.33.5`) containing inherited vulnerabilities in native C libraries (`libvips` CVE-2026-33327, CVE-2026-33328, CVE-2026-35590, and `libheif`).
 
-All modern releases lock `sharp` to **`^0.35.5`**, resolving all known CVEs. Running `pnpm audit` in the repository confirms **0 vulnerabilities**. Socket.dev displays alerts for the specific version requested in the URL; once Socket crawls the latest published version (`1.1.1` and `2.14.0`), those dependency alerts clear.
+All modern releases lock `sharp` to **`^0.35.5`**, resolving all known CVEs. Running `pnpm audit` in the repository confirms **0 vulnerabilities**. Socket.dev displays alerts for the specific version requested in the URL; once Socket crawls the latest published version (`1.1.1` and `2.28.0`), those dependency alerts clear.
 
 #### Why does Socket.dev flag "Unstable ownership"?
 
@@ -86,7 +94,7 @@ High-performance image conversion requires precompiled platform-specific C++ (`l
 
 #### Does Zapwebp phone home or collect telemetry?
 
-**No.** Rule 6 of the Zapwebp Operating Contract strictly enforces zero telemetry. No analytics trackers, no error-monitoring beacons (Sentry, LogRocket), and no phone-home network calls exist anywhere in the codebase. Conversions execute 100% in local memory or within your isolated container.
+**No.** Rule 3 of the Zapwebp Operating Contract strictly enforces zero telemetry. No analytics trackers, no error-monitoring beacons (Sentry, LogRocket), and no phone-home network calls exist anywhere in the codebase. Conversions execute 100% in local memory or within your isolated container.
 
 ---
 
@@ -96,14 +104,13 @@ High-performance image conversion requires precompiled platform-specific C++ (`l
 
 Early extension releases invoked `zap.cmd` through the Windows shell assuming the CLI was installed globally in your system `PATH`.
 
-In `ebula.zapwebp-vscode` v1.2.0, this was permanently replaced by an enterprise-grade 3-tier execution pipeline:
-
+In `ebula.zapwebp-vscode` v1.2.0+, this was permanently replaced by an enterprise-grade 3-tier execution pipeline:
 1. **Tier 1 (In-Process)**: Direct in-memory conversion using native/WASM bindings.
 2. **Tier 2 (Bundled Node Runner)**: Automatically resolves the system `node.exe` binary and executes the extension's self-bundled `dist/zap.js` runner directly (`node.exe dist/zap.js ...`), eliminating any dependency on Windows `.cmd` wrappers or global PATH entries.
 3. **Tier 3 (Subprocess Fallback)**: Runs `npx --yes zapwebp` as a final fallback.
 
 If you encounter this error on Windows:
-1. Update `ebula.zapwebp-vscode` to **v1.2.0** or later from Open VSX or VS Code Marketplace.
+1. Update `ebula.zapwebp-vscode` to **v1.3.0** or later from Open VSX or VS Code Marketplace.
 2. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and run: **`Developer: Reload Window`**.
 
 ---
@@ -121,6 +128,52 @@ Zapwebp strictly enforces transparency safety:
 - Converting a transparent image to JPEG requires an explicit `--background <color>` parameter (e.g. `--background "#ffffff"` or `--background white`).
 - If no background is provided, Zapwebp halts immediately with `E_ALPHA_NOT_REPRESENTABLE` to prevent silent data corruption.
 - To maintain full transparency, convert to **WebP**, **AVIF**, or **PNG**.
+
+---
+
+### Configurable batch limits & rate controls
+
+#### Why did my batch conversion fail with `E_TOO_MANY_FILES` or `E_SESSION_LIMIT_EXCEEDED`?
+
+Starting in v2.28.0, Zapwebp implements standardized file and concurrency limits to protect host resources:
+- **`E_TOO_MANY_FILES`**: The batch exceeds `maxFilesPerRequest` (default 20 files). Pass `--max-files <n>` or `--unlimited` in the CLI to override.
+- **`E_SESSION_LIMIT_EXCEEDED`**: The cumulative rolling session ceiling (`maxFilesPerSession`, default 100 files) has been reached. In the CLI, run `zap --reset-session` to clear the counter in `.zapwebp/session.json`. In the browser, close and reopen the tab or clear `sessionStorage`.
+
+---
+
+### File deletion & zero-data-loss guarantee
+
+#### Does Zapwebp delete my original image files after conversion?
+
+**No, not by default.** Source file preservation is strictly guaranteed:
+- Deletion is disabled by default across all surfaces (`allowDeleteOriginal: false`).
+- Source deletion only occurs when explicitly passing `--delete-original` in the CLI or selecting delete options in VS Code.
+- On first activation, Zapwebp prompts for confirmation.
+- Before deleting any source file, Zapwebp creates a cryptographic backup in `.zapwebp/backups/{timestamp}/{filepath}` and verifies its SHA-256 hash.
+- Any deletion can be undone anytime with `zap undo` or the `undo_last` tool in MCP.
+
+---
+
+### Favicons, multi-size ICO, and compression
+
+#### How do I generate multi-size ICO files and favicons?
+
+Install `@zapwebp/format-ico` and pass `--to ico`:
+```bash
+npx zapwebp logo.svg --to ico
+```
+To generate a complete favicon suite (`favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`, `site.webmanifest`):
+```bash
+npx zapwebp logo.svg --favicon
+```
+
+#### How do I compress an image to fit under an exact byte ceiling?
+
+Install `@zapwebp/compressor` and pass `--target-bytes`:
+```bash
+npx zapwebp hero.png --to webp --target-bytes 250000
+```
+Zapwebp executes a deterministic binary-search quality optimization loop and applies adaptive Lanczos3 downscaling if necessary to satisfy the byte constraint.
 
 ---
 
@@ -171,49 +224,7 @@ Add the following configuration to your client's MCP configuration file:
 }
 ```
 
-Once connected, your AI agent has direct access to 15 tools including `convert_image`, `inspect_image`, `audit_conversion_command`, and `generate_multipliers`.
-
----
-
-### Framework adapters & middleware
-
-#### What happens if an image fails during a Laravel file upload?
-
-The `@zapwebp/laravel` package provides the `ConvertUploads` middleware. It implements a **fail-open** policy:
-- If an uploaded file fails conversion (e.g. invalid header or corrupt data), the exception is logged as a warning (`Log::warning("Zapwebp failed to convert...")`).
-- The middleware retains the original uploaded file unchanged and allows the request to complete, ensuring user registration and checkout forms never crash.
-
-#### How do Vite and Next.js handle multi-format image generation?
-
-Both `zapwebp-vite` and `zapwebp-next` support parallel multi-format generation:
-
-```javascript
-// vite.config.js
-import { zapwebp } from 'zapwebp-vite';
-
-export default {
-  plugins: [
-    zapwebp({
-      formats: ['webp', 'avif'],
-      quality: 85,
-      clean: true,
-    })
-  ]
-};
-```
-
-In Vite, import queries allow generating responsive HTML structures:
-```html
-import pictureHtml from './hero.png?picture';
-```
-
-In Next.js, `zapwebpLoader` integrates natively with `next/image`:
-```tsx
-import Image from 'next/image';
-import { zapwebpLoader } from 'zapwebp-next';
-
-<Image src="/assets/hero.png" width={800} height={600} loader={zapwebpLoader} alt="Hero" />
-```
+Once connected, your AI agent has direct access to 15 tools including `convert_image`, `batch_convert`, `inspect_image`, `audit_conversion`, and `undo_last`.
 
 ---
 
@@ -223,10 +234,12 @@ import { zapwebpLoader } from 'zapwebp-next';
 |---|---|---|
 | `E_UNSAFE_SVG` | SVG contains scripts, event handlers, or external entity references | Strip `<script>` and inline event attributes from SVG before conversion |
 | `E_ALPHA_NOT_REPRESENTABLE` | Converting transparent image to opaque format (JPEG) without background | Supply explicit `--background <color>` (e.g. `--background "#ffffff"`) or use WebP/AVIF |
+| `E_TOO_MANY_FILES` | Batch file count exceeds allowable ceiling | Drop fewer files or pass `--max-files <n>` / `--unlimited` |
+| `E_SESSION_LIMIT_EXCEEDED` | Cumulative session file limit reached | Reset session with `zap --reset-session` |
 | `E_UPLOADER_REQUIRED` | Calling `createZapStore().upload()` without providing an active conversion callback | Pass a real conversion handler into the UI store configuration |
 | `E_CONVERSION_FAILED` | Underlying raster or vector conversion process exited with an error | Verify file integrity, check dimensions (max 4096px), or run `zap doctor` |
 | `E_SSRF_BLOCKED` | Remote image fetch attempted to access private or loopback IP address | Provide a public HTTPS URL or convert local files directly |
-| `path_outside_root` | Target file path resolves outside the permitted workspace directory | Keep input and output paths inside the authorized project root |
+| `E_PATH_TRAVERSAL` | Target file path resolves outside the permitted workspace directory | Keep input and output paths inside the authorized project root |
 
 ## For agents
 
@@ -240,7 +253,13 @@ import { zapwebpLoader } from 'zapwebp-next';
       "vscode": "ebula.zapwebp-vscode",
       "laravel": "zapwebp/laravel",
       "vite": "zapwebp-vite",
-      "next": "zapwebp-next"
+      "next": "zapwebp-next",
+      "formatIco": "@zapwebp/format-ico",
+      "compressor": "@zapwebp/compressor",
+      "lock": "@zapwebp/lock",
+      "docs": "@zapwebp/docs",
+      "scaffolder": "create-zapwebp",
+      "edge": "@zapwebp/edge"
     },
     "securityInvariants": {
       "telemetry": false,
@@ -266,6 +285,6 @@ import { zapwebpLoader } from 'zapwebp-next';
 - [Errors](/errors): Comprehensive machine-readable error dictionary.
 - [Formats](/formats): Supported raster and vector formats.
 - [CLI](/cli): Terminal command reference and flags.
-- [MCP Agent](/mcp): Model Context Protocol tools and configuration.
-- [VS Code Extension](/plugins/vscode): In-editor conversion guide.
-
+- [MCP](/mcp): Model Context Protocol tools and configuration.
+- [Limits](/limits): Configurable file counts and concurrency ceilings.
+- [Deletion](/deletion): Original file deletion safety and backup trees.

@@ -4,10 +4,48 @@ const vscode = require('vscode');
 const { getRealFormat } = require('../format');
 const { buildMenu } = require('../menu');
 const { rememberPreference, getPreferredTarget } = require('../history');
-const { readConfig } = require('../config');
-const { convertBuffer, convertScalesBuffer } = require('../core');
+const { readConfig, readWorkspaceLockConfig } = require('../config');
+const { convertBuffer, convertScalesBuffer, checkLock, ZapError } = require('../core');
+const { promptIcoSizes } = require('./convert');
 const { formatBytes, showSuccess, showError } = require('../ui/toast');
 const { statusBar } = require('../ui/status-bar');
+
+/**
+ * Prompts user for ICO extraction options.
+ * @param {vscode.Uri} uri
+ * @returns {Promise<{ action: 'largest'|'all'|'specific', size?: number }|null>}
+ */
+async function promptIcoExtraction(uri) {
+  const choice = await vscode.window.showQuickPick(
+    [
+      { label: 'Largest size', action: 'largest', description: 'Extract single highest-resolution frame' },
+      { label: 'All sizes as separate files', action: 'all', description: 'Extract every icon resolution into separate files' },
+      { label: 'Specific size...', action: 'specific', description: 'Choose specific resolution from container' },
+    ],
+    { placeHolder: 'Extract from ICO' }
+  );
+  if (!choice) return null;
+  if (choice.action === 'specific') {
+    let sizeChoices = [16, 32, 48, 64, 128, 256];
+    try {
+      const bytes = await vscode.workspace.fs.readFile(uri);
+      const icoLib = require('@zapwebp/format-ico');
+      if (icoLib && typeof icoLib.parseIco === 'function') {
+        const parsed = icoLib.parseIco(bytes);
+        if (parsed.entries?.length) {
+          sizeChoices = parsed.entries.map((e) => e.width);
+        }
+      }
+    } catch {}
+    const pickedSize = await vscode.window.showQuickPick(
+      Array.from(new Set(sizeChoices)).map((s) => ({ label: `${s}×${s}`, size: s })),
+      { placeHolder: 'Select size to extract' }
+    );
+    if (!pickedSize) return null;
+    return { action: 'specific', size: pickedSize.size };
+  }
+  return { action: choice.action };
+}
 
 /**
  * Derives output URI with target extension and optional scale multiplier suffix.
@@ -63,6 +101,24 @@ async function executeZapTasks(tasks, config) {
   let bytesIn = 0;
   let bytesOut = 0;
   let lastDetails = null;
+
+  // Workspace Target Lock check
+  if (tasks.length > 0) {
+    const lockConfig = await readWorkspaceLockConfig(tasks[0].uri);
+    if (config.targetLockEnabled && lockConfig.exists) {
+      statusBar.setTargetLock(lockConfig.targetFormat);
+      for (const t of tasks) {
+        if (lockConfig.acceptFormats && !lockConfig.acceptFormats.includes(t.target.toLowerCase())) {
+          const err = new ZapError(
+            'E_FORMAT_REJECTED',
+            `Target format "${t.target}" is rejected by workspace Target Lock policy (allowed: ${lockConfig.acceptFormats.join(', ')}).`
+          );
+          showError(t.uri, err);
+          return { converted: 0, failed: tasks.length, bytesIn: 0, bytesOut: 0, savedBytes: 0, lastDetails: null };
+        }
+      }
+    }
+  }
 
   await vscode.window.withProgress(
     {
@@ -129,26 +185,68 @@ async function executeZapTasks(tasks, config) {
               throw new Error(`Output (${task.target}) cannot overwrite input source.`);
             }
 
+            // Lock skip check: avoid re-converting files with matching fingerprint
+            try {
+              const existingOutBytes = await vscode.workspace.fs.readFile(outUri);
+              const lockCheck = checkLock(
+                existingOutBytes,
+                inBytes,
+                { to: task.target, quality: config.quality, clean: config.clean, background: bg }
+              );
+              if (lockCheck.skipped) {
+                statusBar.log(`[Lock] Skipped ${filename} (already converted with matching options)`);
+                continue;
+              }
+            } catch {}
+
             const outData = await convertBuffer(
               inBytes,
               task.target,
               config.baseWidth,
               config.quality,
               config.clean,
-              bg
+              bg,
+              {
+                sizes: task.sizes,
+                crop: task.crop,
+                targetBytes: task.targetBytes,
+                extractAll: task.extractAll,
+                extractSize: task.extractSize,
+              }
             );
 
-            const outSize = outData.byteLength;
-            await vscode.workspace.fs.writeFile(outUri, outData);
+            if (Array.isArray(outData)) {
+              // Multi-frame extraction (ICO / CUR)
+              const parentDir = task.uri.path.substring(0, task.uri.path.lastIndexOf('/'));
+              const baseName = filename.replace(/\.[^.]+$/, '');
+              let taskOutSize = 0;
+              for (const frame of outData) {
+                const frameFilename = `${baseName}-${frame.width}x${frame.height}.${task.target === 'jpeg' ? 'jpg' : task.target}`;
+                const frameUri = task.uri.with({ path: `${parentDir}/${frameFilename}` });
+                await vscode.workspace.fs.writeFile(frameUri, frame.data);
+                taskOutSize += frame.data.byteLength;
+              }
+              bytesOut += taskOutSize;
+              converted++;
+              lastDetails = {
+                filename: `${baseName} (${outData.length} sizes)`,
+                sourceSize: inSize,
+                outputSize: taskOutSize,
+                target: task.target,
+              };
+            } else {
+              const outSize = outData.byteLength;
+              await vscode.workspace.fs.writeFile(outUri, outData);
 
-            bytesOut += outSize;
-            converted++;
-            lastDetails = {
-              filename,
-              sourceSize: inSize,
-              outputSize: outSize,
-              target: task.target,
-            };
+              bytesOut += outSize;
+              converted++;
+              lastDetails = {
+                filename,
+                sourceSize: inSize,
+                outputSize: outSize,
+                target: task.target,
+              };
+            }
           }
         } catch (err) {
           failed++;
@@ -183,6 +281,10 @@ async function handleZapCommand(context, uri, uris) {
   }
 
   const config = readConfig();
+  const lockConfig = await readWorkspaceLockConfig(selections[0]);
+  if (config.targetLockEnabled && lockConfig.exists) {
+    statusBar.setTargetLock(lockConfig.targetFormat);
+  }
 
   // 1. Detect source formats using magic byte inspection
   const formatEntries = await Promise.all(
@@ -257,7 +359,9 @@ async function handleZapCommand(context, uri, uris) {
     // 3. Single Format flow (Single file or multi-select of identical format)
     const sourceFormat = uniqueFormats[0];
     const preferredTarget = config.rememberLastChoice ? getPreferredTarget(context, sourceFormat) : null;
-    const defaultTarget = config.defaultTargets[sourceFormat] || 'webp';
+    const defaultTarget = (config.targetLockEnabled && lockConfig.exists && lockConfig.targetFormat)
+      ? lockConfig.targetFormat
+      : (config.defaultTargets[sourceFormat] || 'webp');
 
     const menu = buildMenu(sourceFormat, {
       defaultTarget,
@@ -289,6 +393,24 @@ async function handleZapCommand(context, uri, uris) {
 
     const choice = selected.item;
 
+    let icoSizes = null;
+    if (choice.target === 'ico') {
+      icoSizes = await promptIcoSizes(config.icoPreset);
+      if (!icoSizes) return;
+    }
+
+    let extractAll = false;
+    let extractSize = null;
+    if (sourceFormat === 'ico' || sourceFormat === 'cur') {
+      const extractChoice = await promptIcoExtraction(validEntries[0].uri);
+      if (!extractChoice) return;
+      if (extractChoice.action === 'all') {
+        extractAll = true;
+      } else if (extractChoice.action === 'specific') {
+        extractSize = extractChoice.size;
+      }
+    }
+
     // Remember user preference if not multi-scale
     if (config.rememberLastChoice && !choice.multipliers) {
       rememberPreference(context, {
@@ -303,6 +425,9 @@ async function handleZapCommand(context, uri, uris) {
       sourceFormat,
       target: choice.target,
       multipliers: choice.multipliers,
+      sizes: icoSizes,
+      extractAll,
+      extractSize,
     }));
   }
 

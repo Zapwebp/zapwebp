@@ -4,7 +4,7 @@ Covers: Three background conversion states, transparent-to-transparent alpha pre
 
 Does not cover: Artificial background removal, magic chroma keying, or hallucinated transparency.
 
-Applies to: Zapwebp v1.1.0 and later.
+Applies to: Zapwebp v2.0.0 and later.
 
 ## Quick start
 
@@ -139,7 +139,7 @@ The web app displays a transparency checkerboard behind transparent previews. Wh
 
 ## Related
 
-* [Convert](/convert.md) — Core raster and vector conversion pipeline.
-* [Safety](/safety.md) — Transparency guarantees and SVG security gates.
-* [Target Lock](/lock-target.md) — Many-to-one ingestion architecture and strict contracts.
-* [Errors](/errors.md) — Complete error catalog with root cause analysis.
+* [Convert](/convert) — Core raster and vector conversion pipeline.
+* [Safety](/safety) — Transparency guarantees and SVG security gates.
+* [Target Lock](/lock-target) — Many-to-one ingestion architecture and strict contracts.
+* [Errors](/errors) — Complete error catalog with root cause analysis.

@@ -1,7 +1,7 @@
 'use strict';
 
 const vscode = require('vscode');
-const { convertBuffer, convertScalesBuffer } = require('../core');
+const { convertBuffer, convertScalesBuffer, checkLock } = require('../core');
 const { readConfig } = require('../config');
 
 /**
@@ -141,6 +141,19 @@ async function convertFolder(scanResult, configs, options = {}) {
               throw new Error(`Output (${targetFormat}) cannot overwrite input source.`);
             }
 
+            // Lock skip check
+            try {
+              const existingOutBytes = await vscode.workspace.fs.readFile(outUri);
+              const lockCheck = checkLock(
+                existingOutBytes,
+                inBytes,
+                { to: targetFormat, quality: config.quality, clean: config.clean, background: bg }
+              );
+              if (lockCheck.skipped) {
+                continue;
+              }
+            } catch {}
+
             const outData = await convertBuffer(
               inBytes,
               targetFormat,
@@ -150,17 +163,37 @@ async function convertFolder(scanResult, configs, options = {}) {
               bg
             );
 
-            const outSize = outData.byteLength;
-            await vscode.workspace.fs.writeFile(outUri, outData);
-            totalBytesOut += outSize;
+            if (Array.isArray(outData)) {
+              const parentDir = file.uri.path.substring(0, file.uri.path.lastIndexOf('/'));
+              const baseName = file.name.replace(/\.[^.]+$/, '');
+              let fileOutBytes = 0;
+              for (const frame of outData) {
+                const frameFilename = `${baseName}-${frame.width}x${frame.height}.${targetFormat === 'jpeg' ? 'jpg' : targetFormat}`;
+                const frameUri = file.uri.with({ path: `${parentDir}/${frameFilename}` });
+                await vscode.workspace.fs.writeFile(frameUri, frame.data);
+                fileOutBytes += frame.data.byteLength;
+              }
+              totalBytesOut += fileOutBytes;
+              convertedFiles.push({
+                name: file.name,
+                target: `${targetFormat} (${outData.length} sizes)`,
+                sourceSize: inSize,
+                outputSize: fileOutBytes,
+                saved: Math.max(0, inSize - fileOutBytes),
+              });
+            } else {
+              const outSize = outData.byteLength;
+              await vscode.workspace.fs.writeFile(outUri, outData);
+              totalBytesOut += outSize;
 
-            convertedFiles.push({
-              name: file.name,
-              target: targetFormat,
-              sourceSize: inSize,
-              outputSize: outSize,
-              saved: Math.max(0, inSize - outSize),
-            });
+              convertedFiles.push({
+                name: file.name,
+                target: targetFormat,
+                sourceSize: inSize,
+                outputSize: outSize,
+                saved: Math.max(0, inSize - outSize),
+              });
+            }
           }
         } catch (err) {
           failedFiles.push({

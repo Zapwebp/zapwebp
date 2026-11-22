@@ -1,0 +1,31 @@
+name: 'Setup pnpm with retry'
+description: 'Install and configure pnpm with automatic retry on network or registry timeouts'
+inputs:
+  version:
+    description: 'Version of pnpm to install'
+    required: false
+    default: '11.9.0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup pnpm (Attempt 1)
+      id: attempt1
+      continue-on-error: true
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.version }}
+
+    - name: Setup pnpm (Attempt 2)
+      if: steps.attempt1.outcome == 'failure'
+      id: attempt2
+      continue-on-error: true
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.version }}
+
+    - name: Setup pnpm (Attempt 3)
+      if: steps.attempt1.outcome == 'failure' && steps.attempt2.outcome == 'failure'
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.version }}

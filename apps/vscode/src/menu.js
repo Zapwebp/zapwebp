@@ -26,6 +26,7 @@ function getRawMenuItems(sourceFormat, options = {}) {
       { label: 'Zap to WebP', target: 'webp', description: 'Convert to WebP with transparency' },
       { label: 'Zap to WebP (1x, 2x, 3x)', target: 'webp', multipliers: [1, 2, 3], description: 'Convert to WebP @1x, @2x, @3x retina variants' },
       { label: 'Zap to PNG', target: 'png', description: 'Convert to lossless PNG with alpha' },
+      { label: 'Zap to ICO', target: 'ico', description: 'Generate multi-size Windows ICO' },
       { label: 'Zap to AVIF', target: 'avif', description: 'Convert to next-generation AVIF' },
       { label: 'Zap to JPEG', target: 'jpeg', description: 'Flatten to JPEG onto solid background' },
     ];
@@ -34,6 +35,7 @@ function getRawMenuItems(sourceFormat, options = {}) {
   if (norm === 'png') {
     const items = [
       { label: 'Zap to WebP', target: 'webp', description: 'Convert PNG to WebP' },
+      { label: 'Zap to ICO', target: 'ico', description: 'Generate multi-size Windows ICO' },
     ];
     if (showMultipliersForPng) {
       items.push({
@@ -85,8 +87,16 @@ function getRawMenuItems(sourceFormat, options = {}) {
 
   if (norm === 'ico') {
     return [
+      { label: 'Zap to PNG', target: 'png', description: 'Extract ICO to PNG' },
       { label: 'Zap to WebP', target: 'webp', description: 'Convert ICO to WebP' },
-      { label: 'Zap to PNG', target: 'png', description: 'Convert ICO to PNG' },
+    ];
+  }
+
+  if (norm === 'cur') {
+    return [
+      { label: 'Zap to PNG', target: 'png', description: 'Extract CUR to PNG' },
+      { label: 'Zap to ICO', target: 'ico', description: 'Convert CUR to ICO container' },
+      { label: 'Zap to WebP', target: 'webp', description: 'Convert CUR to WebP' },
     ];
   }
 
@@ -128,7 +138,7 @@ function buildMenu(sourceFormat, options = {}) {
   const norm = (sourceFormat || '').toLowerCase();
   const rawItems = getRawMenuItems(norm, options);
   const preferred = (options.preferredTarget || '').toLowerCase();
-  const defaultTarget = (options.defaultTarget || (norm === 'webp' ? 'avif' : (norm === 'ico' ? 'png' : 'webp'))).toLowerCase();
+  const defaultTarget = (options.defaultTarget || (norm === 'webp' ? 'avif' : (norm === 'ico' || norm === 'cur' ? 'png' : 'webp'))).toLowerCase();
 
   // Annotate items
   const annotated = rawItems.map((item) => {

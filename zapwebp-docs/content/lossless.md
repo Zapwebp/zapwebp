@@ -1,7 +1,7 @@
 # Lossless in Zapwebp
 
 Covers: What "lossless" means in Zapwebp, mathematical pixel identity verification, source quality evaluation, size impact ratios, degraded source detection, and the E_LOSSLESS_MISMATCH error.
-Does not cover: Lossy quality optimization profiles (see [Convert](/convert.md)), container metadata stripping (see [Clean](/clean.md)), or format conversion matrix (see [Formats](/formats.md)).
+Does not cover: Lossy quality optimization profiles (see [Convert](/convert)), container metadata stripping (see [Clean](/clean)), or format conversion matrix (see [Formats](/formats)).
 Applies to: `@zapwebp/core` (`convert`, `convertImage`), `@zapwebp/cli` (`--lossless`), `@zapwebp/mcp` (`convert_image`), `@zapwebp/sdk`, and web app cockpit.
 
 ## Quick start
@@ -124,8 +124,8 @@ Every lossless conversion computes a mathematical comparison against the estimat
 
 ## Related
 
-- [Convert Documentation](/convert.md)
-- [Formats Compatibility Matrix](/formats.md)
-- [Clean Mode Metadata Stripping](/clean.md)
-- [Core SDK Reference](/sdk/core.md)
-- [Error Dictionary](/errors.md)
+- [Convert Documentation](/convert)
+- [Formats Compatibility Matrix](/formats)
+- [Clean Mode Metadata Stripping](/clean)
+- [Core SDK Reference](/sdk/core)
+- [Error Dictionary](/errors)

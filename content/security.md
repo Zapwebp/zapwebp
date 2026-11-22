@@ -1,87 +1,108 @@
-# Security
+# Security Policy
 
-Covers: Security architecture, vulnerability reporting procedures, ISO/IEC 27001 and ISO/IEC 27017 standards alignment, storage adapter boundaries, and zero-telemetry boundary guarantees.
+At Zapwebp, security and data confidentiality are core architectural invariants rather than secondary considerations. Because Zapwebp operates across critical developer environments—including terminal pipelines, CI/CD actions, AI agent protocols, code editors, and client-side browsers—we enforce rigorous defensive controls to protect systems from malicious inputs, unauthorized network calls, and data exfiltration.
 
-Does not cover: Standard user conversion errors or malformed assets. See [Errors](/errors) and [Safety](/safety).
+This document details our security boundaries, standards alignment, supported release lines, and coordinated vulnerability disclosure procedures.
 
-Applies to: All Zapwebp packages, CLI, web application, MCP server, and cloud storage adapters.
+---
 
-## Quick start
+## 1. Architectural Security Controls
 
-```bash
-# Verify zero network calls during local image conversion
-npx zapwebp icon.svg --dry-run
-```
+Zapwebp enforces defensive engineering practices across all conversion pipelines:
 
-To report a vulnerability privately, email [eldrexdelosreyesbula@gmail.com](mailto:eldrexdelosreyesbula@gmail.com) with `[SECURITY VULNERABILITY]` in the subject line.
+### Defensive Vector Ingestion (SVG Hardening)
+Scalable Vector Graphics (SVG) are XML documents capable of executing malicious payloads. Zapwebp inspects all vector input before rasterization:
+- **Executable Code Rejection**: Any SVG containing `<script>`, inline event handlers (`onload`, `onclick`, `onerror`), `<foreignObject>`, or dangerous XML constructs is immediately rejected with `E_UNSAFE_SVG`.
+- **Entity Expansion Defense (XXE)**: Custom entity declarations (`<!ENTITY>`) and external DOCTYPE declarations (`<!DOCTYPE>`) are prohibited, mitigating XML Entity Expansion and Billion Laughs vulnerabilities.
 
-## What it does
+### SSRF & Private Network Protection
+For ingestion pipelines that fetch remote images (`convert_url`), Zapwebp employs autonomous Server-Side Request Forgery (SSRF) defenses:
+- **Private Subnet Blocking**: Requests resolving to loopback (`127.0.0.1`), RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), or link-local cloud metadata endpoints (`169.254.169.254` and IPv6 equivalents) are blocked prior to connection.
+- **Protocol Enforcement**: Only verified `https://` schemes are permitted. Plain `http://`, `file://`, and custom protocols are strictly rejected.
 
-Zapwebp enforces defensive boundaries against malicious image payloads, untrusted cloud storage paths, and network probing attacks:
+### Filesystem & Storage Sandboxing
+- **Directory Traversal Defense**: All local file operations verify that source and destination paths reside strictly within the authorized project directory root (`resolveInside`). Paths attempting to escape via `..` or unverified symlinks trigger `E_PATH_TRAVERSAL`.
+- **Path Length Boundaries**: Path arguments are strictly capped at 1024 bytes to mitigate buffer and heap anomalies.
 
-- **SVG Sanitization**: Strips executable JavaScript, event handlers, `<foreignObject>`, and custom XML external entities (XXE).
-- **SSRF Prevention**: Blocks internal network endpoints, private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.1`), link-local metadata endpoints (`169.254.169.254`), and IPv6 equivalents.
-- **Filesystem & Storage Sandboxing**: Enforces 1024-byte path bounds, strictly rejects directory traversal (`..`), absolute filesystem paths, and `file://` schemes.
-- **Zero-Credential Leakage**: All authentication tokens, basic auth credentials, and service keys are redacted from logs and error messages before propagation.
-- **Zero Remote Retention**: Conversions in the browser execute in isolated memory; CLI conversions operate on local disk with zero telemetry.
+### Memory & Execution Bounds
+- **Dimension Ceilings**: Raster and vector inputs are constrained to 4096 × 4096 pixels (16 Megapixels) unless explicitly overridden by configuration.
+- **WASM Heap Isolation**: Browser-side WebAssembly heaps are restricted to 256MB to prevent client-side denial-of-service.
 
-## ISO/IEC 27001 & ISO/IEC 27017 Alignment
+### Zero Telemetry & Credential Redaction
+- **No In-Code Telemetry**: Zero analytics trackers, tracking cookies, or diagnostic beacons are compiled into Zapwebp.
+- **Credential Masking**: Storage adapter credentials, API keys, and authorization headers are sanitized and masked before error generation or log emission.
 
-Zapwebp aligns its engineering practices and storage adapter boundaries with international cybersecurity and cloud security standards:
+---
+
+## 2. Standards Alignment (ISO/IEC 27001 & ISO/IEC 27017)
+
+Zapwebp aligns its engineering discipline and cloud storage adapter boundaries with recognized international cybersecurity standards:
 
 | Control Domain | Standard | Implementation in Zapwebp |
-|:---|:---:|:---|
-| **A.8.1 Asset Management** | ISO 27001 | SHA-256 cryptographic digests generated for every scaled output; deterministic multi-scale naming. |
-| **A.9 Access Control** | ISO 27001 | Strict path sandboxing (`validateStoragePath`), 1024-byte path ceiling, and official Row Level Security (RLS) templates. |
-| **A.10 Cryptography** | ISO 27001 | TLS 1.3 enforced for cloud adapters; zero plaintext credential persistence in code, configs, or error outputs. |
-| **A.12 Operations Security** | ISO 27001 | Memory-only execution; 16 Megapixel (4096×4096) and 256MB WASM bounds; input sanitization prior to libvips rasterization. |
-| **A.13 Communications Security** | ISO 27001 | Autonomous SSRF defense (`validateSafeUrl`); rejection of cloud metadata endpoints (`169.254.169.254`). |
-| **A.18 Compliance** | ISO 27001 | Full alignment with Philippine Republic Act No. 10173 (Data Privacy Act of 2012) and zero unauthorized telemetry. |
-| **CLD.8.1.5 Cascading Deletion** | ISO 27017 | Deterministic removal of all derived scales (@1x/@2x/@3x), manifests, and originals during asset deletion. |
-| **CLD.6.3.1 Shared Responsibility** | ISO 27017 | Clear delineation between adapter client responsibilities and cloud provider infrastructure. |
+|---|:---:|---|
+| **A.8.1 Asset Management** | ISO 27001 | Cryptographic SHA-256 digests generated for scaled outputs; deterministic multi-scale naming. |
+| **A.9 Access Control** | ISO 27001 | Strict path sandboxing (`resolveInside`), 1024-byte path bounds, and Row Level Security templates. |
+| **A.10 Cryptography** | ISO 27001 | Enforced TLS 1.3 for cloud adapter communication; zero credential persistence in code or logs. |
+| **A.12 Operations Security** | ISO 27001 | Memory-only execution; 16MP dimension and 256MB WASM bounds; input sanitization prior to libvips rasterization. |
+| **A.13 Communications Security** | ISO 27001 | SSRF defense (`validateSafeUrl`) blocking internal subnets and cloud metadata endpoints (`169.254.169.254`). |
+| **A.18 Compliance** | ISO 27001 | Full alignment with Philippine Republic Act No. 10173 (Data Privacy Act of 2012); zero unauthorized telemetry. |
+| **CLD.8.1.5 Cascading Deletion** | ISO 27017 | Deterministic removal of derived variants (@1x/@2x/@3x), manifests, and originals during asset deletion. |
+| **CLD.6.3.1 Shared Responsibility** | ISO 27017 | Explicit division between adapter client responsibilities and cloud provider infrastructure. |
 
-## Supported Versions
+---
 
-| Version Line | Status | Security Support Level |
-|:---|:---:|:---|
-| **2.x** | Active | Full security patches, dependency updates, and feature backports |
-| **1.x** | Maintenance | Critical security fixes and vulnerability patches only |
-| **< 1.0** | End of Life | Unsupported; upgrade to the latest stable release |
+## 3. Supported Versions & Security Lifecycle
 
-## Response Timeline
+Security patches and vulnerability updates are applied to the following release lines:
 
-| Milestone | Target Timeline | Action |
-|---|---|---|
-| **Initial Acknowledgment** | **Within 48 hours** | Acknowledge receipt and assign tracking identifier |
-| **Triage & Severity Assessment** | **Within 72 hours** | Reproduce issue and determine CVSS severity |
-| **Patch & Verification** | **Within 5–7 days** | Engineer fix, run regression tests, and prepare release |
-| **Coordinated Disclosure** | **Coordinated** | Publish patched npm release and GitHub Security Advisory |
+| Version Line | Status | Security Maintenance Level |
+|:---:|:---:|---|
+| **2.x** | **Active** | Full security patches, dependency updates, and feature backports. |
+| **1.x** | **Maintenance** | Critical vulnerability fixes and high-severity CVE remediation only. |
+| **< 1.0** | **End of Life** | Unsupported. Users must upgrade to the latest stable release. |
 
-## Errors
+---
 
-| Code | Cause | Fix |
-|---|---|---|
-| `E_UNSAFE_SVG` | SVG contains scripts, foreignObjects, or event handlers | Sanitize the SVG markup or use `--allow-unsafe` if trusted |
-| `E_UNSAFE_URL` | Attempted fetch of private subnet, loopback, or cloud metadata endpoint | Provide a public HTTPS image URL |
-| `E_PATH_TRAVERSAL` | Path exceeds 1024 bytes, contains `..`, or specifies absolute filesystem root | Specify a relative path within the authorized bucket root |
-| `E_AUTH` | Missing or invalid cloud storage credentials | Provide valid environment variables or function arguments |
+## 4. Threat Model & Security Boundaries
 
-## For agents
+### In-Scope Vulnerabilities
+- Bypasses of SVG sanitization allowing script execution or XML entity expansion.
+- Server-Side Request Forgery (SSRF) bypasses allowing access to private IP spaces or cloud metadata.
+- Directory traversal vulnerabilities in the CLI, SDK, or MCP server.
+- Memory exhaustion or Denial-of-Service vulnerabilities triggered by malformed image headers.
+- Unintended alpha channel loss or silent asset corruption in production conversion pipelines.
 
-```json
-{
-  "policy": "security",
-  "contact": "eldrexdelosreyesbula@gmail.com",
-  "disclosure": "coordinated",
-  "supportedVersions": ["2.x", "1.x"],
-  "standards": ["ISO/IEC 27001:2022", "ISO/IEC 27017:2015"],
-  "protections": ["xxeDefense", "scriptSanitization", "ssrfBlocker", "pathTraversalGuard", "credentialRedaction"]
-}
-```
+### Out-of-Scope Vulnerabilities
+- Vulnerabilities requiring physical access to a compromised developer workstation.
+- Attacks relying on unauthorized local modification of `.zapwebp/config.json` on a developer's local machine.
+- Downtime, service disruptions, or vulnerabilities in third-party hosting providers (e.g., Vercel, Supabase, Firebase, Neocities).
+- Issues reported by automated scanners based solely on package registry age or generic heuristics rather than demonstrable exploits.
 
-## Related
+---
 
-- [Safety](/safety): Strict asset verification guarantees.
-- [Privacy Policy](/privacy): Zero-telemetry, statutory compliance, and data minimization.
-- [Storage Adapters](/plugins/storage): Secure pre-upload conversion for Supabase, Firebase, and Neocities.
-- [Errors](/errors): Complete machine-readable error catalog.
+## 5. Coordinated Vulnerability Disclosure
+
+We welcome responsible security research and vulnerability disclosures from the community. If you discover a potential vulnerability in Zapwebp, please report it to us privately.
+
+### Reporting Procedure
+Send an encrypted or private email to:
+- **Contact:** `eldrexdelosreyesbula@gmail.com`
+- **Subject:** `[SECURITY VULNERABILITY] <Brief Description>`
+
+Please include in your report:
+1. Package and version affected (e.g. `@zapwebp/core@1.1.2`, `zapwebp@1.1.1`).
+2. Type of vulnerability (e.g. SVG sanitization bypass, path traversal, SSRF).
+3. Step-by-step reproduction instructions and a minimal proof-of-concept image or script.
+4. An assessment of potential impact.
+
+### Response Milestones & Commitments
+We are committed to coordinated, responsible remediation and adhere to the following target response windows:
+
+| Milestone | Target Window | Commitment |
+|---|:---:|---|
+| **Initial Acknowledgment** | **Within 48 hours** | We confirm receipt of your report and assign a tracking identifier. |
+| **Triage & Reproduction** | **Within 72 hours** | We reproduce the issue and determine CVSS severity rating. |
+| **Remediation & Testing** | **Within 5–7 business days** | We engineer a fix, run regression tests, and prepare release packages. |
+| **Coordinated Disclosure** | **Coordinated with reporter** | We publish the patched release to npm and issue a GitHub Security Advisory. |
+
+We request that you maintain confidentiality and refrain from public disclosure until an official fix has been published.

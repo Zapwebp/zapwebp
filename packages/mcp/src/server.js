@@ -416,6 +416,7 @@ export function createMcpServer(options = {}) {
     }
 
     // Idempotent Conversion Lock: check if destination was already converted with matching options
+    let isNewDerivative = false;
     if (rawOptions.useLock !== false && !rawOptions.force) {
       const existingBytes = await readImageFile(destination).catch(() => null);
       if (existingBytes && existingBytes.length > 0) {
@@ -433,6 +434,9 @@ export function createMcpServer(options = {}) {
               lock: verification,
             },
           };
+        }
+        if (verification.reason === 'new_target_format_requested') {
+          isNewDerivative = true;
         }
       }
     }
@@ -537,6 +541,7 @@ export function createMcpServer(options = {}) {
     return resultText(JSON.stringify({
       summary: summaryText,
       outputPath: relDest,
+      newDerivative: isNewDerivative,
       originalDeleted: Boolean(deleteBackupRel),
       backupPath: deleteBackupRel || undefined,
       format: converted.format,

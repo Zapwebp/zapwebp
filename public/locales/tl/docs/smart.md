@@ -57,6 +57,6 @@ Sinusuri ng Smart Content Optimization ang raw RGBA pixel buffer sa memorya gami
 
 ## Related
 
-- [Patakaran ng Conversion (Policy Engine)](/policy.md) — Pamahalaan ang mga panuntunan ng koponan.
-- [Preserbasyon ng Likuran (Backgrounds)](/backgrounds.md) — Pamamahala ng aninag at alpha channel.
-- [Mga Format (Formats)](/formats.md) — Talaan ng mga sinusuportahang format ng imahe.
+- [Patakaran ng Conversion (Policy Engine)](/policy) — Pamahalaan ang mga panuntunan ng koponan.
+- [Preserbasyon ng Likuran (Backgrounds)](/backgrounds) — Pamamahala ng aninag at alpha channel.
+- [Mga Format (Formats)](/formats) — Talaan ng mga sinusuportahang format ng imahe.

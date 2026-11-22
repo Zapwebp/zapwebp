@@ -1,7 +1,7 @@
 # Plugin Scaffolding
 
 Covers: Pag-scaffold ng mga agent-native na Zapwebp plugin, storage adapter, transform, at metadata handler gamit ang `create-zapwebp`, structured na AGENTS.md at SKILLS.md context files, at TypeScript build harness.
-Does not cover: Low-level engine internals (tingnan ang [Core SDK](/sdk/core.md)), pagpapatupad ng sandbox security policies (tingnan ang [Plugin SDK](/sdk/plugin.md)), o format compatibility matrix (tingnan ang [Formats](/formats.md)).
+Does not cover: Low-level engine internals (tingnan ang [Core SDK](/sdk/core)), pagpapatupad ng sandbox security policies (tingnan ang [Plugin SDK](/sdk/plugin)), o format compatibility matrix (tingnan ang [Formats](/formats)).
 Applies to: `create-zapwebp`, `@zapwebp/plugin-sdk`, Antigravity, Cursor, at mga AI agent development environment.
 
 ## Quick start
@@ -88,8 +88,8 @@ Kadalasan, ang mga lumang CLI scaffolder ay lumilikha ng napakaraming paunang co
 
 ## Related
 
-- [Plugin SDK at Sandboxing](/sdk/plugin.md)
-- [Core SDK Reference](/sdk/core.md)
-- [Matrix ng mga Format](/formats.md)
-- [Gabay sa Pagaambag ng Developer](/contributing.md)
-- [Talaan ng mga Error](/errors.md)
+- [Plugin SDK at Sandboxing](/sdk/plugin)
+- [Core SDK Reference](/sdk/core)
+- [Matrix ng mga Format](/formats)
+- [Gabay sa Pagaambag ng Developer](/contributing)
+- [Talaan ng mga Error](/errors)

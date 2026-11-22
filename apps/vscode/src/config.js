@@ -14,7 +14,7 @@ const vscode = require('vscode');
  * @property {boolean} rememberLastChoice - Whether to remember last used target format per source format.
  */
 
-const VALID_FORMATS = new Set(['webp', 'png', 'avif', 'jpeg']);
+const VALID_FORMATS = new Set(['webp', 'png', 'avif', 'jpeg', 'ico', 'cur']);
 
 const DEFAULT_TARGETS = Object.freeze({
   svg: 'webp',
@@ -26,6 +26,7 @@ const DEFAULT_TARGETS = Object.freeze({
   heic: 'webp',
   heif: 'webp',
   ico: 'png',
+  cur: 'ico',
   gif: 'webp',
   tiff: 'webp',
 });
@@ -47,6 +48,8 @@ function readConfig(workspaceConfig) {
     ...(typeof configuredTargets === 'object' && configuredTargets !== null ? configuredTargets : {}),
   };
 
+  const deleteOriginalVal = Boolean(config.get('deleteOriginal', config.get('deleteOriginalAfterConversion', false)));
+
   return {
     convertOnSave: Boolean(config.get('convertOnSave', false)),
     baseWidth: Number.isFinite(baseWidthRaw) && baseWidthRaw > 0 ? baseWidthRaw : 512,
@@ -56,12 +59,87 @@ function readConfig(workspaceConfig) {
     defaultTargets,
     showMultipliersForPng: Boolean(config.get('showMultipliersForPng', false)),
     rememberLastChoice: Boolean(config.get('rememberLastChoice', true)),
-    deleteOriginalAfterConversion: Boolean(config.get('deleteOriginalAfterConversion', false)),
+    deleteOriginalAfterConversion: deleteOriginalVal,
+    deleteOriginal: deleteOriginalVal,
+    icoPreset: String(config.get('icoPreset', 'default')).toLowerCase(),
+    compressorEnabled: Boolean(config.get('compressorEnabled', true)),
+    targetLockEnabled: Boolean(config.get('targetLockEnabled', true)),
   };
+}
+
+/**
+ * Reads workspace Target Lock configuration from .zapwebp/config.json, .zapwebp.config.json, or zapwebp.json.
+ * @param {vscode.Uri} [fileUri]
+ * @returns {Promise<{ targetFormat?: string, acceptFormats?: string[], strict?: boolean, exists: boolean }>}
+ */
+async function readWorkspaceLockConfig(fileUri) {
+  try {
+    let roots = [];
+    if (fileUri && vscode.workspace.getWorkspaceFolder) {
+      const folder = vscode.workspace.getWorkspaceFolder(fileUri);
+      if (folder) roots.push(folder.uri);
+    }
+    if (vscode.workspace && Array.isArray(vscode.workspace.workspaceFolders)) {
+      for (const folder of vscode.workspace.workspaceFolders) {
+        roots.push(folder.uri);
+      }
+    }
+
+    const uniqueRoots = [];
+    const seenPaths = new Set();
+    for (const r of roots) {
+      const p = r.fsPath || r.path;
+      if (!seenPaths.has(p)) {
+        seenPaths.add(p);
+        uniqueRoots.push(r);
+      }
+    }
+
+    const configFilenames = [
+      ['.zapwebp', 'config.json'],
+      ['.zapwebp.config.json'],
+      ['zapwebp.json'],
+    ];
+
+    for (const rootUri of uniqueRoots) {
+      for (const candidateParts of configFilenames) {
+        let candidateUri;
+        if (candidateParts.length === 2) {
+          candidateUri = rootUri.with({
+            path: `${rootUri.path.replace(/\/+$/, '')}/${candidateParts[0]}/${candidateParts[1]}`,
+          });
+        } else {
+          candidateUri = rootUri.with({
+            path: `${rootUri.path.replace(/\/+$/, '')}/${candidateParts[0]}`,
+          });
+        }
+
+        try {
+          const bytes = await vscode.workspace.fs.readFile(candidateUri);
+          const raw = Buffer.isBuffer(bytes) ? bytes.toString('utf8') : new TextDecoder().decode(bytes);
+          const parsed = JSON.parse(raw);
+          const targetFormat = parsed.targetFormat || parsed.lockTarget || parsed.output?.lock || parsed.lock?.targetFormat;
+          const acceptFormats = parsed.acceptFormats || parsed.output?.acceptFormats || (targetFormat ? [targetFormat] : null);
+          const strict = parsed.strict ?? parsed.output?.strict ?? true;
+          if (targetFormat || acceptFormats) {
+            return {
+              targetFormat: targetFormat ? String(targetFormat).toLowerCase() : undefined,
+              acceptFormats: Array.isArray(acceptFormats) ? acceptFormats.map((f) => String(f).toLowerCase()) : undefined,
+              strict: Boolean(strict),
+              exists: true,
+            };
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+
+  return { exists: false };
 }
 
 module.exports = {
   readConfig,
+  readWorkspaceLockConfig,
   VALID_FORMATS,
   DEFAULT_TARGETS,
 };

@@ -9,6 +9,9 @@ on:
     # Nightly determinism run
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   proofs-matrix:
     name: Guarantees (${{ matrix.os }}, Node 22)
@@ -19,15 +22,25 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
-      - uses: actions/setup-node@v4
+          version: '11.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+
+      - name: Verify lockfile synchronization
+        run: pnpm install --frozen-lockfile --lockfile-only
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 'Proof 1: Transparency Preservation'
         run: node --test test/proof-transparency.test.js

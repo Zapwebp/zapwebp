@@ -114,7 +114,7 @@ Zapwebp Smart Optimization analyzes raw RGBA pixel buffers in memory using deter
 
 ## Related
 
-- [Conversion Policy](/policy.md) — Team policy validation and governance rules.
-- [Lossless Mode](/lossless.md) — Exact pixel preservation guidelines.
-- [Performance & Reports](/reports.md) — Track cumulative bandwidth and carbon savings.
-- [Formats Reference](/formats.md) — Comprehensive format matrix and features.
+- [Conversion Policy](/policy) — Team policy validation and governance rules.
+- [Lossless Mode](/lossless) — Exact pixel preservation guidelines.
+- [Performance & Reports](/reports) — Track cumulative bandwidth and carbon savings.
+- [Formats Reference](/formats) — Comprehensive format matrix and features.

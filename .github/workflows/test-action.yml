@@ -46,10 +46,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
+          version: '11.9.0'
+
+      - name: Verify lockfile synchronization
+        run: pnpm install --frozen-lockfile --lockfile-only
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -64,4 +67,3 @@ jobs:
           INPUT_QUALITY: '85'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node packages/github-action/src/index.js
-

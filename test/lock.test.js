@@ -15,9 +15,9 @@ const {
   verifyLock,
   createLockPlugin,
   ENGINE_VERSION,
-} = require('./packages/lock/src/lock.js');
-const { convertImage } = require('./packages/core/src/index.js');
-const storagePkg = require('./packages/storage/src/wrapper.js');
+} = require('../packages/lock/src/lock.js');
+const { convertImage } = require('../packages/core/src/index.js');
+const storagePkg = require('../packages/storage/src/wrapper.js');
 const withZapwebp = storagePkg.withZapwebp || storagePkg.default?.withZapwebp || storagePkg;
 
 function createMcpClient(cwd) {
@@ -118,7 +118,8 @@ test('Lock Plan L5 & L7: CLI skips identical conversions and supports --force & 
     // Run 3: Third conversion with --force -> forces re-conversion
     const run3 = spawnSync(process.execPath, [cliBin, 'test.svg', '--to', 'webp', '--force'], { cwd: tmp, encoding: 'utf8' });
     assert.equal(run3.status, 0);
-    assert.ok(!run3.stdout.includes('Skipped'));
+    assert.ok(!run3.stdout.includes('already converted with matching options'));
+    assert.ok(run3.stdout.includes('test.svg →'));
 
     // Test --lock-status flag
     const statusRun = spawnSync(process.execPath, [cliBin, 'test.webp', '--lock-status'], { cwd: tmp, encoding: 'utf8' });
@@ -183,7 +184,7 @@ test('Lock Plan L9: Storage Adapter skips redundant conversion when lock matches
     async list() { return []; },
   };
 
-  const zap = withZapwebp(dummyAdapter, { targetFormat: 'webp', quality: 85, useLock: true });
+  const zap = withZapwebp(dummyAdapter, { targetFormat: 'webp', quality: 85, useLock: true, emitManifest: false });
 
   // Create an already-locked WebP buffer
   const baseWebp = Buffer.alloc(12);
@@ -199,5 +200,44 @@ test('Lock Plan L9: Storage Adapter skips redundant conversion when lock matches
   const result = await zap.upload('bucket', 'icon.webp', lockedBuffer);
   assert.equal(writeCount, 1, 'Write must be called on the adapter');
   assert.ok(result);
+});
+
+test('Lock Plan Intent-Aware Format Changes: CLI allows intentional format switching while blocking identical redundancy', async () => {
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'zap-lock-intent-'));
+  const cliBin = path.resolve('packages/cli/bin/zapwebp.js');
+  const svgPath = path.join(tmp, 'logo.svg');
+  const destWebp = path.join(tmp, 'logo.webp');
+  const destAvif = path.join(tmp, 'logo.avif');
+
+  try {
+    await fs.writeFile(svgPath, '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="blue"/></svg>');
+
+    // 1. Initial conversion to WebP: converts and writes lock
+    const run1 = spawnSync(process.execPath, [cliBin, 'logo.svg', '--to', 'webp'], { cwd: tmp, encoding: 'utf8' });
+    assert.equal(run1.status, 0);
+    assert.ok(fsSync.existsSync(destWebp), 'logo.webp must exist');
+
+    // 2. Redundant conversion to WebP: identical request -> SKIPPED
+    const run2 = spawnSync(process.execPath, [cliBin, 'logo.svg', '--to', 'webp'], { cwd: tmp, encoding: 'utf8' });
+    assert.equal(run2.status, 0);
+    assert.ok(run2.stdout.includes('already converted with matching options'));
+
+    // 3. Intentional format change to AVIF: user requested new format -> CONVERTS & creates new derivative
+    const run3 = spawnSync(process.execPath, [cliBin, 'logo.svg', '--to', 'avif'], { cwd: tmp, encoding: 'utf8' });
+    assert.equal(run3.status, 0);
+    assert.ok(fsSync.existsSync(destAvif), 'logo.avif must exist');
+    assert.ok(run3.stdout.includes('New derivative created') || run3.stdout.includes('logo.svg →'));
+
+    // 4. Verify safety & independence: logo.webp still exists, logo.avif exists
+    assert.ok(fsSync.existsSync(destWebp), 'Original WebP derivative must not be deleted or overwritten');
+    assert.ok(fsSync.existsSync(destAvif), 'New AVIF derivative must exist independently');
+
+    // 5. Converting to WebP again: WebP lock is still valid -> SKIPPED
+    const run4 = spawnSync(process.execPath, [cliBin, 'logo.svg', '--to', 'webp'], { cwd: tmp, encoding: 'utf8' });
+    assert.equal(run4.status, 0);
+    assert.ok(run4.stdout.includes('already converted with matching options'));
+  } finally {
+    await fs.rm(tmp, { recursive: true, force: true }).catch(() => {});
+  }
 });
 

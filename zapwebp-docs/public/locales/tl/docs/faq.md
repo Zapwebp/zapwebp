@@ -1,10 +1,10 @@
 # Mga Karaniwang Tanong (FAQ)
 
-Covers: mga madalas na katanungan tungkol sa mga pangalan ng package, mga 404 error sa npm at npx, mga alerto ng Socket.dev sa dependencies, pagpapatakbo sa VS Code extension, pag-iingat sa alpha transparency, pag-sanitize ng SVG, at pag-configure ng MCP agent.
+Covers: mga madalas na katanungan tungkol sa mga pangalan ng package, mga 404 error sa npm at npx, mga alerto ng Socket.dev sa dependencies, pagpapatakbo sa VS Code extension, pag-iingat sa alpha transparency, pag-sanitize ng SVG, pag-configure ng MCP agent, configurable batch limits, orihinal na pagbura ng file, favicon suite generation, byte target compression, conversion locking, at documentation delivery engine.
 
 Does not cover: pag-compile ng native C at Rust binaries o pagsasaayos ng sariling cloud server.
 
-Applies to: lahat ng surface ng Zapwebp (Web, CLI, MCP, VS Code, Laravel, Vite, Next.js, at SDKs).
+Applies to: lahat ng surface ng Zapwebp (Web, CLI, MCP, VS Code, Laravel, Vite, Next.js, at SDKs) v2.28.0 at mas bago.
 
 ## Quick start
 
@@ -57,13 +57,21 @@ Talahanayan ng mga opisyal na package identifier:
 | **MCP AI Server** | npm | `@zapwebp/mcp` | `npx -y @zapwebp/mcp` |
 | **Core Engine** | npm | `@zapwebp/core` | `npm install @zapwebp/core` |
 | **UI Kit & Store** | npm | `@zapwebp/ui` | `npm install @zapwebp/ui` |
-| **VS Code Extension** | Open VSX | `ebula.zapwebp-vscode` | `ovsx install ebula.zapwebp-vscode` |
+| **VS Code Extension** | Open VSX / Marketplace | `ebula.zapwebp-vscode` | `ovsx install ebula.zapwebp-vscode` |
 | **Laravel Package** | Packagist | `zapwebp/laravel` | `composer require zapwebp/laravel` |
 | **Vite Plugin** | npm | `zapwebp-vite` | `npm install -D zapwebp-vite` |
 | **Next.js Plugin** | npm | `zapwebp-next` | `npm install -D zapwebp-next` |
+| **GitHub Action** | GitHub Marketplace | `zapwebp-github-action` | `uses: zapwebp/zapwebp-github-action@v1` |
 | **Storage Adapters** | npm | `@zapwebp/storage` | `npm install @zapwebp/storage` |
 | **Lens Inspector** | npm | `zapwebp-lens` | `npx zapwebp-lens inspect <file>` |
 | **Crop Transform** | npm | `@zapwebp/crop` | `npm install @zapwebp/crop` |
+| **ICO / Favicon Plugin** | npm | `@zapwebp/format-ico` | `npm install @zapwebp/format-ico` |
+| **Compressor Plugin** | npm | `@zapwebp/compressor` | `npm install @zapwebp/compressor` |
+| **Lock Plugin** | npm | `@zapwebp/lock` | `npm install @zapwebp/lock` |
+| **Docs Delivery Engine** | npm | `@zapwebp/docs` | `npm install @zapwebp/docs` |
+| **Plugin Scaffolder** | npm | `create-zapwebp` | `pnpm create zapwebp` |
+| **Edge SDK** | npm | `@zapwebp/edge` | `npm install @zapwebp/edge` |
+| **Plugin SDK** | npm | `@zapwebp/plugin-sdk` | `npm install @zapwebp/plugin-sdk` |
 | **SDK Client** | npm | `@zapwebp/sdk` | `npm install @zapwebp/sdk` |
 
 ---
@@ -86,7 +94,7 @@ Kinakailangan ng image processing ang precompiled native binaries para sa iba't 
 
 #### Nangongolekta ba ng datos o telemetry ang Zapwebp?
 
-**Hindi kailanman.** Mahigpit na ipinagbabawal ng Rule 6 ng Operating Contract ang telemetry. Walang tracking beacons, walang panlabas na network calls, at 100% lokal sa memorya o disk ang pagpoproseso ng mga imahe.
+**Hindi kailanman.** Mahigpit na ipinagbabawal ng Rule 3 ng Operating Contract ang telemetry. Walang tracking beacons, walang panlabas na network calls, at 100% lokal sa memorya o disk ang pagpoproseso ng mga imahe.
 
 ---
 
@@ -96,12 +104,12 @@ Kinakailangan ng image processing ang precompiled native binaries para sa iba't 
 
 Sa mga naunang bersyon ng extension, tinangkang tawagin ang `zap.cmd` sa pamamagitan ng Windows command prompt sa pag-aakalang naka-install ito nang global sa `PATH`.
 
-Simula sa bersyon `1.2.0`, pinalitan ito ng 3-tier execution model:
+Simula sa bersyon `1.2.0+`, pinalitan ito ng 3-tier execution model:
 1. **Tier 1 (In-Process)**: Direktang conversion gamit ang WASM/native bindings sa memorya.
 2. **Tier 2 (Bundled Node Runner)**: Awtomatikong hinahanap ang `node.exe` ng system at pinatatakbo ang kasamang `dist/zap.js` script nang direkta, kaya hindi na kailangan ang global `.cmd` wrapper.
 3. **Tier 3 (Subprocess Fallback)**: Pagtawag sa `npx --yes zapwebp` kung kinakailangan.
 
-Upang ayusin: i-update ang extension sa bersyon **v1.2.0** o mas bago, at patakbuhin ang `Developer: Reload Window` sa Command Palette.
+Upang ayusin: i-update ang extension sa bersyon **v1.3.0** o mas bago, at patakbuhin ang `Developer: Reload Window` sa Command Palette.
 
 ---
 
@@ -112,6 +120,51 @@ Upang ayusin: i-update ang extension sa bersyon **v1.2.0** o mas bago, at patakb
 Ang JPEG format ay walang alpha channel. Karaniwang ginagawa ng ibang tool ang paglalagay ng itim na background (RGB 0,0,0) sa mga transparent na pixel ("black background bug").
 
 Upang maiwasan ang pagkasira ng imahe, hindi tahimik na tinatanggal ng Zapwebp ang alpha. Humihingi ito ng tahasang kulay ng background (hal. `--background "#ffffff"`). Kung nais panatilihin ang transparency, gamitin ang **WebP**, **AVIF**, o **PNG**.
+
+---
+
+### Configurable batch limits at session controls
+
+#### Bakit nabigo ang batch conversion gamit ang `E_TOO_MANY_FILES` o `E_SESSION_LIMIT_EXCEEDED`?
+
+Simula v2.28.0, nagpapatupad ang Zapwebp ng standard limits upang maprotektahan ang mga resource:
+- **`E_TOO_MANY_FILES`**: Lumagpas ang batch sa `maxFilesPerRequest` (default 20 files). Ipasa ang `--max-files <n>` o `--unlimited` sa CLI.
+- **`E_SESSION_LIMIT_EXCEEDED`**: Naabot ang rolling session ceiling (`maxFilesPerSession`, default 100 files). Sa CLI, patakbuhin ang `zap --reset-session` upang i-reset ang counter sa `.zapwebp/session.json`.
+
+---
+
+### File deletion at garantiyang zero-data-loss
+
+#### Binubura ba ng Zapwebp ang orihinal na file pagkatapos mag-convert?
+
+**Hindi bilang default.** Protektado ang iyong mga orihinal na asset:
+- Naka-off ang deletion bilang default sa lahat ng surface (`allowDeleteOriginal: false`).
+- Nagaganap lamang ang pagbura kapag tahasang ipinasa ang `--delete-original` sa CLI o pinili sa VS Code.
+- Bago burahin, gumagawa ang Zapwebp ng cryptographic backup sa `.zapwebp/backups/{timestamp}/{filepath}` at tinitiyak ang SHA-256 hash nito.
+- Maaaring ibalik ang anumang naburang file anumang oras gamit ang `zap undo` o `undo_last` tool sa MCP.
+
+---
+
+### Mga Favicon at Size Reduction
+
+#### Paano gumawa ng multi-size ICO files at favicons?
+
+I-install ang `@zapwebp/format-ico` at ipasa ang `--to ico`:
+```bash
+npx zapwebp logo.svg --to ico
+```
+Para sa buong favicon suite (`favicon.ico`, `apple-touch-icon.png`, `site.webmanifest`):
+```bash
+npx zapwebp logo.svg --favicon
+```
+
+#### Paano i-compress ang imahe sa isang tiyak na sukat sa bytes?
+
+I-install ang `@zapwebp/compressor` at ipasa ang `--target-bytes`:
+```bash
+npx zapwebp hero.png --to webp --target-bytes 250000
+```
+Isinasagawa ng Zapwebp ang binary search quality optimization at adaptive Lanczos3 downscaling upang maabot ang target size.
 
 ---
 
@@ -131,10 +184,12 @@ Solusyon: Linisin ang SVG gamit ang SVGO o alisin ang mga script bago mag-conver
 |---|---|---|
 | `E_UNSAFE_SVG` | Naglalaman ang SVG ng scripts o mapanganib na mga tag | Alisin ang `<script>` at event handlers bago mag-convert |
 | `E_ALPHA_NOT_REPRESENTABLE` | Pagtangkang i-convert ang transparent na imahe sa JPEG nang walang background | Maglagay ng `--background <kulay>` o gumamit ng WebP/AVIF |
+| `E_TOO_MANY_FILES` | Lumagpas ang bilang ng file sa batch ceiling | Bawasan ang file o ipasa ang `--max-files` / `--unlimited` |
+| `E_SESSION_LIMIT_EXCEEDED` | Naabot ang limitasyon ng session | I-reset ang session gamit ang `zap --reset-session` |
 | `E_UPLOADER_REQUIRED` | Tinawag ang `createZapStore().upload()` nang walang uploader function | Magbigay ng aktibong conversion handler sa configuration |
 | `E_CONVERSION_FAILED` | Nagkaroon ng error sa ilalim na conversion process | Tiyaking hindi corrupt ang file o patakbuhin ang `zap doctor` |
 | `E_SSRF_BLOCKED` | Tinangkang mag-access ng pribadong network o localhost IP | Gumamit ng pampublikong HTTPS URL |
-| `path_outside_root` | Ang path ng file ay nasa labas ng pinapayagang folder | Panatilihin ang mga file sa loob ng workspace directory |
+| `E_PATH_TRAVERSAL` | Ang path ng file ay nasa labas ng pinapayagang folder | Panatilihin ang mga file sa loob ng workspace directory |
 
 ## For agents
 
@@ -148,7 +203,13 @@ Solusyon: Linisin ang SVG gamit ang SVGO o alisin ang mga script bago mag-conver
       "vscode": "ebula.zapwebp-vscode",
       "laravel": "zapwebp/laravel",
       "vite": "zapwebp-vite",
-      "next": "zapwebp-next"
+      "next": "zapwebp-next",
+      "formatIco": "@zapwebp/format-ico",
+      "compressor": "@zapwebp/compressor",
+      "lock": "@zapwebp/lock",
+      "docs": "@zapwebp/docs",
+      "scaffolder": "create-zapwebp",
+      "edge": "@zapwebp/edge"
     },
     "securityInvariants": {
       "telemetry": false,
@@ -175,5 +236,6 @@ Solusyon: Linisin ang SVG gamit ang SVGO o alisin ang mga script bago mag-conver
 - [Formats](/formats): Mga suportadong format ng imahe.
 - [CLI](/cli): Gabay sa paggamit ng terminal executable.
 - [MCP Agent](/mcp): Pagsasaayos ng Model Context Protocol.
+- [Limits](/limits): Mga limitasyon sa bilang ng file at concurrency.
+- [Deletion](/deletion): Orihinal na pagbura ng file at mga backup.
 - [VS Code Extension](/plugins/vscode): Paggamit ng extension sa editor.
-

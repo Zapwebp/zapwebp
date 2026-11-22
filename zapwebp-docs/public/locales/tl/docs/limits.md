@@ -4,7 +4,7 @@ Covers: `maxFilesPerRequest`, `maxFilesPerSession`, `maxFilesPerUser`, `maxBytes
 
 Does not cover: Commercial telemetry o pagsubaybay sa remote database. Tingnan ang [Privacy](/privacy).
 
-Applies to: Lahat ng Zapwebp surface (CLI, MCP Server, Web App, SDK, at Storage Adapters) v2.26.0 at mas bago.
+Applies to: Lahat ng Zapwebp surface (CLI, MCP Server, Web App, SDK, at Storage Adapters) v2.28.0 at mas bago.
 
 ## Quick start
 

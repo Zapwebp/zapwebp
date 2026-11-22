@@ -10,14 +10,21 @@ on:
       - 'plugins.json'
       - 'schemas/plugins.schema.json'
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Validate plugins.json syntax and schema
         run: |
           node -e "

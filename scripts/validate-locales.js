@@ -111,9 +111,12 @@ async function validateLocales() {
                 console.error(`✖ [${locale}] "${rel}" must start with H1 title`);
                 errors++;
               }
-              if (!md.includes('## Quick start') || !md.includes('## What it does') || !md.includes('## Errors')) {
-                console.error(`✖ [${locale}] "${rel}" is missing required template sections`);
-                errors++;
+              const isInformational = ['about.md', 'privacy.md', 'terms.md', 'security.md', 'code-of-conduct.md', 'contributing.md', 'translators.md'].includes(item.name);
+              if (!isInformational) {
+                if (!md.includes('## Quick start') || !md.includes('## What it does') || !md.includes('## Errors')) {
+                  console.error(`✖ [${locale}] "${rel}" is missing required template sections`);
+                  errors++;
+                }
               }
             }
           }

@@ -72,6 +72,18 @@ const activeMock = {
     },
   },
   workspace: {
+    workspaceFolders: [],
+    getWorkspaceFolder: (uri) => {
+      if (!activeMock.workspace.workspaceFolders || !activeMock.workspace.workspaceFolders.length) {
+        return null;
+      }
+      for (const folder of activeMock.workspace.workspaceFolders) {
+        if (uri && uri.path && uri.path.startsWith(folder.uri.path)) {
+          return folder;
+        }
+      }
+      return activeMock.workspace.workspaceFolders[0];
+    },
     getConfiguration: () => ({
       get: (key, def) => (key in config ? config[key] : def),
     }),
@@ -300,6 +312,7 @@ function resetMock(initialConfig = {}) {
   delete activeMock._infoMessageHandler;
   delete activeMock._onWebviewCreated;
   activeMock._lastWebviewPanel = null;
+  activeMock.workspace.workspaceFolders = [];
 
   for (const k of Object.keys(config)) {
     delete config[k];

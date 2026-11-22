@@ -4,7 +4,7 @@ Covers: cloud storage adapter interfaces para sa Supabase, Firebase, at Neocitie
 
 Does not cover: database table queries.
 
-Applies to: `@zapwebp/storage` v1.0.0 at mas bago.
+Applies to: `@zapwebp/storage` v1.1.0 at mas bago.
 
 ## Quick start
 

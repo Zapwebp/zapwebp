@@ -4,7 +4,7 @@ Covers: standardized framework para sa pagbuo ng una at third-party na Zapwebp p
 
 Does not cover: end-user conversion commands.
 
-Applies to: `@zapwebp/plugin-sdk` v1.0.0 at mas bago.
+Applies to: `@zapwebp/plugin-sdk` v1.1.0 at mas bago.
 
 ## Quick start
 

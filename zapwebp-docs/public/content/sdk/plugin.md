@@ -2,7 +2,7 @@
 
 Covers: The official plugin architecture, lifecycle hooks, and adapters for building Zapwebp integrations.
 Does not cover: Low-level WASM compilation or binary bindings.
-Applies to: `@zapwebp/plugin-sdk` v1.0.0+.
+Applies to: `@zapwebp/plugin-sdk` v1.1.0 and later.
 
 ## Quick start
 

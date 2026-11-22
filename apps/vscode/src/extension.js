@@ -2,6 +2,7 @@
 
 const vscode = require('vscode');
 const { init } = require('./core');
+const { readWorkspaceLockConfig } = require('./config');
 const { registerConvertCommand } = require('./commands/convert');
 const { registerConvertScalesCommand } = require('./commands/convert-scales');
 const { registerFolderCommands } = require('./commands/folder');
@@ -21,6 +22,14 @@ function activate(context) {
   init().catch((err) => {
     statusBar.log(`Engine initialization error: ${err.message}`);
   });
+
+  readWorkspaceLockConfig()
+    .then((lockConfig) => {
+      if (lockConfig.exists && lockConfig.targetFormat) {
+        statusBar.setTargetLock(lockConfig.targetFormat);
+      }
+    })
+    .catch(() => {});
 
   registerZapCommand(context);
   registerConvertCommand(context);

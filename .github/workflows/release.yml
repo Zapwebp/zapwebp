@@ -12,19 +12,31 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
-      - uses: actions/setup-node@v4
+          version: '11.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
-      - uses: changesets/action@v1
+
+      - name: Verify lockfile synchronization
+        run: pnpm install --frozen-lockfile --lockfile-only
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Version and publish packages via changesets
+        uses: changesets/action@v1
         with:
           version: pnpm run version-packages
           publish: pnpm run release
@@ -39,7 +51,7 @@ jobs:
         run: |
           pnpm build:vscode
           cd apps/vscode
-          npx @vscode/vsce package --no-dependencies
-          npx ovsx publish $(ls *.vsix) -p ${{ secrets.OVSX_PAT }}
+          npx --yes @vscode/vsce package --no-dependencies
+          npx --yes ovsx publish $(ls *.vsix) -p "${{ env.OVSX_PAT }}"
         env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+          OVSX_PAT: ${{ secrets.OPENVSX_TOKEN || secrets.OVSX_PAT }}

@@ -46,9 +46,24 @@ importers:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@26.6.6)
     devDependencies:
+      '@zapwebp/compressor':
+        specifier: workspace:*
+        version: link:../../packages/compressor
       '@zapwebp/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@zapwebp/crop':
+        specifier: workspace:*
+        version: link:../../packages/crop
+      '@zapwebp/format-ico':
+        specifier: workspace:*
+        version: link:../../packages/format-ico
+      '@zapwebp/lock':
+        specifier: workspace:*
+        version: link:../../packages/lock
+      '@zapwebp/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12

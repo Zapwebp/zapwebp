@@ -337,11 +337,12 @@ function withZapwebp(adapter, options) {
 
       uploadedOutputs.push({
         path: writeRes?.path || targetPath,
-        bytes: writeRes?.bytes || result.data.length,
+        bytes: writeRes?.bytes || (result ? result.data.length : finalData.length),
         publicUrl: writeRes?.publicUrl,
         scale,
-        width: result.width || width,
-        sha256: crypto.createHash('sha256').update(result.data).digest('hex'),
+        width: result?.width || width,
+        sha256: crypto.createHash('sha256').update(result?.data || finalData).digest('hex'),
+        skippedByLock: Boolean(skippedByLock),
       });
     }
 

@@ -4,7 +4,7 @@ Covers: gabay sa pagbuo para sa mga kontribyutor at plugin author, create-zapweb
 
 Does not cover: paggamit ng end-user web application.
 
-Applies to: Zapwebp v1.1.0 at mas bago.
+Applies to: `@zapwebp/core`, `@zapwebp/cli`, `@zapwebp/mcp`, at `@zapwebp/sdk` v1.1.0 at mas bago.
 
 ## Quick start
 

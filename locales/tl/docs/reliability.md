@@ -120,10 +120,10 @@ Tinatanggihan agad ng bawat integration ang mga mapanganib na input bago pa man 
 
 ## Related
 
-- [Stability at Error Boundaries](/stability.md)
-- [Safety at Security Model](/safety.md)
-- [Performance at Benchmarks](/performance.md)
-- [Vite Plugin Reference](/plugins/vite.md)
-- [Next.js Plugin Reference](/plugins/next.md)
-- [GitHub Action Reference](/plugins/github-action.md)
-- [Storage Adapters Reference](/plugins/storage.md)
+- [Stability at Error Boundaries](/stability)
+- [Safety at Security Model](/safety)
+- [Performance at Benchmarks](/performance)
+- [Vite Plugin Reference](/plugins/vite)
+- [Next.js Plugin Reference](/plugins/next)
+- [GitHub Action Reference](/plugins/github-action)
+- [Storage Adapters Reference](/plugins/storage)

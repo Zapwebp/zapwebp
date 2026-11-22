@@ -4,7 +4,7 @@ Covers: Target lock configuration, many-to-one ingestion pipelines, strict mode 
 
 Does not cover: arbitrary multiple format permutations or lossy format downgrades without alpha safety.
 
-Applies to: Zapwebp v1.1.0 and later.
+Applies to: Zapwebp v2.0.0 and later.
 
 ## Quick start
 

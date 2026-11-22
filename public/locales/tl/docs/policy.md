@@ -4,7 +4,7 @@ Covers: conversion policy enforcement, allowlists, denylists, limitasyon sa laki
 
 Does not cover: UI component styling. Tingnan ang [UI Kit](/ui).
 
-Applies to: Zapwebp v2.0.0 at mas bago.
+Applies to: Zapwebp v2.19.0 at mas bago.
 
 ## Quick start
 

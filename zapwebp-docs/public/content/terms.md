@@ -1,55 +1,83 @@
 # Terms of Service
 
-Covers: Permitted usage, intellectual property, warranty disclaimer, and liability limits for the Zapwebp service.
+**Effective Date:** November 1, 2025  
+**Last Revised:** November 21, 2026  
+**Jurisdiction:** Republic of the Philippines  
 
-Does not cover: Commercial custom licensing or enterprise SLA agreements.
+Welcome to Zapwebp. These Terms of Service ("Terms") govern your access to and use of Zapwebp's applications, services, command-line interfaces, AI agent integrations, and open-source packages (collectively, the "Service"). 
 
-Applies to: All public Zapwebp surfaces (`zapwebp.vercel.app`, CLI, MCP, API).
+By accessing the web application at [https://zapwebp.vercel.app](https://zapwebp.vercel.app), running the CLI tool (`zapwebp`), invoking the Model Context Protocol server (`@zapwebp/mcp`), or integrating any official `@zapwebp` package, you agree to be bound by these Terms.
 
-## Quick start
+---
 
-```bash
-# View license in terminal
-npx zapwebp --version
-```
+## 1. User Asset Ownership & Intellectual Property
 
-## What it does
+You retain complete and exclusive ownership of all source images, graphics, vector artwork, and files you process through Zapwebp. 
 
-By accessing or using Zapwebp (via web application, CLI binary, MCP server, or REST API), you agree to standard open-source and fair use terms:
+- **Zero Claim on User Assets**: Zapwebp claims no intellectual property rights, licenses, or ownership title to any image content uploaded, converted, or optimized through our tools.
+- **Privacy of Content**: Converted files belong entirely to you. Zapwebp does not archive, catalogue, or reuse your media assets.
+- **Responsibility for Uploads**: You represent and warrant that you hold all necessary copyrights, licenses, or permissions for any media you process using the Service, and that your use of the Service does not infringe upon third-party rights.
 
-- **Intellectual Property**: You retain 100% full ownership, rights, and copyright to all source images you convert using Zapwebp. Zapwebp asserts zero claim over user assets.
-- **Permitted Use**: You are permitted to use Zapwebp for personal, commercial, educational, and automated workflows.
-- **Prohibited Conduct**: You may not use the public API endpoints to conduct denial-of-service attacks or distribute malicious payloads.
-- **Open-Source License**: Core software libraries are distributed under the permissive MIT License.
+---
 
-## Terms Matrix
+## 2. Open-Source Licensing
 
-| Section | Term | Description |
-|---|---|---|
-| License | MIT | Free to use, modify, distribute, and integrate |
-| User Content | Retained by User | Converted outputs belong entirely to the user |
-| Service Level | "As Is" | No express or implied warranty of uptime |
-| Data Storage | None | Server does not maintain persistent backups of user data |
+The underlying source code, CLI utilities, SDKs, and algorithms powering Zapwebp are distributed as free and open-source software under the **MIT License**.
 
-## Errors
+- You may inspect, modify, fork, bundle, and distribute the open-source software according to the terms of the MIT License located in the project's official repository.
+- Nothing in these Terms restricts rights granted to you under the open-source software license.
 
-| Code | Cause | Fix |
-|---|---|---|
-| `terms_rate_limited` | Excessive automated abuse of public API | Run conversions locally via `@zapwebp/cli` |
+---
 
-## For agents
+## 3. Acceptable Use Policy
 
-```json
-{
-  "service": "Zapwebp",
-  "termsType": "MIT Open Source",
-  "userOwnership": "100%",
-  "liability": "AS-IS without warranty"
-}
-```
+Zapwebp is designed for productive developer workflows, content authoring, and personal productivity. You agree to use the Service in compliance with applicable local and international laws.
 
-## Related
+You agree not to:
+1. Conduct denial-of-service (DoS) attacks, flood public API endpoints, or intentionally overwhelm public infrastructure beyond published rate limits.
+2. Attempt to bypass or circumvent network security controls, private subnet guards, or path sandboxing boundaries.
+3. Transmit, upload, or convert malicious code, automated exploits, or dangerous payloads disguised as vector or raster image files.
+4. Use public demo conversion endpoints to host or relay unauthorized, illegal, or abusive content.
 
-- [Privacy](/privacy): Zero-telemetry policy and data handling.
-- [About](/about): Project background and mission.
+---
 
+## 4. Service Availability & "As Is" Warranty
+
+Zapwebp provides its web conversion endpoints, documentation portals, and package registries as a community service and open-source platform.
+
+- **"As Is" Provision**: The Service and all accompanying software are provided on an "as is" and "as available" basis, without warranties of any kind, whether express, statutory, or implied.
+- **No Guarantee of Uninterrupted Operation**: While we strive for high reliability and uptime, Zapwebp does not guarantee that access to the web interface or public APIs will be uninterrupted, error-free, or continuously available.
+- **Modifications**: Zapwebp reserves the right to modify, rate-limit, or discontinue public web services at any time for maintenance, security enhancements, or platform updates.
+
+---
+
+## 5. Limitation of Liability
+
+To the maximum extent permitted under applicable law, in no event shall the authors, maintainers, or contributors of Zapwebp be liable for any direct, indirect, incidental, special, consequential, or exemplary damages arising out of or in connection with:
+- The use or inability to use the Service;
+- Any corruption, alteration, or loss of image assets or data;
+- Unauthorized access to or alteration of transmissions when using third-party storage adapters;
+- Any decisions made based on reports, carbon calculations, or conversion diagnostics generated by the software.
+
+---
+
+## 6. Governing Law & Dispute Resolution
+
+These Terms shall be governed by and construed in accordance with the laws of the **Republic of the Philippines**, without regard to conflict of law principles. Any legal inquiry, dispute, or proceeding arising under or relating to these Terms shall be subject to the exclusive jurisdiction of the competent courts of the Republic of the Philippines.
+
+---
+
+## 7. Modifications to Terms
+
+We reserve the right to revise these Terms as the Zapwebp platform evolves. Any changes will be posted directly to this documentation page with an updated "Last Revised" date. Continued use of the Service after revisions constitutes your acceptance of the updated Terms.
+
+---
+
+## 8. Inquiries & Contact
+
+For legal questions, partnership inquiries, or clarification regarding these Terms of Service, contact the maintainer:
+
+- **Maintainer:** Eldrex Delos Reyes Bula
+- **Email:** `eldrexdelosreyesbula@gmail.com`
+- **Location:** Republic of the Philippines
+- **Repository:** [https://github.com/Zapwebp/zapwebp](https://github.com/Zapwebp/zapwebp)

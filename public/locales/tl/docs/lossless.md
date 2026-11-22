@@ -1,7 +1,7 @@
 # Lossless sa Zapwebp
 
 Covers: Ang kahulugan ng "lossless" sa Zapwebp, pagpapatunay ng pixel identity sa matematika, pagsusuri sa kalidad ng pinagmulang imahe, ratio ng epekto sa laki ng file, pagtuklas ng degraded na source, at ang error code na E_LOSSLESS_MISMATCH.
-Does not cover: Mga profile ng pag-compress sa lossy quality (tingnan ang [Convert](/convert.md)), pag-aalis ng container metadata (tingnan ang [Clean](/clean.md)), o matrix ng mga format (tingnan ang [Formats](/formats.md)).
+Does not cover: Mga profile ng pag-compress sa lossy quality (tingnan ang [Convert](/convert)), pag-aalis ng container metadata (tingnan ang [Clean](/clean)), o matrix ng mga format (tingnan ang [Formats](/formats)).
 Applies to: `@zapwebp/core` (`convert`, `convertImage`), `@zapwebp/cli` (`--lossless`), `@zapwebp/mcp` (`convert_image`), `@zapwebp/sdk`, at cockpit ng web app.
 
 ## Quick start
@@ -124,8 +124,8 @@ Bawat lossless conversion ay nagbibigay ng paghahambing laban sa tinantyang loss
 
 ## Related
 
-- [Convert Dokumentasyon](/convert.md)
-- [Matrix ng mga Format](/formats.md)
-- [Clean Mode Pag-alis ng Metadata](/clean.md)
-- [Core SDK Reference](/sdk/core.md)
-- [Talaan ng mga Error](/errors.md)
+- [Convert Dokumentasyon](/convert)
+- [Matrix ng mga Format](/formats)
+- [Clean Mode Pag-alis ng Metadata](/clean)
+- [Core SDK Reference](/sdk/core)
+- [Talaan ng mga Error](/errors)

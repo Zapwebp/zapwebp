@@ -4,7 +4,7 @@ Covers: format registry ng Zapwebp, matrix ng alpha channel preservation sa bawa
 
 Does not cover: pag-edit ng pixels. Tingnan ang [Crop Plugin](/plugins/crop).
 
-Applies to: Zapwebp v1.1.0 at mas bago.
+Applies to: `@zapwebp/core` v1.1.0 at mas bago.
 
 ## Quick start
 

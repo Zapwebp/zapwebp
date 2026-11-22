@@ -2,7 +2,7 @@
 
 Covers: Command line interface, programmatic options, transaction journaling, and terminal automation flags.
 Does not cover: Web browser canvas APIs or client-side event loops.
-Applies to: `zapwebp` v1.0.0+.
+Applies to: `zapwebp` v1.1.0 and later.
 
 ## Quick start
 

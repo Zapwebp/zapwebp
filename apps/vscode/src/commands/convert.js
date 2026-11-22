@@ -3,12 +3,12 @@
 const path = require('node:path');
 const crypto = require('node:crypto');
 const vscode = require('vscode');
-const { convertBuffer } = require('../core');
-const { readConfig } = require('../config');
+const { convertBuffer, checkLock, ZapError } = require('../core');
+const { readConfig, readWorkspaceLockConfig } = require('../config');
 const { showSuccess, showError } = require('../ui/toast');
 const { statusBar } = require('../ui/status-bar');
 
-const SUPPORTED_INPUT_EXTENSIONS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'tif', 'tiff'];
+const SUPPORTED_INPUT_EXTENSIONS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'tif', 'tiff', 'ico', 'cur'];
 
 /**
  * Ensures user has given explicit consent to delete original files.
@@ -81,9 +81,40 @@ async function resolveTargets(uri, uris) {
 }
 
 /**
+ * Prompts user for target ICO sizes via QuickPick or custom entry.
+ * @param {string} [defaultPreset='default']
+ * @returns {Promise<number[]|null>}
+ */
+async function promptIcoSizes(defaultPreset = 'default') {
+  const choice = await vscode.window.showQuickPick(
+    [
+      { label: 'Default Suite', sizes: [16, 32, 48, 64, 128, 256], description: '16×16, 32×32, 48×48, 64×64, 128×128, 256×256 (Recommended)' },
+      { label: 'Favicon Suite', sizes: [16, 32, 48], description: '16×16, 32×32, 48×48' },
+      { label: 'Windows App', sizes: [16, 32, 48, 256], description: '16×16, 32×32, 48×48, 256×256' },
+      { label: 'High-Resolution', sizes: [64, 128, 256, 512], description: '64×64, 128×128, 256×256, 512×512' },
+      { label: 'Custom Sizes...', sizes: 'custom', description: 'Enter custom pixel dimensions' },
+    ],
+    { placeHolder: 'Select ICO icon sizes' }
+  );
+  if (!choice) return null;
+  if (choice.sizes === 'custom') {
+    const custom = await vscode.window.showInputBox({
+      prompt: 'Enter comma-separated icon sizes (e.g. 16, 32, 48, 128):',
+      placeHolder: '16, 32, 48, 64, 128, 256',
+    });
+    if (!custom) return null;
+    return custom
+      .split(',')
+      .map((s) => Number.parseInt(s.trim(), 10))
+      .filter((n) => Number.isFinite(n) && n >= 8 && n <= 512);
+  }
+  return choice.sizes;
+}
+
+/**
  * Executes batch conversion to a specified target format.
  * @param {vscode.Uri[]} targets
- * @param {'webp'|'png'|'avif'|'jpeg'} targetFormat
+ * @param {'webp'|'png'|'avif'|'jpeg'|'ico'|'cur'} targetFormat
  * @param {object} [options]
  * @param {vscode.ExtensionContext} [context]
  */
@@ -96,6 +127,20 @@ async function executeBatchConvert(targets, targetFormat = 'webp', options = {},
 
   if (format === 'jpeg' && !background) {
     background = '#ffffff';
+  }
+
+  // Workspace Target Lock Policy Check
+  const lockConfig = await readWorkspaceLockConfig(targets[0]);
+  if (config.targetLockEnabled && lockConfig.exists) {
+    statusBar.setTargetLock(lockConfig.targetFormat);
+    if (lockConfig.acceptFormats && !lockConfig.acceptFormats.includes(format.toLowerCase())) {
+      const err = new ZapError(
+        'E_FORMAT_REJECTED',
+        `Target format "${format}" is rejected by workspace Target Lock policy (allowed: ${lockConfig.acceptFormats.join(', ')}).`
+      );
+      showError(targets[0], err);
+      return;
+    }
   }
 
   let totalSaved = 0;
@@ -120,54 +165,98 @@ async function executeBatchConvert(targets, targetFormat = 'webp', options = {},
           }
 
           const bytes = await vscode.workspace.fs.readFile(fileUri);
+
+          // Lock verification check: skip redundant conversions
+          try {
+            const existingOutBytes = await vscode.workspace.fs.readFile(outUri);
+            const lockCheck = checkLock(
+              existingOutBytes,
+              bytes,
+              { to: format, quality: config.quality, clean: config.clean, background },
+              options.lock
+            );
+            if (lockCheck.skipped) {
+              statusBar.log(`[Lock] Skipped ${filename} (already converted with matching options)`);
+              continue;
+            }
+          } catch {}
+
+          const convertOpts = {
+            ...options,
+            background,
+            acceptFormats: config.targetLockEnabled && lockConfig.exists ? lockConfig.acceptFormats : undefined,
+          };
+
           const out = await convertBuffer(
             bytes,
             format,
             config.baseWidth,
             config.quality,
             config.clean,
-            background
+            background,
+            convertOpts
           );
 
-          await vscode.workspace.fs.writeFile(outUri, out);
-          const saved = bytes.byteLength - out.byteLength;
-          totalSaved += Math.max(0, saved);
-          count++;
+          if (Array.isArray(out)) {
+            // Extracted multiple frames (from ICO / CUR extractAll)
+            const parentDir = fileUri.path.substring(0, fileUri.path.lastIndexOf('/'));
+            const baseName = filename.replace(/\.[^.]+$/, '');
+            let totalOutBytes = 0;
+            for (const frame of out) {
+              const frameFilename = `${baseName}-${frame.width}x${frame.height}.${format === 'jpeg' ? 'jpg' : format}`;
+              const frameUri = fileUri.with({ path: `${parentDir}/${frameFilename}` });
+              await vscode.workspace.fs.writeFile(frameUri, frame.data);
+              totalOutBytes += frame.data.byteLength;
+            }
+            const saved = bytes.byteLength - totalOutBytes;
+            totalSaved += Math.max(0, saved);
+            count++;
+            lastDetails = {
+              filename: `${baseName} (${out.length} sizes)`,
+              sourceSize: bytes.byteLength,
+              outputSize: totalOutBytes,
+            };
+            statusBar.log(`Extracted ${filename} -> ${out.length} files (${totalOutBytes} bytes)`);
+          } else {
+            await vscode.workspace.fs.writeFile(outUri, out);
+            const saved = bytes.byteLength - out.byteLength;
+            totalSaved += Math.max(0, saved);
+            count++;
 
-          // Lifecycle: Original file deletion after conversion if enabled and consented
-          if (config.deleteOriginalAfterConversion) {
-            const hasConsent = await ensureDeleteConsent(context);
-            if (hasConsent) {
-              const wsFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-              const rootDir = wsFolder ? wsFolder.uri.fsPath : path.dirname(fileUri.fsPath);
-              const relPath = path.relative(rootDir, fileUri.fsPath).replace(/\\/g, '/');
-              const ts = new Date().toISOString().replace(/[:.]/g, '-');
-              const backupRel = path.join('.zapwebp', 'backups', ts, relPath);
-              const backupFull = path.resolve(rootDir, backupRel);
-              const backupUri = vscode.Uri.file(backupFull);
+            // Lifecycle: Original file deletion after conversion if enabled and consented
+            if (config.deleteOriginalAfterConversion) {
+              const hasConsent = await ensureDeleteConsent(context);
+              if (hasConsent) {
+                const wsFolder = vscode.workspace.getWorkspaceFolder ? vscode.workspace.getWorkspaceFolder(fileUri) : null;
+                const rootDir = wsFolder ? wsFolder.uri.fsPath : path.dirname(fileUri.fsPath);
+                const relPath = path.relative(rootDir, fileUri.fsPath).replace(/\\/g, '/');
+                const ts = new Date().toISOString().replace(/[:.]/g, '-');
+                const backupRel = path.join('.zapwebp', 'backups', ts, relPath);
+                const backupFull = path.resolve(rootDir, backupRel);
+                const backupUri = vscode.Uri.file(backupFull);
 
-              // Write backup and verify hash before deleting original
-              await vscode.workspace.fs.writeFile(backupUri, bytes);
-              const writtenBytes = await vscode.workspace.fs.readFile(backupUri);
-              const origHash = crypto.createHash('sha256').update(bytes).digest('hex');
-              const backupHash = crypto.createHash('sha256').update(writtenBytes).digest('hex');
+                await vscode.workspace.fs.writeFile(backupUri, bytes);
+                const writtenBytes = await vscode.workspace.fs.readFile(backupUri);
+                const origHash = crypto.createHash('sha256').update(bytes).digest('hex');
+                const backupHash = crypto.createHash('sha256').update(writtenBytes).digest('hex');
 
-              if (origHash === backupHash) {
-                await vscode.workspace.fs.delete(fileUri, { useTrash: true });
-                statusBar.log(`Deleted original ${filename} (backed up to ${backupRel})`);
-              } else {
-                statusBar.log(`Backup hash mismatch for ${filename}. Source file was not deleted.`);
+                if (origHash === backupHash) {
+                  await vscode.workspace.fs.delete(fileUri, { useTrash: true });
+                  statusBar.log(`Deleted original ${filename} (backed up to ${backupRel})`);
+                } else {
+                  statusBar.log(`Backup hash mismatch for ${filename}. Source file was not deleted.`);
+                }
               }
             }
+
+            lastDetails = {
+              filename: outUri.path.split('/').pop(),
+              sourceSize: bytes.byteLength,
+              outputSize: out.byteLength,
+            };
+
+            statusBar.log(`Converted ${filename} -> ${lastDetails.filename} (${out.byteLength} bytes)`);
           }
-
-          lastDetails = {
-            filename: outUri.path.split('/').pop(),
-            sourceSize: bytes.byteLength,
-            outputSize: out.byteLength,
-          };
-
-          statusBar.log(`Converted ${filename} -> ${lastDetails.filename} (${out.byteLength} bytes)`);
         } catch (err) {
           statusBar.log(`Error converting ${filename}: ${err.message}`);
           showError(fileUri, err);
@@ -272,7 +361,117 @@ function registerConvertCommand(context) {
     await executeBatchConvert(targets, picked.format, { background }, context);
   });
 
-  // 6. Undo Command (Restores backed-up original files)
+  // 6. Direct to ICO
+  const cmdIco = vscode.commands.registerCommand('zapwebp.convertToIco', async (uri, uris) => {
+    const targets = await resolveTargets(uri, uris);
+    if (targets.length === 0) return;
+    const config = readConfig();
+    const icoSizes = await promptIcoSizes(config.icoPreset);
+    if (!icoSizes) return;
+    await executeBatchConvert(targets, 'ico', { sizes: icoSizes }, context);
+  });
+
+  // 7. Compressor (Target Bytes Optimization)
+  const cmdCompress = vscode.commands.registerCommand('zapwebp.convertCompress', async (uri, uris) => {
+    const targets = await resolveTargets(uri, uris);
+    if (targets.length === 0) return;
+
+    const rawTarget = await vscode.window.showInputBox({
+      prompt: 'Enter target maximum file size (e.g. 500 KB, 1.5 MB, 250 KB):',
+      placeHolder: '500 KB',
+      validateInput: (val) => {
+        try {
+          const compLib = require('@zapwebp/compressor');
+          compLib.parseTargetBytes(val);
+          return null;
+        } catch {
+          return 'Please enter a valid size, e.g. "500 KB" or "1.5 MB".';
+        }
+      },
+    });
+    if (!rawTarget) return;
+
+    const formatPick = await vscode.window.showQuickPick(
+      [
+        { label: 'WebP', format: 'webp', description: 'Recommended • High quality and compression' },
+        { label: 'AVIF', format: 'avif', description: 'Next-Gen • Highest compression' },
+        { label: 'JPEG', format: 'jpeg', description: 'Photographic' },
+      ],
+      { placeHolder: 'Select target format for compressed image' }
+    );
+    if (!formatPick) return;
+
+    await executeBatchConvert(targets, formatPick.format, { targetBytes: rawTarget }, context);
+  });
+
+  // 8. Convert with Options (Crop, Ratio, Quality, Sizing)
+  const cmdWithOptions = vscode.commands.registerCommand('zapwebp.convertWithOptions', async (uri, uris) => {
+    const targets = await resolveTargets(uri, uris);
+    if (targets.length === 0) return;
+
+    // Step 1: Format
+    const formatPick = await vscode.window.showQuickPick(
+      [
+        { label: 'WebP', format: 'webp', description: 'Recommended • High compatibility & compression' },
+        { label: 'PNG', format: 'png', description: 'Lossless with alpha' },
+        { label: 'AVIF', format: 'avif', description: 'Next-Gen extreme compression' },
+        { label: 'JPEG', format: 'jpeg', description: 'Universal photographic (flattens alpha)' },
+        { label: 'ICO', format: 'ico', description: 'Windows icon container' },
+      ],
+      { placeHolder: 'Step 1/3: Select target format' }
+    );
+    if (!formatPick) return;
+
+    // Step 2: Crop & Aspect Ratio
+    const cropPick = await vscode.window.showQuickPick(
+      [
+        { label: 'None', crop: null, description: 'Keep original aspect ratio' },
+        { label: 'Avatar (1:1)', crop: 'avatar', description: 'Square profile / avatar crop' },
+        { label: 'Thumbnail (16:9)', crop: 'thumbnail', description: 'Standard video / landscape thumbnail' },
+        { label: 'Banner (21:9)', crop: 'banner', description: 'Ultra-wide header banner' },
+        { label: 'Product (4:5)', crop: 'product', description: 'E-commerce portrait display' },
+        { label: 'Story (9:16)', crop: 'story', description: 'Vertical full-screen story' },
+        { label: 'Custom Aspect Ratio...', crop: 'custom', description: 'Enter specific ratio like 4:3' },
+      ],
+      { placeHolder: 'Step 2/3: Select crop and aspect ratio' }
+    );
+    if (!cropPick) return;
+
+    let resolvedCrop = cropPick.crop;
+    if (resolvedCrop === 'custom') {
+      const customRatio = await vscode.window.showInputBox({
+        prompt: 'Enter aspect ratio (e.g. 4:3, 16:10, 2:1):',
+        placeHolder: '4:3',
+      });
+      if (!customRatio) return;
+      resolvedCrop = { mode: 'auto', aspectRatio: customRatio };
+    }
+
+    // Step 3: Background & Specific options
+    let background;
+    if (formatPick.format === 'jpeg') {
+      background = await vscode.window.showInputBox({
+        prompt: 'JPEG flattens transparency. Background color:',
+        value: '#ffffff',
+      });
+      if (background === undefined) return;
+    }
+
+    let icoSizes;
+    if (formatPick.format === 'ico') {
+      icoSizes = await promptIcoSizes();
+      if (!icoSizes) return;
+    }
+
+    await executeBatchConvert(
+      targets,
+      formatPick.format,
+      { crop: resolvedCrop, background, sizes: icoSizes },
+      context
+    );
+  });
+
+  // 9. Undo Command (Restores backed-up original files)
   const cmdUndo = vscode.commands.registerCommand('zapwebp.undo', async () => {
     const wsFolders = vscode.workspace.workspaceFolders;
     if (!wsFolders || wsFolders.length === 0) {
@@ -328,6 +527,9 @@ function registerConvertCommand(context) {
   context.subscriptions.push(cmdAvif);
   context.subscriptions.push(cmdJpeg);
   context.subscriptions.push(cmdPrompt);
+  context.subscriptions.push(cmdIco);
+  context.subscriptions.push(cmdCompress);
+  context.subscriptions.push(cmdWithOptions);
   context.subscriptions.push(cmdUndo);
 }
 
@@ -336,5 +538,6 @@ module.exports = {
   executeBatchConvert,
   resolveTargets,
   siblingUri,
+  promptIcoSizes,
   SUPPORTED_INPUT_EXTENSIONS,
 };

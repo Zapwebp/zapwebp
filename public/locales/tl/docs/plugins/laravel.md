@@ -4,7 +4,7 @@ Covers: opisyal na Laravel package `zapwebp/laravel`, Zap facade, SafeImage vali
 
 Does not cover: Node.js server configurations. Tingnan ang [REST API](/api).
 
-Applies to: `zapwebp/laravel` v1.0.0 at mas bago.
+Applies to: `zapwebp/laravel` v1.0.0 at mas bago, PHP 8.2+, Laravel 10.0+.
 
 ## Quick start
 

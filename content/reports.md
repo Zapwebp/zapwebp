@@ -90,7 +90,7 @@ Zapwebp tracks transactional operations locally within `.zapwebp/journal/` witho
 
 ## Related
 
-- [Conversion Policy](/policy.md) — Set corporate size limits and accepted formats.
-- [Clean Mode](/clean.md) — Strip sensitive metadata and verify certificates.
-- [CLI Reference](/cli.md) — Complete command-line flags and journal subcommands.
-- [Model Context Protocol](/mcp.md) — Automate reports through AI agents.
+- [Conversion Policy](/policy) — Set corporate size limits and accepted formats.
+- [Clean Mode](/clean) — Strip sensitive metadata and verify certificates.
+- [CLI Reference](/cli) — Complete command-line flags and journal subcommands.
+- [Model Context Protocol](/mcp) — Automate reports through AI agents.

@@ -19,6 +19,7 @@ const EXTENSION_MAP = Object.freeze({
   heic: 'heic',
   heif: 'heic',
   ico: 'ico',
+  cur: 'cur',
 });
 
 /**
@@ -114,6 +115,11 @@ function detectFormatFromBytes(bytes) {
   // ICO: 00 00 01 00
   if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00) {
     return 'ico';
+  }
+
+  // CUR: 00 00 02 00
+  if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x02 && bytes[3] === 0x00) {
+    return 'cur';
   }
 
   // TIFF: II*. or MM.*

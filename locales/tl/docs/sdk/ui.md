@@ -4,7 +4,7 @@ Covers: programmatic component mounting, zero-dependency dropzone element, cockp
 
 Does not cover: backend node script execution. Tingnan ang [CLI SDK](/sdk/cli).
 
-Applies to: `@zapwebp/ui` v2.2.0 at mas bago.
+Applies to: `@zapwebp/ui` v1.1.0+ (Zapwebp v2.2.0 at mas bago).
 
 ## Quick start
 

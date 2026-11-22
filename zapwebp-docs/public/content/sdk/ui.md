@@ -2,7 +2,7 @@
 
 Covers: User interface design tokens, accessible components, checkerboard viewports, and progress states.
 Does not cover: Terminal ANSI styling or headless Node.js processing.
-Applies to: `@zapwebp/ui` v1.0.0+.
+Applies to: `@zapwebp/ui` v1.1.0+ (Zapwebp v2.2.0 and later).
 
 ## Quick start
 

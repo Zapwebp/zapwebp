@@ -2,7 +2,7 @@
 
 Covers: Serverless edge runtime handlers, fetch request pipelines, and Cloudflare Workers integration.
 Does not cover: Filesystem watcher daemon or local CLI journaling.
-Applies to: `@zapwebp/edge` v1.0.0+.
+Applies to: `@zapwebp/edge` v2.0.0+.
 
 ## Quick start
 

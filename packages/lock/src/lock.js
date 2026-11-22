@@ -66,6 +66,7 @@ function createLockFingerprint({ input, options = {}, engineVersion = ENGINE_VER
   const inputBuf = Buffer.isBuffer(input) ? input : Buffer.from(input || []);
   const inputSha256 = crypto.createHash('sha256').update(inputBuf).digest('hex');
   const optionsSha256 = computeOptionsHash(options);
+  const targetFormat = options.to ? String(options.to).toLowerCase().trim() : 'webp';
 
   return {
     'zapwebp:lock': {
@@ -73,9 +74,10 @@ function createLockFingerprint({ input, options = {}, engineVersion = ENGINE_VER
       inputSha256,
       optionsSha256,
       engineVersion,
+      targetFormat,
       convertedAt: convertedAt || options.convertedAt || (process.env.SOURCE_DATE_EPOCH ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString() : '1970-01-01T00:00:00.000Z'),
       optionsSummary: {
-        to: options.to ? String(options.to).toLowerCase() : 'webp',
+        to: targetFormat,
         quality: options.quality !== undefined ? Number(options.quality) : 85,
         clean: Boolean(options.clean),
         lossless: Boolean(options.lossless),
@@ -179,6 +181,15 @@ function writeLock(buffer, format, lockData) {
   return buf;
 }
 
+function normalizeLock(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const lock = raw['zapwebp:lock'] || raw;
+  if (!lock.targetFormat) {
+    lock.targetFormat = lock.optionsSummary?.to ? String(lock.optionsSummary.to).toLowerCase().trim() : 'webp';
+  }
+  return lock;
+}
+
 /**
  * Reads and parses a `zapwebp:lock` block from an image buffer if present.
  *
@@ -202,7 +213,7 @@ function readLock(buffer, format) {
         if (fourcc === 'ZAPL' && chunkEnd <= buf.length) {
           const payload = buf.subarray(offset + 8, chunkEnd).toString('utf8');
           const parsed = JSON.parse(payload);
-          return parsed['zapwebp:lock'] || parsed;
+          return normalizeLock(parsed);
         }
         offset += 8 + chunkSize + (chunkSize & 1);
       }
@@ -222,7 +233,7 @@ function readLock(buffer, format) {
             if (keyword === LOCK_KEYWORD) {
               const text = chunkData.subarray(nullIdx + 1).toString('utf8');
               const parsed = JSON.parse(text);
-              return parsed['zapwebp:lock'] || parsed;
+              return normalizeLock(parsed);
             }
           }
         }
@@ -251,7 +262,7 @@ function readLock(buffer, format) {
           if (payload.startsWith(`${LOCK_KEYWORD}:`)) {
             const jsonText = payload.slice(LOCK_KEYWORD.length + 1);
             const parsed = JSON.parse(jsonText);
-            return parsed['zapwebp:lock'] || parsed;
+            return normalizeLock(parsed);
           }
         }
 
@@ -265,7 +276,7 @@ function readLock(buffer, format) {
       const match = str.match(/<metadata id="zapwebp-lock">\s*<script type="application\/json">([\s\S]*?)<\/script>\s*<\/metadata>/i);
       if (match && match[1]) {
         const parsed = JSON.parse(match[1]);
-        return parsed['zapwebp:lock'] || parsed;
+        return normalizeLock(parsed);
       }
     }
   } catch {
@@ -288,6 +299,66 @@ function detectFormat(buf) {
   if (buf.length >= 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
   if (buf.toString('utf8', 0, 100).includes('<svg')) return 'svg';
   return null;
+}
+
+/**
+ * Evaluates whether an existing lock warrants skipping the conversion.
+ * Allows intentional format changes (e.g. WebP -> AVIF or WebP -> PNG)
+ * while skipping redundant identical requests (e.g. WebP -> WebP with same options).
+ *
+ * @param {object} existingLock - The stored lock metadata
+ * @param {object} [currentOptions={}] - The requested conversion options
+ * @param {string} [currentInputSha256] - SHA-256 of the current input image
+ * @param {object} [lockOptions={}] - Optional lock controls (force, invalidateOnEngineChange, engineVersion)
+ * @returns {{ skip: boolean, reason: string }}
+ */
+function shouldSkipConversion(
+  existingLock,
+  currentOptions = {},
+  currentInputSha256,
+  lockOptions = {}
+) {
+  if (!existingLock || typeof existingLock !== 'object') {
+    return { skip: false, reason: 'no_lock_present' };
+  }
+
+  // 0. Force override: do not skip
+  if (lockOptions.force || currentOptions.force) {
+    return { skip: false, reason: 'forced' };
+  }
+
+  // 1. If input file changed, do not skip.
+  if (currentInputSha256 && existingLock.inputSha256 && existingLock.inputSha256 !== currentInputSha256) {
+    return { skip: false, reason: 'input_changed' };
+  }
+
+  // 2. If the requested target format is DIFFERENT from the locked format,
+  //    do not skip. The user is intentionally creating a new derivative.
+  const lockedFormat = (existingLock.targetFormat || existingLock.optionsSummary?.to || 'webp').toLowerCase().trim();
+  const requestedFormat = (currentOptions.to || 'webp').toLowerCase().trim();
+  if (lockedFormat !== requestedFormat) {
+    return { skip: false, reason: 'new_target_format_requested' };
+  }
+
+  // 3. If the target format is the same, check the rest of the options hash.
+  const currentOptionsSha256 = computeOptionsHash(currentOptions);
+  if (existingLock.optionsSha256 && existingLock.optionsSha256 !== currentOptionsSha256) {
+    return { skip: false, reason: 'options_changed' };
+  }
+
+  // 4. If engine version changed and invalidation is on, do not skip.
+  const activeEngineVersion = lockOptions.engineVersion || ENGINE_VERSION;
+  const invalidateOnEngineChange = lockOptions.invalidateOnEngineChange !== false && currentOptions.lock?.invalidateOnEngineChange !== false;
+  if (
+    invalidateOnEngineChange &&
+    existingLock.engineVersion &&
+    existingLock.engineVersion !== activeEngineVersion
+  ) {
+    return { skip: false, reason: 'engine_version_changed' };
+  }
+
+  // 5. Everything matches. Skip.
+  return { skip: true, reason: 'identical_request' };
 }
 
 /**
@@ -340,54 +411,46 @@ function verifyLock(
     };
   }
 
-  const activeEngineVersion = lockOptions.engineVersion || ENGINE_VERSION;
-  const invalidateOnEngineChange = lockOptions.invalidateOnEngineChange !== false;
-
-  // 1. Engine Version verification
-  if (invalidateOnEngineChange && existingLock.engineVersion && existingLock.engineVersion !== activeEngineVersion) {
-    return {
-      enabled: true,
-      detected: true,
-      match: false,
-      skipped: false,
-      reason: 'engine_version_mismatch',
-      storedEngineVersion: existingLock.engineVersion,
-      currentEngineVersion: activeEngineVersion,
-      lock: existingLock,
-    };
-  }
-
-  // 2. Options Hash verification
-  const currentOptionsHash = computeOptionsHash(currentOptions);
-  if (existingLock.optionsSha256 && existingLock.optionsSha256 !== currentOptionsHash) {
-    return {
-      enabled: true,
-      detected: true,
-      match: false,
-      skipped: false,
-      reason: 'options_hash_mismatch',
-      storedOptionsHash: existingLock.optionsSha256,
-      currentOptionsHash,
-      lock: existingLock,
-    };
-  }
-
-  // 3. Input Hash verification (if source buffer provided)
+  let currentInputSha256;
   if (currentInputBuffer && currentInputBuffer.length) {
     const inputBuf = Buffer.isBuffer(currentInputBuffer) ? currentInputBuffer : Buffer.from(currentInputBuffer);
-    const currentInputHash = crypto.createHash('sha256').update(inputBuf).digest('hex');
-    if (existingLock.inputSha256 && existingLock.inputSha256 !== currentInputHash) {
-      return {
-        enabled: true,
-        detected: true,
-        match: false,
-        skipped: false,
-        reason: 'input_hash_mismatch',
-        storedInputHash: existingLock.inputSha256,
-        currentInputHash,
-        lock: existingLock,
-      };
-    }
+    currentInputSha256 = crypto.createHash('sha256').update(inputBuf).digest('hex');
+  }
+
+  const decision = shouldSkipConversion(
+    existingLock,
+    currentOptions,
+    currentInputSha256,
+    lockOptions
+  );
+
+  const lockedFormat = existingLock.targetFormat || existingLock.optionsSummary?.to || 'webp';
+  const requestedFormat = (currentOptions.to || 'webp').toLowerCase().trim();
+
+  if (!decision.skip) {
+    let mappedReason = decision.reason;
+    if (decision.reason === 'options_changed') mappedReason = 'options_hash_mismatch';
+    else if (decision.reason === 'input_changed') mappedReason = 'input_hash_mismatch';
+    else if (decision.reason === 'engine_version_changed') mappedReason = 'engine_version_mismatch';
+
+    return {
+      enabled: true,
+      detected: true,
+      match: false,
+      skipped: false,
+      reason: mappedReason,
+      skipReason: decision.reason,
+      targetFormat: lockedFormat,
+      requestedFormat,
+      storedFormat: lockedFormat,
+      storedOptionsHash: existingLock.optionsSha256,
+      currentOptionsHash: computeOptionsHash(currentOptions),
+      storedInputHash: existingLock.inputSha256,
+      currentInputHash: currentInputSha256,
+      storedEngineVersion: existingLock.engineVersion,
+      currentEngineVersion: lockOptions.engineVersion || ENGINE_VERSION,
+      lock: existingLock,
+    };
   }
 
   // All checks passed -> Skip conversion
@@ -397,6 +460,9 @@ function verifyLock(
     match: true,
     skipped: true,
     reason: 'options_hash_match',
+    skipReason: 'identical_request',
+    identicalRequest: true,
+    targetFormat: lockedFormat,
     inputSha256: existingLock.inputSha256,
     optionsSha256: existingLock.optionsSha256,
     engineVersion: existingLock.engineVersion,
@@ -501,5 +567,6 @@ module.exports = {
   writeLock,
   readLock,
   verifyLock,
+  shouldSkipConversion,
   createLockPlugin,
 };

@@ -120,10 +120,10 @@ Every integration rejects dangerous inputs before rasterization or storage writi
 
 ## Related
 
-- [Stability & Error Boundaries](/stability.md)
-- [Safety & Security Model](/safety.md)
-- [Performance & Benchmarks](/performance.md)
-- [Vite Plugin Reference](/plugins/vite.md)
-- [Next.js Plugin Reference](/plugins/next.md)
-- [GitHub Action Reference](/plugins/github-action.md)
-- [Storage Adapters Reference](/plugins/storage.md)
+- [Stability & Error Boundaries](/stability)
+- [Safety & Security Model](/safety)
+- [Performance & Benchmarks](/performance)
+- [Vite Plugin Reference](/plugins/vite)
+- [Next.js Plugin Reference](/plugins/next)
+- [GitHub Action Reference](/plugins/github-action)
+- [Storage Adapters Reference](/plugins/storage)

@@ -1,8 +1,9 @@
-export interface LockData {
+export interface LockMetadata {
   version: string;
   inputSha256: string;
   optionsSha256: string;
   engineVersion: string;
+  targetFormat: string;
   convertedAt: string;
   optionsSummary?: {
     to: string;
@@ -14,6 +15,8 @@ export interface LockData {
     background?: string;
   };
 }
+
+export type LockData = LockMetadata;
 
 export interface LockPluginOptions {
   /**
@@ -49,12 +52,19 @@ export interface LockVerificationResult {
   skipped: boolean;
   reason:
     | 'options_hash_match'
+    | 'identical_request'
+    | 'new_target_format_requested'
     | 'options_hash_mismatch'
     | 'input_hash_mismatch'
     | 'engine_version_mismatch'
     | 'no_lock_present'
     | 'no_existing_file'
     | 'forced';
+  skipReason?: string;
+  identicalRequest?: boolean;
+  targetFormat?: string;
+  requestedFormat?: string;
+  storedFormat?: string;
   inputSha256?: string;
   optionsSha256?: string;
   engineVersion?: string;
@@ -81,6 +91,13 @@ export function createLockFingerprint(params: {
 }): { 'zapwebp:lock': LockData };
 export function writeLock(buffer: Buffer | Uint8Array, format: string, lockData: object): Buffer;
 export function readLock(buffer: Buffer | Uint8Array, format?: string): LockData | null;
+export function shouldSkipConversion(
+  existingLock: LockMetadata,
+  currentOptions?: Record<string, unknown>,
+  currentInputSha256?: string,
+  lockOptions?: LockPluginOptions
+): { skip: boolean; reason: string };
+
 export function verifyLock(
   existingBuffer: Buffer | Uint8Array,
   currentInputBuffer?: Buffer | Uint8Array,

@@ -11,6 +11,9 @@ on:
     # Weekly Sunday at 04:00 UTC
     - cron: '0 4 * * 0'
 
+permissions:
+  contents: read
+
 jobs:
   reliability-matrix:
     name: Reliability (${{ matrix.os }}, Node ${{ matrix.node-version }})
@@ -19,32 +22,50 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [20, 22]
+        node-version: [22, 24]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
-      - uses: actions/setup-node@v4
+          version: '11.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+
+      - name: Verify lockfile synchronization
+        run: pnpm install --frozen-lockfile --lockfile-only
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Run Unified Reliability Suite
         run: node --test test/reliability.test.js
+
       - name: Test Vite Plugin Integration
         run: pnpm --filter @zapwebp/vite test
+
       - name: Test Next.js Plugin Integration
         run: pnpm --filter @zapwebp/next test
+
       - name: Test GitHub Action Integration
         run: pnpm --filter @zapwebp/github-action test
+
       - name: Test Storage Adapters Integration
         run: pnpm --filter @zapwebp/storage test
+
       - name: Test Crop Plugin Integration
         run: pnpm --filter @zapwebp/crop test
+
       - name: Test Lens CLI Integration
         run: pnpm --filter @zapwebp/lens test
+
       - name: Test Laravel Integration
         run: pnpm --filter @zapwebp/laravel test
 
@@ -53,15 +74,23 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm (with retry)
+        uses: ./.github/actions/setup-pnpm-retry
         with:
-          version: 11.9.0
-      - uses: actions/setup-node@v4
+          version: '11.9.0'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Run Extended Soak Loop (100 iterations)
         run: |
           node -e "

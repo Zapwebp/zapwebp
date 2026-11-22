@@ -127,9 +127,9 @@ Zapwebp provides a unified **Team Policy Contract** that standardizes image stan
 
 ## Related
 
-- [Performance & Reports](/reports.md) — Aggregate corporate conversion savings and carbon accounting.
-- [Smart Optimization](/smart.md) — Automatic content profiling and quality tuning.
-- [Target Lock](/lock-target.md) — Universal many-to-one conversion gateway.
-- [Clean Mode](/clean.md) — Strip sensitive metadata and verify certificates.
-- [CLI Reference](/cli.md) — Command line policy subcommands and flags.
-- [Errors](/errors.md) — Machine-readable error catalog with root cause explanations.
+- [Performance & Reports](/reports) — Aggregate corporate conversion savings and carbon accounting.
+- [Smart Optimization](/smart) — Automatic content profiling and quality tuning.
+- [Target Lock](/lock-target) — Universal many-to-one conversion gateway.
+- [Clean Mode](/clean) — Strip sensitive metadata and verify certificates.
+- [CLI Reference](/cli) — Command line policy subcommands and flags.
+- [Errors](/errors) — Machine-readable error catalog with root cause explanations.

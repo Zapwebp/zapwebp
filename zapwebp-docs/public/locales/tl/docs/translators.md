@@ -1,75 +1,61 @@
-# Translators & Internationalization
+# Gabay para sa mga Tagasalin at Internasyonalisasyon
 
-Covers: Mga sinusuportahang wika, ayos ng directory sa `/locales/`, disiplina sa mga key, pagpapanatili ng variable placeholder, at ang opisyal na listahan ng mga tagasalin.
+Ang Zapwebp ay binuo para sa mga developer at creator sa buong mundo. Ang aming internationalization (i18n) engine ay nakapaloob sa `@zapwebp/shared`, nagbibigay ng mabilis at zero-dependency na localization sa web app, CLI, error catalog, at dokumentasyon.
 
-Does not cover: Pagbuo ng TypeScript SDK. Tingnan ang [Contributing](/contributing) at [Developers](/developers).
+Malugod naming tinatanggap ang mga kontribusyon upang maidagdag ang mga bagong wika sa Zapwebp.
 
-Applies to: Lahat ng translation catalog ng Zapwebp (`en`, `tl`, at mga wika ng komunidad).
+---
 
-## Quick start
-
-```bash
-# Patunayan ang parity ng translation catalog
-pnpm run validate-locales
-```
-
-Upang mag-ambag ng bagong wika, lumikha ng `/locales/<locale-code>/` at patakbuhin ang validation suite bago magbukas ng pull request.
-
-## What it does
-
-Ang localization engine ng Zapwebp (`@zapwebp/shared`) ay nagbibigay ng zero-dependency na pagsasalin sa buong web application, terminal CLI, error catalog, at dokumentasyon.
-
-### Mga Sinusuportahang Wika
+## 1. Mga Sinusuportahang Wika
 
 | Code | Wika | Katutubong Pangalan | Katayuan | Tagapamahala |
-|:---:|:---|:---|:---:|:---|
-| `en` | English | English | Batayan (Source of Truth) | Core Team |
-| `tl` | Tagalog | Filipino | Napatunayan | Core Team |
+|:---:|---|---|:---:|---|
+| **`en`** | English | English | **Authoritative Source of Truth** | Core Team |
+| **`tl`** | Tagalog / Filipino | Wikang Filipino | **Verified (100% Parity)** | Core Team |
 
-### Mga Panuntunan sa Pagsasalin
+---
 
-1. **Mga Hindi Mababagong Key (Immutable Keys)**: Huwag kailanman baguhin o palitan ang pangalan ng mga key sa `common.json`, `errors.json`, `cli.json`, o `docs.json`.
-2. **Panatilihin ang mga Placeholder**: Ang mga variable tulad ng `{{count}}`, `{{from}}`, at `{{to}}` ay dapat manatili sa eksaktong anyo sa isinaling teksto.
-3. **Purong Teksto Lamang**: Ang mga salin ay hindi dapat maglaman ng HTML tags (`<script>`, `<b>`) o executable event handlers.
-4. **Natural na Pagpapahayag**: Gumamit ng natural na Tagalog habang pinapanatili ang mga teknikal na termino (mga flag ng CLI, error code, format name).
+## 2. Balangkas ng mga Translation Catalog
 
-## Catalog Structure
-
+Lahat ng catalog ay matatagpuan sa direktoryong `/locales/`:
 ```text
 locales/
-├── en/
-│   ├── common.json   # UI ng web app, mga button, pamagat, dropzone hints
-│   ├── errors.json   # Mga error code, sanhi, at solusyon
-│   ├── cli.json      # Mga command ng CLI, flags, at help text
-│   └── docs.json     # Nabigasyon at mga pamagat sa dokumentasyon
-└── tl/
+├── en/                      # Pangunahing source of truth
+│   ├── common.json          # Web app UI, buttons, headers
+│   ├── errors.json          # Mga mensahe ng error codes
+│   ├── cli.json             # Mga flag at help text sa CLI
+│   └── docs.json            # Navigation categories at titles
+└── tl/                      # Salin sa Tagalog / Filipino
     ├── common.json
     ├── errors.json
     ├── cli.json
-    └── docs.json
+    ├── docs.json
+    └── docs/                # Isinaling documentation markdown files
 ```
 
-## Errors
+---
 
-| Code | Dahilan | Solusyon |
-|---|---|---|
-| `E_UNSUPPORTED_LOCALE` | Hindi suportado ang hiniling na wika sa catalog | Pumili ng suportadong wika (hal. `en`, `tl`) |
-| `missing_translation_key` | Umiiral ang key sa `en` ngunit wala sa target catalog | Idagdag ang nawawalang key at salin sa target catalog |
+## 3. Mahigpit na Panuntunan sa Pagsasalin
 
-## For agents
+1. **Huwag Baguhin ang mga Key**: Huwag kailanman palitan ang pangalan ng mga JSON key. Ang mga value lamang ang isinasalin.
+2. **Panatilihin ang mga Variable Placeholder**: Ang mga variable na nasa loob ng double curly braces (tulad ng `{{from}}`, `{{to}}`, `{{count}}`, `{{limit}}`, `{{maxBytes}}`) ay hindi dapat palitan.
+3. **Ligtas na Plain Text**: Bawal magsama ng raw HTML tags (`<script>`, `<a>`) sa mga salin.
+4. **Katumpakan ng mga Teknikal na Termino**: Ang mga error code (`E_UNSAFE_SVG`), CLI flags (`--to`, `--scale`), at format names (`WebP`, `AVIF`, `SVG`) ay nananatili sa kanilang orihinal na anyo.
 
-```json
-{
-  "system": "i18n",
-  "engine": "@zapwebp/shared",
-  "catalogs": ["common.json", "errors.json", "cli.json", "docs.json"],
-  "validator": "scripts/validate-locales.js",
-  "locales": ["en", "tl"]
-}
-```
+---
 
-## Related
+## 4. Paano Mag-ambag ng Bagong Wika
 
-- [Contributing](/contributing): Daloy ng trabaho sa pag-ambag ng code.
-- [Code of Conduct](/code-of-conduct): Mga pamantayan sa pakikipag-ugnayan sa komunidad.
-- [About](/about): Kasaysayan at layunin ng proyekto.
+1. Gumawa ng bagong folder sa ilalim ng `locales/` gamit ang ISO 639-1 code (halimbawa: `locales/es`).
+2. Kopyahin ang mga JSON file mula sa `locales/en/` patungo sa bagong folder.
+3. Isalin ang mga string value sa iyong wika.
+4. Patakbuhin ang validator: `pnpm run validate-locales`.
+5. Magbukas ng pull request sa GitHub.
+
+---
+
+## 5. Talaan ng mga Kinikilalang Tagasalin
+
+Pinasasalamatan namin ang mga miyembro ng komunidad na tumutulong magpanatili ng mga salin ng Zapwebp:
+- **English**: Eldrex Delos Reyes Bula (@eldrex)
+- **Tagalog / Filipino**: Eldrex Delos Reyes Bula (@eldrex), Mga Kontribyutor ng Komunidad

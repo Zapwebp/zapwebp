@@ -4,7 +4,7 @@ Covers: zero-dependency streaming request handlers para sa Cloudflare Workers, V
 
 Does not cover: Node.js native addon compilation.
 
-Applies to: `@zapwebp/edge` v1.0.0 at mas bago.
+Applies to: `@zapwebp/edge` v2.0.0 at mas bago.
 
 ## Quick start
 
