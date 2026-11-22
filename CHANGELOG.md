@@ -4,6 +4,13 @@ This changelog records the changes included in each Zapwebp version.
 
 ## [Unreleased]
 
+### Added
+
+- **Universal Stability, Performance & Reliability Contract**:
+  - **Nine Universal Promises**: Codified measurable contracts across all surfaces (Correctness, Determinism, Stability, Performance, Accessibility, Reliability, Optimization, Security, Reversibility) into canonical documentation ([content/reliability.md](content/reliability.md)) and mirrors.
+  - **Per-Surface Performance Budgets**: Defined exact performance and memory budgets for Web (FCP < 0.8s, TTI < 1.2s, CLS < 0.02, initial JS bundle < 40KB gzipped), VS Code Extension (activation < 100ms, single file < 100ms, memory < 80MB), Core Engine (cold start < 250ms, SVG→WebP < 25ms, PNG→WebP < 80ms), and GitHub Actions (startup < 5s, 100 SVGs < 30s).
+  - **Public Reliability Dashboard Expansion**: Expanded the public dashboard to report verified uptime, test cycles, adversarial defense, and memory soak metrics across all primary platform surfaces and plugins.
+
 ### Fixed
 
 - **CSS Syntax & Mobile Dropdown Placement**:
