@@ -1,6 +1,6 @@
 {
   "name": "@zapwebp/ui",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Universal Error & Upload UI kit, design system tokens, and accessible UI primitives for Zapwebp",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -37,6 +37,26 @@
       "types": "./src/components/progress.d.ts",
       "default": "./src/components/progress.js"
     },
+    "./format-selector": {
+      "types": "./src/components/format-selector.d.ts",
+      "default": "./src/components/format-selector.js"
+    },
+    "./quality-slider": {
+      "types": "./src/components/quality-slider.d.ts",
+      "default": "./src/components/quality-slider.js"
+    },
+    "./diff-viewer": {
+      "types": "./src/components/diff-viewer.d.ts",
+      "default": "./src/components/diff-viewer.js"
+    },
+    "./result-card": {
+      "types": "./src/components/result-card.d.ts",
+      "default": "./src/components/result-card.js"
+    },
+    "./batch-bar": {
+      "types": "./src/components/batch-bar.d.ts",
+      "default": "./src/components/batch-bar.js"
+    },
     "./errors": {
       "types": "./src/errors/index.d.ts",
       "default": "./src/errors/index.js"
@@ -56,6 +76,18 @@
     "./svelte": {
       "types": "./src/frameworks/svelte.d.ts",
       "default": "./src/frameworks/svelte.js"
+    },
+    "./solid": {
+      "types": "./src/frameworks/solid.d.ts",
+      "default": "./src/frameworks/solid.js"
+    },
+    "./astro": {
+      "types": "./src/frameworks/astro.d.ts",
+      "default": "./src/frameworks/astro.js"
+    },
+    "./angular": {
+      "types": "./src/frameworks/angular.d.ts",
+      "default": "./src/frameworks/angular.js"
     },
     "./blade": {
       "types": "./src/frameworks/blade/index.d.ts",
@@ -88,7 +120,7 @@
   "homepage": "https://zapwebp.vercel.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Zapwebp/ui.git"
+    "url": "git+https://github.com/Zapwebp/ui.git"
   },
   "publishConfig": {
     "access": "public"
