@@ -12,6 +12,11 @@ const { ZapErrorCard, renderZapErrorCard } = require('./components/card');
 const { ZapDropzone, renderZapDropzone } = require('./components/dropzone');
 const { ZapUploadButton, renderZapUploadButton } = require('./components/button');
 const { ZapUploadProgress, renderZapUploadProgress } = require('./components/progress');
+const { ZapFormatSelector, renderZapFormatSelector } = require('./components/format-selector');
+const { ZapQualitySlider, renderZapQualitySlider } = require('./components/quality-slider');
+const { ZapDiffViewer, renderZapDiffViewer } = require('./components/diff-viewer');
+const { ZapFileCard, renderZapFileCard } = require('./components/result-card');
+const { ZapBatchBar, renderZapBatchBar } = require('./components/batch-bar');
 const { defineCustomElements } = require('./components/custom-elements');
 const { createZapStore, useZapStore } = require('./state');
 
@@ -38,6 +43,16 @@ module.exports = {
   renderZapUploadButton,
   ZapUploadProgress,
   renderZapUploadProgress,
+  ZapFormatSelector,
+  renderZapFormatSelector,
+  ZapQualitySlider,
+  renderZapQualitySlider,
+  ZapDiffViewer,
+  renderZapDiffViewer,
+  ZapFileCard,
+  renderZapFileCard,
+  ZapBatchBar,
+  renderZapBatchBar,
 
   // Custom Elements
   defineCustomElements,

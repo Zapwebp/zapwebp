@@ -616,6 +616,554 @@
 }
 
 /* ==========================================================================
+   Checkerboard Alpha Transparency
+   ========================================================================== */
+
+.zap-checkerboard-wrap {
+  background-color: #121510;
+  background-image: 
+    linear-gradient(45deg, #181c15 25%, transparent 25%),
+    linear-gradient(-45deg, #181c15 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #181c15 75%),
+    linear-gradient(-45deg, transparent 75%, #181c15 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* ==========================================================================
+   Component 8: ZapFormatSelector
+   ========================================================================== */
+
+.zap-format-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--zap-border);
+  padding: 4px;
+  border-radius: var(--zap-radius);
+  font-family: var(--zap-font);
+}
+
+.zap-fmt-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--zap-muted);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: calc(var(--zap-radius) - 2px);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.zap-fmt-pill:hover {
+  color: var(--zap-ink);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.zap-fmt-pill.is-active {
+  background: var(--zap-primary);
+  color: #0d0f0c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.zap-fmt-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   Component 9: ZapQualitySlider
+   ========================================================================== */
+
+.zap-quality-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--zap-font);
+  width: 100%;
+}
+
+.zap-quality-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zap-quality-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--zap-muted);
+}
+
+.zap-quality-readout-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zap-quality-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--zap-primary);
+  font-family: var(--zap-font-mono);
+}
+
+.zap-quality-badge-lossless {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(141, 198, 63, 0.15);
+  border: 1px solid rgba(141, 198, 63, 0.3);
+  color: var(--zap-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.zap-slider-track-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.zap-quality-range-input {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--zap-border);
+  outline: none;
+  cursor: pointer;
+  accent-color: var(--zap-primary);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.zap-quality-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--zap-primary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Component 10: ZapDiffViewer
+   ========================================================================== */
+
+.zap-diff-viewer {
+  position: relative;
+  width: 100%;
+  border-radius: var(--zap-radius);
+  overflow: hidden;
+  border: 1px solid var(--zap-border);
+  box-shadow: var(--zap-shadow);
+  font-family: var(--zap-font);
+}
+
+.zap-diff-stage {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+}
+
+.zap-diff-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.zap-diff-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.zap-diff-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--zap-primary);
+  cursor: ew-resize;
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+.zap-diff-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--zap-primary);
+  color: #0d0f0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.zap-diff-badge {
+  position: absolute;
+  top: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.zap-diff-badge-before { left: 12px; }
+.zap-diff-badge-after { right: 12px; }
+
+/* Side by Side Mode */
+.zap-diff-viewer.mode-side-by-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.zap-diff-panel {
+  position: relative;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--zap-radius);
+}
+
+/* ==========================================================================
+   Component 11: ZapFileCard
+   ========================================================================== */
+
+.zap-file-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: var(--zap-radius);
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  box-shadow: var(--zap-shadow);
+  font-family: var(--zap-font);
+  transition: border-color 150ms ease, transform 150ms ease;
+  position: relative;
+}
+
+.zap-file-card:hover {
+  border-color: var(--zap-primary);
+  transform: translateY(-1px);
+}
+
+.zap-file-thumb-wrap {
+  width: 100%;
+  height: 120px;
+  border-radius: calc(var(--zap-radius) - 4px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.zap-file-thumb {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.zap-file-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--zap-ink);
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zap-file-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--zap-muted);
+  margin-bottom: 12px;
+}
+
+.zap-file-sizes {
+  font-family: var(--zap-font-mono);
+}
+
+.zap-file-savings {
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+}
+
+.zap-file-savings.is-reduced {
+  background: var(--zap-success-bg);
+  color: var(--zap-primary);
+  border: 1px solid var(--zap-success-border);
+}
+
+.zap-file-savings.is-expanded {
+  background: var(--zap-warning-bg);
+  color: var(--zap-warning);
+}
+
+.zap-file-actions-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--zap-border);
+}
+
+.zap-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--zap-border);
+  background: var(--zap-surface);
+  color: var(--zap-muted);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.zap-action-btn:hover {
+  color: var(--zap-ink);
+  border-color: var(--zap-primary);
+  background: var(--zap-bg);
+}
+
+.zap-action-btn.zap-action-download:hover {
+  background: var(--zap-primary);
+  color: #0d0f0c;
+  border-color: var(--zap-primary);
+}
+
+.zap-action-btn.zap-action-delete:hover {
+  color: var(--zap-error);
+  border-color: var(--zap-error);
+  background: var(--zap-error-bg);
+}
+
+/* ==========================================================================
+   Component 12: ZapBatchBar
+   ========================================================================== */
+
+.zap-batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  border-radius: var(--zap-radius);
+  font-family: var(--zap-font);
+}
+
+.zap-batch-info-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--zap-ink);
+}
+
+.zap-batch-count strong {
+  color: var(--zap-primary);
+}
+
+.zap-batch-dot {
+  color: var(--zap-muted);
+}
+
+.zap-batch-flow {
+  font-family: var(--zap-font-mono);
+  font-size: 12px;
+  color: var(--zap-muted);
+}
+
+.zap-batch-savings {
+  font-weight: 700;
+  color: var(--zap-primary);
+}
+
+.zap-batch-fmt-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--zap-bg);
+  border: 1px solid var(--zap-border);
+  color: var(--zap-muted);
+}
+
+.zap-batch-actions-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zap-batch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.zap-batch-add,
+.zap-batch-delete-all {
+  background: var(--zap-surface);
+  border: 1px solid var(--zap-border);
+  color: var(--zap-ink);
+}
+
+.zap-batch-add:hover {
+  border-color: var(--zap-primary);
+}
+
+.zap-batch-delete-all:hover {
+  color: var(--zap-error);
+  border-color: var(--zap-error);
+}
+
+.zap-batch-download-all {
+  background: var(--zap-primary);
+  border: 1px solid var(--zap-primary);
+  color: #0d0f0c;
+  font-weight: 700;
+}
+
+.zap-batch-download-all:hover {
+  background: var(--zap-primary-hover);
+}
+
+.zap-view-toggle-wrap {
+  display: inline-flex;
+  border: 1px solid var(--zap-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.zap-view-btn {
+  padding: 6px 10px;
+  border: none;
+  background: var(--zap-surface);
+  color: var(--zap-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zap-view-btn.is-active {
+  background: var(--zap-border);
+  color: var(--zap-ink);
+}
+
+/* ==========================================================================
+   Universal Responsive Media Queries (<640px and <480px)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .zap-format-selector {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .zap-fmt-pill {
+    min-height: 44px;
+    padding: 6px;
+  }
+
+  .zap-diff-stage {
+    height: 260px;
+  }
+
+  .zap-diff-viewer.mode-side-by-side {
+    grid-template-columns: 1fr;
+  }
+
+  .zap-batch-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zap-batch-actions-cluster {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .zap-batch-download-all {
+    width: 100%;
+    order: -1;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .zap-action-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .zap-diff-stage {
+    height: 220px;
+  }
+
+  .zap-batch-info-cluster {
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================================================
    Accessibility & Reduced Motion
    ========================================================================== */
 

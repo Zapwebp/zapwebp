@@ -12,6 +12,11 @@ const BLADE_COMPONENTS = [
   'card',
   'button',
   'progress',
+  'format-selector',
+  'quality-slider',
+  'diff-viewer',
+  'result-card',
+  'batch-bar',
 ];
 
 /**

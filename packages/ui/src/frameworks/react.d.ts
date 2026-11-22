@@ -1,19 +1,22 @@
-import { ZapErrorInfo, ShowErrorOptions } from '../errors';
-import { ZapStore } from '../state';
-
-export declare function useZapError(): {
-  showError: (codeOrError: string | Error, context?: Record<string, any>, options?: ShowErrorOptions) => any;
+export function useZapError(): {
+  showError: (codeOrError: string | Error, context?: Record<string, any>, options?: Record<string, any>) => any;
   dismissAll: () => void;
-  resolveError: (code: string | Error, context?: Record<string, any>) => ZapErrorInfo;
+  resolveError: (code: string, context?: Record<string, any>) => any;
 };
 
-export declare function useZapStore(): ZapStore;
+export function useZapStore(customStore?: any): any;
+export function showError(codeOrError: string | Error, context?: Record<string, any>, options?: Record<string, any>): any;
+export function dismissAllErrors(): void;
 
-export declare const ZapToast: any;
-export declare const ZapBanner: any;
-export declare const ZapModal: any;
-export declare const ZapErrorCard: any;
-export declare const ZapDropzone: any;
-export declare const ZapUploadButton: any;
-export declare const ZapUploadProgress: any;
-
+export const ZapToast: (props?: any) => any;
+export const ZapBanner: (props?: any) => any;
+export const ZapModal: (props?: any) => any;
+export const ZapErrorCard: (props?: any) => any;
+export const ZapDropzone: (props?: any) => any;
+export const ZapUploadButton: (props?: any) => any;
+export const ZapUploadProgress: (props?: any) => any;
+export const ZapFormatSelector: (props?: any) => any;
+export const ZapQualitySlider: (props?: any) => any;
+export const ZapDiffViewer: (props?: any) => any;
+export const ZapFileCard: (props?: any) => any;
+export const ZapBatchBar: (props?: any) => any;

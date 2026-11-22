@@ -1,15 +1,17 @@
-import { ZapErrorInfo, ShowErrorOptions } from '../errors';
+export function zapDropzone(node: HTMLElement, options?: any): { destroy: () => void };
+export function showError(codeOrError: string | Error, context?: Record<string, any>, options?: Record<string, any>): any;
+export function dismissAllErrors(): void;
+export function resolveError(code: string, context?: Record<string, any>): any;
 
-export declare function zapDropzone(node: HTMLElement, options?: any): { destroy: () => void };
-export declare function showError(codeOrError: string | Error, context?: Record<string, any>, options?: ShowErrorOptions): any;
-export declare function dismissAllErrors(): void;
-export declare function resolveError(code: string | Error, context?: Record<string, any>): ZapErrorInfo;
-
-export declare const ZapToast: any;
-export declare const ZapBanner: any;
-export declare const ZapModal: any;
-export declare const ZapErrorCard: any;
-export declare const ZapDropzone: any;
-export declare const ZapUploadButton: any;
-export declare const ZapUploadProgress: any;
-
+export const ZapToast: any;
+export const ZapBanner: any;
+export const ZapModal: any;
+export const ZapErrorCard: any;
+export const ZapDropzone: any;
+export const ZapUploadButton: any;
+export const ZapUploadProgress: any;
+export const ZapFormatSelector: any;
+export const ZapQualitySlider: any;
+export const ZapDiffViewer: any;
+export const ZapFileCard: any;
+export const ZapBatchBar: any;

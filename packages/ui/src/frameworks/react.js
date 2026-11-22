@@ -13,6 +13,11 @@ const { ZapErrorCard: VanillaErrorCard } = require('../components/card');
 const { ZapDropzone: VanillaDropzone } = require('../components/dropzone');
 const { ZapUploadButton: VanillaUploadButton } = require('../components/button');
 const { ZapUploadProgress: VanillaProgress } = require('../components/progress');
+const { ZapFormatSelector: VanillaFormatSelector } = require('../components/format-selector');
+const { ZapQualitySlider: VanillaQualitySlider } = require('../components/quality-slider');
+const { ZapDiffViewer: VanillaDiffViewer } = require('../components/diff-viewer');
+const { ZapFileCard: VanillaFileCard } = require('../components/result-card');
+const { ZapBatchBar: VanillaBatchBar } = require('../components/batch-bar');
 const { useZapStore } = require('../state');
 
 /**
@@ -58,6 +63,11 @@ const ZapErrorCard = createReactWrapper(VanillaErrorCard);
 const ZapDropzone = createReactWrapper(VanillaDropzone);
 const ZapUploadButton = createReactWrapper(VanillaUploadButton);
 const ZapUploadProgress = createReactWrapper(VanillaProgress);
+const ZapFormatSelector = createReactWrapper(VanillaFormatSelector);
+const ZapQualitySlider = createReactWrapper(VanillaQualitySlider);
+const ZapDiffViewer = createReactWrapper(VanillaDiffViewer);
+const ZapFileCard = createReactWrapper(VanillaFileCard);
+const ZapBatchBar = createReactWrapper(VanillaBatchBar);
 
 module.exports = {
   useZapError,
@@ -71,5 +81,10 @@ module.exports = {
   ZapDropzone,
   ZapUploadButton,
   ZapUploadProgress,
+  ZapFormatSelector,
+  ZapQualitySlider,
+  ZapDiffViewer,
+  ZapFileCard,
+  ZapBatchBar,
 };
 

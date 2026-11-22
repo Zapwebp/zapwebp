@@ -249,23 +249,85 @@ test('UI State: createZapStore transitions states and tracks conversions', async
   unsubscribe();
 });
 
-test('UI Frameworks: React, Vue, Svelte, and Blade adapters export correctly', () => {
+test('UI Frameworks: React, Vue, Svelte, Blade, Solid, Astro, and Angular adapters export correctly', () => {
   const react = require('../src/frameworks/react');
   assert.ok(typeof react.useZapError === 'function');
   assert.ok(typeof react.useZapStore === 'function');
   assert.ok(typeof react.ZapDropzone === 'function');
+  assert.ok(typeof react.ZapFormatSelector === 'function');
+  assert.ok(typeof react.ZapDiffViewer === 'function');
 
   const vue = require('../src/frameworks/vue');
   assert.ok(typeof vue.useZapError === 'function');
   assert.ok(vue.ZapDropzone.name === 'ZapDropzone');
+  assert.ok(vue.ZapFormatSelector.name === 'ZapFormatSelector');
 
   const svelte = require('../src/frameworks/svelte');
   assert.ok(typeof svelte.zapDropzone === 'function');
+  assert.ok(typeof svelte.ZapFormatSelector === 'function');
+
+  const solid = require('../src/frameworks/solid');
+  assert.ok(typeof solid.useZapError === 'function');
+  assert.ok(typeof solid.ZapDropzone === 'function');
+  assert.ok(typeof solid.ZapDiffViewer === 'function');
+
+  const astro = require('../src/frameworks/astro');
+  assert.ok(typeof astro.ZapDropzone === 'function');
+  assert.ok(typeof astro.ZapFormatSelector === 'function');
+  assert.match(astro.ZapFormatSelector(), /zap-format-selector/);
+
+  const angular = require('../src/frameworks/angular');
+  assert.ok(typeof angular.provideZapUi === 'function');
+  assert.ok(typeof angular.ZapUiService === 'function');
 
   const blade = require('../src/frameworks/blade');
   assert.ok(blade.BLADE_COMPONENTS.includes('dropzone'));
   assert.ok(blade.BLADE_COMPONENTS.includes('toast'));
   assert.ok(blade.BLADE_COMPONENTS.includes('modal'));
+  assert.ok(blade.BLADE_COMPONENTS.includes('format-selector'));
+  assert.ok(blade.BLADE_COMPONENTS.includes('quality-slider'));
+  assert.ok(blade.BLADE_COMPONENTS.includes('diff-viewer'));
+  assert.ok(blade.BLADE_COMPONENTS.includes('result-card'));
+  assert.ok(blade.BLADE_COMPONENTS.includes('batch-bar'));
   const dropzoneTmpl = blade.getBladeTemplate('dropzone');
   assert.match(dropzoneTmpl, /<zap-dropzone/);
+  const formatTmpl = blade.getBladeTemplate('format-selector');
+  assert.match(formatTmpl, /zap-format-selector/);
+});
+
+test('UI Components: renders FormatSelector, QualitySlider, DiffViewer, FileCard, and BatchBar', () => {
+  // 1. FormatSelector
+  const fmtHtml = ui.renderZapFormatSelector({ selected: 'avif' });
+  assert.match(fmtHtml, /role="radiogroup"/);
+  assert.match(fmtHtml, /data-format="avif"/);
+  assert.match(fmtHtml, /is-active/);
+
+  // 2. QualitySlider
+  const sliderHtml = ui.renderZapQualitySlider({ value: 100 });
+  assert.match(sliderHtml, /type="range"/);
+  assert.match(sliderHtml, /100%/);
+  assert.match(sliderHtml, /Lossless/);
+
+  // 3. DiffViewer
+  const diffSplitHtml = ui.renderZapDiffViewer({ beforeSrc: 'before.png', afterSrc: 'after.webp', splitPercent: 40 });
+  assert.match(diffSplitHtml, /mode-split/);
+  assert.match(diffSplitHtml, /left: 40%/);
+  assert.match(diffSplitHtml, /role="slider"/);
+
+  const diffSideHtml = ui.renderZapDiffViewer({ beforeSrc: 'before.png', afterSrc: 'after.webp', mode: 'side-by-side' });
+  assert.match(diffSideHtml, /mode-side-by-side/);
+
+  // 4. FileCard
+  const cardHtml = ui.renderZapFileCard({ filename: 'hero.png', originalSize: '1.2 MB', outputSize: '120 KB', savingsPct: 90 });
+  assert.match(cardHtml, /hero\.png/);
+  assert.match(cardHtml, /1\.2 MB → 120 KB/);
+  assert.match(cardHtml, /-90%/);
+  assert.match(cardHtml, /data-action="download"/);
+
+  // 5. BatchBar
+  const batchHtml = ui.renderZapBatchBar({ fileCount: 5, totalOriginal: '10 MB', totalOutput: '1 MB', savingsPct: 90 });
+  assert.match(batchHtml, /role="toolbar"/);
+  assert.match(batchHtml, /<strong>5<\/strong> files converted/);
+  assert.match(batchHtml, /10 MB → 1 MB/);
+  assert.match(batchHtml, /Download all \(ZIP\)/);
 });

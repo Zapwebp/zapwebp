@@ -13,6 +13,11 @@ const { ZapErrorCard: VanillaErrorCard } = require('../components/card');
 const { ZapDropzone: VanillaDropzone } = require('../components/dropzone');
 const { ZapUploadButton: VanillaUploadButton } = require('../components/button');
 const { ZapUploadProgress: VanillaProgress } = require('../components/progress');
+const { ZapFormatSelector: VanillaFormatSelector } = require('../components/format-selector');
+const { ZapQualitySlider: VanillaQualitySlider } = require('../components/quality-slider');
+const { ZapDiffViewer: VanillaDiffViewer } = require('../components/diff-viewer');
+const { ZapFileCard: VanillaFileCard } = require('../components/result-card');
+const { ZapBatchBar: VanillaBatchBar } = require('../components/batch-bar');
 const { useZapStore } = require('../state');
 
 function useZapError() {
@@ -54,6 +59,11 @@ const ZapErrorCard = createVueComponent(VanillaErrorCard, 'ZapErrorCard');
 const ZapDropzone = createVueComponent(VanillaDropzone, 'ZapDropzone');
 const ZapUploadButton = createVueComponent(VanillaUploadButton, 'ZapUploadButton');
 const ZapUploadProgress = createVueComponent(VanillaProgress, 'ZapUploadProgress');
+const ZapFormatSelector = createVueComponent(VanillaFormatSelector, 'ZapFormatSelector');
+const ZapQualitySlider = createVueComponent(VanillaQualitySlider, 'ZapQualitySlider');
+const ZapDiffViewer = createVueComponent(VanillaDiffViewer, 'ZapDiffViewer');
+const ZapFileCard = createVueComponent(VanillaFileCard, 'ZapFileCard');
+const ZapBatchBar = createVueComponent(VanillaBatchBar, 'ZapBatchBar');
 
 module.exports = {
   useZapError,
@@ -67,5 +77,10 @@ module.exports = {
   ZapDropzone,
   ZapUploadButton,
   ZapUploadProgress,
+  ZapFormatSelector,
+  ZapQualitySlider,
+  ZapDiffViewer,
+  ZapFileCard,
+  ZapBatchBar,
 };
 

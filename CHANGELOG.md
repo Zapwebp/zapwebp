@@ -6,6 +6,22 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **`@zapwebp/ui` UI Kit Expansion & Framework Adapters**:
+  - **New Framework Adapters**: Added official adapters and typed declarations for **Solid.js** (`@zapwebp/ui/solid`), **Astro** (`@zapwebp/ui/astro`), and **Angular** (`@zapwebp/ui/angular`), augmenting existing React, Vue, Svelte, and Blade integrations.
+  - **5 Core Conversion UI Primitives**: Introduced standalone component renderers, Web Components, and CSS tokens for:
+    - `ZapFormatSelector` (`<zap-format-selector>`): Accessible segmented format picker with keyboard shortcuts (1–4) and lossless badges.
+    - `ZapQualitySlider` (`<zap-quality-slider>`): Accessible slider with live percentage indicator and contextual lossless status.
+    - `ZapDiffViewer` (`<zap-diff-viewer>`): High-contrast split visual diff comparison with checkered alpha backdrop.
+    - `ZapFileCard` (`<zap-file-card>`): Converted asset card featuring thumbnail preview, dimensions, delta badges, and action toolbar.
+    - `ZapBatchBar` (`<zap-batch-bar>`): Batch conversion summary toolbar featuring aggregate size savings, Add more, Download all (ZIP), Delete all, and grid/list view toggles.
+  - **Blade Component Templates**: Added Blade templates for Laravel in `packages/ui/src/frameworks/blade/` (`format-selector.blade.php`, `quality-slider.blade.php`, `diff-viewer.blade.php`, `result-card.blade.php`, `batch-bar.blade.php`).
+  - **Custom Element Registry**: Registered all 5 components in `packages/ui/src/components/custom-elements.js`.
+
+- **Web UI Responsiveness & Touch Ergonomics (`public/styles.css`)**:
+  - **Fluid 2-Column Mobile Grid**: Preserved clean 2-column layout (`repeat(2, minmax(0, 1fr))`) between 340px and 640px, ensuring compact card arrangement on mobile devices without vertical ballooning.
+  - **Mobile Dialog Viewport Clamping**: Clamped `.crop-dialog` and `.reports-modal-panel` to `95vw` and `92dvh` with smooth momentum-scrolling aspect ratio pills and responsive metrics grid.
+  - **44px Touch Targets & Action Stacking**: Ensured all action buttons on `.result-card`, `.batch-header-bar`, `.crop-dialog`, and `.reports-modal-panel` meet WCAG 2.2 AA 44×44px minimum tap target requirements.
+
 - **Documentation Architecture & Ecosystem Directory Relocation**:
   - **Clean Documentation Footer (`zapwebp-docs/src/render.ts`)**: Removed the heavy 4-column sitemap grid ("Explore Zapwebp Architecture & Ecosystem") from the bottom of documentation articles (`/docs`, `/mcp`, etc.), resolving bottom clutter while preserving the helpful article meta row (raw markdown link, GitHub issue link, translation contribution, and back-to-top action) alongside the brand and zero-telemetry trust bar.
   - **Landing Page Ecosystem Directory (`public/hero.html`, `zapwebp-docs/index.html`)**: Transferred the full 4-column directory (`Core Engine`, `Plugins & Frameworks`, `Developer SDKs & API`, `Platform & Governance`) to the landing page right after the Quick Start section, styled with tactile card surfaces, tokenized borders, badges, and responsive multi-column layouts.

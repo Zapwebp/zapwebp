@@ -7,6 +7,11 @@ const { ZapErrorCard } = require('./card');
 const { ZapDropzone } = require('./dropzone');
 const { ZapUploadButton } = require('./button');
 const { ZapUploadProgress } = require('./progress');
+const { ZapFormatSelector } = require('./format-selector');
+const { ZapQualitySlider } = require('./quality-slider');
+const { ZapDiffViewer } = require('./diff-viewer');
+const { ZapFileCard } = require('./result-card');
+const { ZapBatchBar } = require('./batch-bar');
 const { resolveError } = require('../errors');
 
 function defineCustomElements() {
@@ -229,6 +234,109 @@ function defineCustomElements() {
           failed,
         });
         prog.mount(this);
+      }
+    });
+  }
+
+  // 8. <zap-format-selector>
+  if (!customElements.get('zap-format-selector')) {
+    customElements.define('zap-format-selector', class extends HTMLElement {
+      connectedCallback() {
+        const selected = this.getAttribute('selected') || 'webp';
+        const showBadges = this.hasAttribute('show-badges');
+        const selector = new ZapFormatSelector({
+          selected,
+          showBadges,
+        });
+        selector.mount(this);
+      }
+    });
+  }
+
+  // 9. <zap-quality-slider>
+  if (!customElements.get('zap-quality-slider')) {
+    customElements.define('zap-quality-slider', class extends HTMLElement {
+      connectedCallback() {
+        const value = Number(this.getAttribute('value')) || 85;
+        const min = Number(this.getAttribute('min')) || 1;
+        const max = Number(this.getAttribute('max')) || 100;
+        const label = this.getAttribute('label') || 'Quality';
+
+        const slider = new ZapQualitySlider({
+          value,
+          min,
+          max,
+          label,
+        });
+        slider.mount(this);
+      }
+    });
+  }
+
+  // 10. <zap-diff-viewer>
+  if (!customElements.get('zap-diff-viewer')) {
+    customElements.define('zap-diff-viewer', class extends HTMLElement {
+      connectedCallback() {
+        const beforeSrc = this.getAttribute('before-src') || '';
+        const afterSrc = this.getAttribute('after-src') || '';
+        const mode = this.getAttribute('mode') || 'split';
+        const splitPercent = Number(this.getAttribute('split-percent')) || 50;
+
+        const viewer = new ZapDiffViewer({
+          beforeSrc,
+          afterSrc,
+          mode,
+          splitPercent,
+        });
+        viewer.mount(this);
+      }
+    });
+  }
+
+  // 11. <zap-file-card>
+  if (!customElements.get('zap-file-card')) {
+    customElements.define('zap-file-card', class extends HTMLElement {
+      connectedCallback() {
+        const filename = this.getAttribute('filename') || 'image.png';
+        const originalSize = this.getAttribute('original-size') || '0 B';
+        const outputSize = this.getAttribute('output-size') || '0 B';
+        const savingsPct = Number(this.getAttribute('savings-pct')) || 0;
+        const format = this.getAttribute('format') || 'webp';
+        const thumbnailSrc = this.getAttribute('thumbnail-src') || '';
+
+        const card = new ZapFileCard({
+          filename,
+          originalSize,
+          outputSize,
+          savingsPct,
+          format,
+          thumbnailSrc,
+        });
+        card.mount(this);
+      }
+    });
+  }
+
+  // 12. <zap-batch-bar>
+  if (!customElements.get('zap-batch-bar')) {
+    customElements.define('zap-batch-bar', class extends HTMLElement {
+      connectedCallback() {
+        const fileCount = Number(this.getAttribute('file-count')) || 0;
+        const totalOriginal = this.getAttribute('total-original') || '0 B';
+        const totalOutput = this.getAttribute('total-output') || '0 B';
+        const savingsPct = Number(this.getAttribute('savings-pct')) || 0;
+        const format = this.getAttribute('format') || 'WEBP';
+        const view = this.getAttribute('view') || 'grid';
+
+        const bar = new ZapBatchBar({
+          fileCount,
+          totalOriginal,
+          totalOutput,
+          savingsPct,
+          format,
+          view,
+        });
+        bar.mount(this);
       }
     });
   }

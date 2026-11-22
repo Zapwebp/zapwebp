@@ -13,6 +13,11 @@ const { ZapModal } = require('../components/modal');
 const { ZapErrorCard } = require('../components/card');
 const { ZapUploadButton } = require('../components/button');
 const { ZapUploadProgress } = require('../components/progress');
+const { ZapFormatSelector } = require('../components/format-selector');
+const { ZapQualitySlider } = require('../components/quality-slider');
+const { ZapDiffViewer } = require('../components/diff-viewer');
+const { ZapFileCard } = require('../components/result-card');
+const { ZapBatchBar } = require('../components/batch-bar');
 
 /**
  * Svelte Action for ZapDropzone
@@ -49,5 +54,10 @@ module.exports = {
   ZapDropzone,
   ZapUploadButton,
   ZapUploadProgress,
+  ZapFormatSelector,
+  ZapQualitySlider,
+  ZapDiffViewer,
+  ZapFileCard,
+  ZapBatchBar,
 };
 
