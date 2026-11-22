@@ -1861,3 +1861,184 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   shadcn/ui Minimal Clean Components & Utilities
+   ========================================================================== */
+.docs-frontmatter-hero {
+  margin-bottom: 24px;
+}
+.docs-hero-title {
+  font-size: clamp(2rem, 1.7rem + 1.2vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+.docs-hero-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+/* Callout */
+.shadcn-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin: 20px 0 24px 0;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.shadcn-callout .callout-icon-wrap {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+.shadcn-callout .callout-content-wrap {
+  flex: 1;
+}
+.shadcn-callout .callout-content-wrap p {
+  margin: 0;
+}
+.shadcn-callout .callout-content-wrap p + p {
+  margin-top: 8px;
+}
+.shadcn-callout.border-emerald-600,
+.shadcn-callout.bg-emerald-100 {
+  border-color: rgba(141, 198, 63, 0.45);
+  background: rgba(141, 198, 63, 0.08);
+}
+[data-theme="dark"] .shadcn-callout.border-emerald-600,
+[data-theme="dark"] .shadcn-callout.bg-emerald-100,
+[data-theme="dark"] .shadcn-callout.dark\:border-emerald-400,
+[data-theme="dark"] .shadcn-callout.dark\:bg-emerald-900 {
+  border-color: rgba(141, 198, 63, 0.35);
+  background: rgba(141, 198, 63, 0.12);
+}
+
+/* Linked Card */
+.shadcn-linked-card {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: transform 140ms var(--ease-snap), border-color 140ms var(--ease-snap), box-shadow 140ms var(--ease-snap);
+}
+.shadcn-linked-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(141, 198, 63, 0.55);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .shadcn-linked-card:hover {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+.shadcn-linked-card .font-medium {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.shadcn-linked-card .text-muted-foreground {
+  color: var(--color-text-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.shadcn-linked-card svg {
+  margin-bottom: 12px;
+  color: var(--color-text);
+}
+
+/* Buttons */
+.shadcn-btn-wrap {
+  margin: 16px 0;
+}
+.shadcn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: var(--color-accent);
+  color: #0d0f0c !important;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.shadcn-btn:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+/* Grids & Utility Layouts */
+.grid {
+  display: grid;
+  width: 100%;
+}
+.gap-4 {
+  gap: 16px;
+}
+.gap-6 {
+  gap: 24px;
+}
+.mt-6 {
+  margin-top: 24px;
+}
+.mt-8 {
+  margin-top: 32px;
+}
+.mb-6 {
+  margin-bottom: 24px;
+}
+.p-6 {
+  padding: 24px;
+}
+.text-sm {
+  font-size: 14px;
+}
+.leading-relaxed {
+  line-height: 1.6;
+}
+.font-medium {
+  font-weight: 600;
+}
+.text-muted-foreground {
+  color: var(--color-text-muted);
+}
+.h-10 {
+  height: 40px;
+}
+.w-10 {
+  width: 40px;
+}
+
+@media (min-width: 640px) {
+  .sm\:grid-cols-2,
+  .sm-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sm\:grid-cols-3,
+  .sm-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .sm\:grid-cols-2,
+  .sm\:grid-cols-3,
+  .sm-grid-cols-2,
+  .sm-grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}

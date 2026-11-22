@@ -37,6 +37,26 @@ export async function renderDoc(fileKey: string, mount: HTMLElement): Promise<vo
     throw new Error(`Document not found: ${fileKey}`);
   }
 
+  // Parse YAML Frontmatter (title, description) if present
+  let frontmatter: { title?: string; description?: string } | null = null;
+  const fmMatch = rawMarkdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
+  if (fmMatch) {
+    const fmLines = fmMatch[1].split(/\r?\n/);
+    const fm: Record<string, string> = {};
+    for (const line of fmLines) {
+      const idx = line.indexOf(':');
+      if (idx > -1) {
+        const key = line.slice(0, idx).trim();
+        const val = line.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+        fm[key] = val;
+      }
+    }
+    if (fm.title || fm.description) {
+      frontmatter = fm;
+    }
+    rawMarkdown = rawMarkdown.slice(fmMatch[0].length);
+  }
+
   // Find route metadata
   const currentPath = location.pathname.replace(/\/$/, '') || '/';
   const route = ROUTE_MAP[currentPath] || DOC_ROUTES.find((r) => r.file === fileKey) || DOC_ROUTES[0];
@@ -55,19 +75,41 @@ export async function renderDoc(fileKey: string, mount: HTMLElement): Promise<vo
   const temp = document.createElement('div');
   temp.innerHTML = parsedHtml;
 
+  // Prepend frontmatter header if parsed
+  if (frontmatter) {
+    const existingH1 = temp.querySelector('h1');
+    if (!existingH1 && frontmatter.title) {
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'docs-frontmatter-hero';
+      headerDiv.innerHTML = `
+        <h1 class="docs-hero-title">${escapeHtml(frontmatter.title)}</h1>
+        ${frontmatter.description ? `<p class="docs-hero-description">${escapeHtml(frontmatter.description)}</p>` : ''}
+      `;
+      temp.prepend(headerDiv);
+    } else if (existingH1 && frontmatter.description) {
+      const descP = document.createElement('p');
+      descP.className = 'docs-hero-description';
+      descP.textContent = frontmatter.description;
+      existingH1.after(descP);
+    }
+  }
+
   // 1. Process Scope Card (Covers, Excludes, Applies to)
   transformScopeCard(temp);
 
   // 2. Transform Admonitions / Callouts (> [!NOTE], etc.)
   transformCallouts(temp);
 
-  // 3. Transform Tables with responsive wrappers
+  // 3. Transform shadcn custom components (<Callout>, <LinkedCard>, <Button>)
+  transformCustomComponents(temp);
+
+  // 4. Transform Tables with responsive wrappers
   transformTables(temp);
 
-  // 4. Transform Code Blocks with robust single-pass syntax coloring & copy
+  // 5. Transform Code Blocks with robust single-pass syntax coloring & copy
   transformCodeBlocks(temp);
 
-  // 5. Transform Headings & build Table of Contents
+  // 6. Transform Headings & build Table of Contents
   const tocItems = transformHeadings(temp);
 
   // 6. Append transformed content
@@ -254,6 +296,68 @@ function transformCallouts(container: HTMLElement) {
         <div class="callout-body">${body}</div>
       `;
       bq.replaceWith(aside);
+    }
+  });
+}
+
+/**
+ * Transforms shadcn-style custom elements (<Callout>, <LinkedCard>, <Button>, <Link>)
+ */
+function transformCustomComponents(container: HTMLElement) {
+  // 1. Transform <Callout> or <callout>
+  container.querySelectorAll('callout, Callout').forEach((el) => {
+    const callout = document.createElement('aside');
+    const className = el.getAttribute('classname') || el.getAttribute('class') || '';
+    callout.className = `shadcn-callout ${className}`.trim();
+    callout.setAttribute('role', 'note');
+
+    callout.innerHTML = `
+      <div class="callout-icon-wrap" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </div>
+      <div class="callout-content-wrap">
+        ${el.innerHTML}
+      </div>
+    `;
+    el.replaceWith(callout);
+  });
+
+  // 2. Transform <LinkedCard> or <linkedcard>
+  container.querySelectorAll('linkedcard, LinkedCard').forEach((el) => {
+    const card = document.createElement('a');
+    const href = el.getAttribute('href') || '#';
+    const className = el.getAttribute('classname') || el.getAttribute('class') || '';
+    card.href = href;
+    card.className = `shadcn-linked-card ${className}`.trim();
+    card.innerHTML = el.innerHTML;
+    el.replaceWith(card);
+  });
+
+  // 3. Transform <Button> or <button aschild>
+  container.querySelectorAll('button[aschild], Button[asChild], button[asChild]').forEach((el) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'shadcn-btn-wrap';
+    wrapper.innerHTML = el.innerHTML;
+    const a = wrapper.querySelector('a');
+    if (a) {
+      a.classList.add('shadcn-btn', 'btn-primary');
+    }
+    el.replaceWith(wrapper);
+  });
+
+  // 4. Transform JSX className attributes on all elements to standard class
+  container.querySelectorAll('*').forEach((el) => {
+    const className = el.getAttribute('classname');
+    if (className) {
+      el.removeAttribute('classname');
+      const classes = className.split(/\s+/).filter(Boolean);
+      for (const c of classes) {
+        el.classList.add(c);
+      }
     }
   });
 }

@@ -6,6 +6,13 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **shadcn/ui Minimal Clean Design System & Custom Documentation Components**:
+  - **Custom Component Pipeline (`zapwebp-docs/src/render.ts`)**: Added support for YAML frontmatter headers (`title`, `description`) and JSX-compatible documentation primitives: `<Callout>` (with emerald and dark mode styling), `<LinkedCard>` (interactive card grids with subtle lift and border transitions), and `<Button asChild>` actions.
+  - **Minimalist Design Tokens & Styles (`zapwebp-docs/public/docs.css`)**: Styled `.shadcn-callout`, `.shadcn-linked-card`, `.shadcn-btn`, and responsive grid utilities (`.grid`, `.gap-4`, `.gap-6`, `.sm:grid-cols-2`, `.sm:grid-cols-3`) adhering to WCAG 2.2 AA contrast standards.
+  - **Index Page Experience Polish (`content/index.md`)**: Restructured documentation index with a prominent emerald callout, Starting Point cards (`Web Converter`, `Use the CLI`, `AI Agents (MCP)`), and Choose Your Framework card grid (Next.js, Vite, Laravel, VS Code).
+  - **CLI Reference Polish (`content/cli.md`)**: Elevated CLI documentation with starting point execution cards, structured subcommand reference breakdown (`init`, `undo`, `redo`, `inspect`), and complete option matrices.
+  - **Full Documentation Mirror Parity**: Propagated updates across all 4 canonical mirror trees (`content/`, `zapwebp-docs/content/`, `zapwebp-docs/public/content/`, and Tagalog mirrors in `locales/tl/docs/`, `zapwebp-docs/public/locales/tl/docs/`, `public/locales/tl/docs/`), verified by automated byte-for-byte synchronization tests.
+
 - **Hero Landing Page for Documentation Portal**:
   - **Standalone Hero Page (`public/hero.html`)**: Added a zero-framework, token-driven hero landing page at `zapwebp-docs/public/hero.html` featuring a prominent brand tagline ("Convert correctly."), 6 surface highlight cards (Browser, Terminal, AI Agents, Build Tools, Storage Adapters, Inspector), interactive terminal quick-start with one-click copy, and primary CTA directing visitors to `/docs`.
   - **Vercel Routing Governance**: Updated `zapwebp-docs/vercel.json` rewrites to map `/` to `/hero.html` while preserving catch-all `/index.html` for documentation SPA paths (`/docs`, `/cli`, `/mcp`, `/plugins/*`).

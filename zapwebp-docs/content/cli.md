@@ -6,6 +6,35 @@ Does not cover: web app, MCP server. See [MCP](/mcp).
 
 Applies to: `zap` and `zapwebp` v1.1.0 and later.
 
+<Callout className="mb-6 border-emerald-600 bg-emerald-100 dark:border-emerald-400 dark:bg-emerald-900">
+
+**Zero-Telemetry & Reversible:** The Zapwebp CLI executes 100% locally in memory with zero tracking beacons and journals every modification to `.zapwebp/journal/` for instant one-command rollbacks (`zap undo`).
+
+</Callout>
+
+Choose your preferred execution method:
+
+<div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-6">
+  <LinkedCard href="#quick-start" className="items-start gap-1 p-6 text-sm md:p-6">
+    <div className="font-medium">Run via npx</div>
+    <div className="leading-relaxed text-muted-foreground">
+      Execute on demand without a global installation: `npx zapwebp`.
+    </div>
+  </LinkedCard>
+  <LinkedCard href="#subcommand-reference" className="items-start gap-1 p-6 text-sm md:p-6">
+    <div className="font-medium">Subcommands</div>
+    <div className="leading-relaxed text-muted-foreground">
+      Explore `init`, `undo`, `redo`, `inspect`, `clean`, and `doctor`.
+    </div>
+  </LinkedCard>
+  <LinkedCard href="#options" className="items-start gap-1 p-6 text-sm md:p-6">
+    <div className="font-medium">Options Reference</div>
+    <div className="leading-relaxed text-muted-foreground">
+      Complete reference for multipliers, quality, and output targets.
+    </div>
+  </LinkedCard>
+</div>
+
 ## Quick start
 
 ```bash
@@ -36,6 +65,56 @@ Reads SVG and raster image files, converts each to the requested format, preserv
 | `inspect` | `zap inspect <image>` | Analyze image container and metadata chunks |
 | `audit` | `zap audit <command>` | Lint shell conversion commands for transparency pitfalls |
 | `explain-black-bg` | `zap explain-black-bg` | Explain ImageMagick black background bugs |
+
+## Subcommand Reference
+
+### init
+
+Initialize a Zapwebp project with `.zapwebpignore`, configuration files, and git hooks.
+
+```bash
+npx zap init [options]
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-y, --yes` | Skip prompts and accept default settings | `false` |
+| `--hook` | Install Git pre-commit hook to auto-convert staged assets | `false` |
+| `-c, --cwd <dir>` | Project working directory | Current working directory |
+
+### undo
+
+Revert the last batch conversion or a specific journal transaction ID.
+
+```bash
+npx zap undo [id] [options]
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `--force-undo` | Force rollback even if destination files were modified externally | `false` |
+| `--json` | Return JSON transaction summary of restored files | `false` |
+
+### redo
+
+Reapply a previously undone transaction.
+
+```bash
+npx zap redo [id]
+```
+
+### inspect
+
+Deep container and chunk analyzer for image assets (provided by `zapwebp-lens`).
+
+```bash
+npx zap inspect <file> [options]
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `--json` | Output machine-readable JSON structure | `false` |
+| `--chunks` | Inspect raw container binary chunks (RIFF, PNG, EXIF) | `true` |
 
 ## Options
 
