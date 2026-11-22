@@ -6006,10 +6006,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
+}
+
+.footer-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  text-decoration: none;
+}
+
+.footer-brand-link:hover {
+  color: var(--green-primary) !important;
+}
+
+.footer-logo {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .footer-minimal-inner a {

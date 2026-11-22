@@ -17,6 +17,10 @@ This changelog records the changes included in each Zapwebp version.
   - **Blade Component Templates**: Added Blade templates for Laravel in `packages/ui/src/frameworks/blade/` (`format-selector.blade.php`, `quality-slider.blade.php`, `diff-viewer.blade.php`, `result-card.blade.php`, `batch-bar.blade.php`).
   - **Custom Element Registry**: Registered all 5 components in `packages/ui/src/components/custom-elements.js`.
 
+- **Brand Logo Integration in Minimal Footers (`public/`, `zapwebp-docs/`)**:
+  - **Visual Identity Alignment**: Integrated the official Zapwebp SVG logo (`zapwebp.svg`) across all minimal footers in both the main web converter (`public/index.html`, `public/styles.css`) and the documentation hero landing page (`zapwebp-docs/index.html`, `public/hero.html`, `zapwebp-docs/public/hero.html`).
+  - **Ergonomic Brand Lockup**: Styled `.footer-brand-link` with `inline-flex` vertical centering, 20–22px SVG icon dimensions, and smooth hover transition to primary brand green.
+
 - **Web UI Responsiveness & Touch Ergonomics (`public/styles.css`)**:
   - **Fluid 2-Column Mobile Grid**: Preserved clean 2-column layout (`repeat(2, minmax(0, 1fr))`) between 340px and 640px, ensuring compact card arrangement on mobile devices without vertical ballooning.
   - **Mobile Dialog Viewport Clamping**: Clamped `.crop-dialog` and `.reports-modal-panel` to `95vw` and `92dvh` with smooth momentum-scrolling aspect ratio pills and responsive metrics grid.

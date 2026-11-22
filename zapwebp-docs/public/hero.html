@@ -709,6 +709,27 @@
       flex-wrap: wrap;
     }
 
+    .footer-brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--hero-text) !important;
+      text-decoration: none;
+    }
+
+    .footer-brand-link:hover {
+      color: var(--hero-primary) !important;
+      text-decoration: none !important;
+    }
+
+    .footer-logo {
+      width: 22px;
+      height: 22px;
+      display: block;
+      flex-shrink: 0;
+    }
+
     .footer-inner a {
       color: var(--hero-muted);
       transition: color 150ms ease;
@@ -961,11 +982,14 @@
   <footer>
     <div class="footer-inner">
       <div class="footer-brand-wrap">
-        <span>⚡ Zapwebp</span>
+        <a href="/" class="footer-brand-link" aria-label="Zapwebp Documentation Home">
+          <img src="/zapwebp.svg" alt="Zapwebp" width="22" height="22" class="footer-logo" />
+          <span>Zapwebp</span>
+        </a>
         <span class="footer-sep">·</span>
         <span>© 2026</span>
         <span class="footer-sep">·</span>
-        <span>MIT License</span>
+        <a href="https://github.com/Zapwebp/zapwebp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
         <span class="footer-sep">·</span>
         <span>Maintained by <strong>Eldrex Delos Reyes Bula</strong></span>
       </div>
