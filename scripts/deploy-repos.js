@@ -146,11 +146,16 @@ async function deployOne(item) {
 }
 
 async function runAll() {
-  for (const item of DEPLOYMENTS) {
+  const targetFilter = process.argv.slice(2);
+  const targets = targetFilter.length > 0
+    ? DEPLOYMENTS.filter(d => targetFilter.includes(d.repo) || targetFilter.includes(d.dir))
+    : DEPLOYMENTS;
+
+  for (const item of targets) {
     await deployOne(item);
     sleep(1000);
   }
-  console.log('\nAll deployments completed!');
+  console.log('\nAll targeted deployments completed!');
 }
 
 runAll().catch(err => {
