@@ -4,6 +4,15 @@ This changelog records the changes included in each Zapwebp version.
 
 ## [Unreleased]
 
+### Fixed
+
+- **CSS Syntax & Mobile Dropdown Placement**:
+  - **Syntax Correction**: Removed a stray closing curly brace in `public/styles.css` that prematurely terminated a `@media` query and caused downstream CSS parser errors.
+  - **Header-Relative Dropdown Anchoring**: Updated `.lang-dropdown-menu` across `public/styles.css` and `zapwebp-docs/public/docs.css` to use relative anchoring (`position: absolute; top: calc(100% + 8px); right: 0;`), preventing status bar and safe-area header clipping on mobile screens.
+  - **WCAG Contrast Harmonization**: Aligned `--gray-600` token to `#575c50` in `zapwebp-docs/public/tokens.css` to guarantee WCAG 2.2 AA contrast ratios on light surfaces.
+  - **Route Aliasing**: Corrected route mapping in `zapwebp-docs/src/routes.ts` so `/lock` accurately routes to `/plugins/lock` (idempotent lock plugin) while `/target-lock` routes to `/lock-target`.
+  - **Empty Document Guard**: Added validation in `renderDoc` (`zapwebp-docs/src/render.ts`) to reject zero-length markdown payloads and ensure breadcrumbs remain active on fetch error.
+
 ### Added
 
 - **Mobile Responsive Language Picker & Stacking Context Isolation**:

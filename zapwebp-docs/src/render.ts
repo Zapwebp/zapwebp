@@ -33,6 +33,10 @@ export async function renderDoc(fileKey: string, mount: HTMLElement): Promise<vo
     rawMarkdown = text;
   }
 
+  if (!rawMarkdown || !rawMarkdown.trim()) {
+    throw new Error(`Document not found: ${fileKey}`);
+  }
+
   // Find route metadata
   const currentPath = location.pathname.replace(/\/$/, '') || '/';
   const route = ROUTE_MAP[currentPath] || DOC_ROUTES.find((r) => r.file === fileKey) || DOC_ROUTES[0];
@@ -600,7 +604,7 @@ function appendArticleFooter(mount: HTMLElement, fileKey: string) {
 /**
  * Updates Breadcrumbs trail in header area
  */
-function updateBreadcrumbs(route: DocRoute) {
+export function updateBreadcrumbs(route: DocRoute) {
   const bar = document.getElementById('docs-breadcrumbs');
   if (!bar) return;
 

@@ -1,4 +1,4 @@
-import { renderDoc, buildComprehensiveFooter } from './render';
+import { renderDoc, buildComprehensiveFooter, updateBreadcrumbs } from './render';
 import { ROUTE_MAP, DOC_ROUTES } from './routes';
 
 let currentMount: HTMLElement | null = null;
@@ -101,6 +101,9 @@ function runRender(rawPath: string, hash?: string): void {
     })
     .catch((err) => {
       console.error(err);
+      if (route) {
+        updateBreadcrumbs(route);
+      }
       if (currentMount) {
         currentMount.replaceChildren();
         const errCard = document.createElement('div');

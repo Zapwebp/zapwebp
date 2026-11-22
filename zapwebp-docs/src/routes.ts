@@ -530,7 +530,9 @@ if (ROUTE_MAP['/plugins/lens']) ROUTE_MAP['/lens'] = ROUTE_MAP['/plugins/lens'];
 if (ROUTE_MAP['/plugins/laravel']) ROUTE_MAP['/laravel'] = ROUTE_MAP['/plugins/laravel'];
 if (ROUTE_MAP['/lock-target']) {
   ROUTE_MAP['/target-lock'] = ROUTE_MAP['/lock-target'];
-  ROUTE_MAP['/lock'] = ROUTE_MAP['/lock-target'];
+}
+if (ROUTE_MAP['/plugins/lock']) {
+  ROUTE_MAP['/lock'] = ROUTE_MAP['/plugins/lock'];
 }
 if (ROUTE_MAP['/mcp']) {
   ROUTE_MAP['/mcp-agent'] = ROUTE_MAP['/mcp'];
