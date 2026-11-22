@@ -6,6 +6,12 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Tactile Refraction, Rim Light & Reflection Design System**:
+  - **Specular Highlights & Rim Light (`public/styles.css`, `public/tokens.css`)**: Implemented high-contrast physical depth with razor-sharp 1px top rim highlights (`--rim-highlight`), inset dual-bevel rim lighting (`--rim-light`), ambient shadows, and top-lit glass specular refraction gradients (`--glass-refraction`) across all cards (`.guarantee-card`, `.cockpit-bar`, `.converter-card`, `.single-result-card`, `.feature`, `.code-terminal-card`).
+  - **Light Mode Contrast Harmonization**: Solved light mode theme drift by declaring explicit semantic surface tokens (`--bg-card`, `--bg-card-elevated`, `--bg-muted`, `--border-rim`, `--border-subtle`, `--text-secondary`, `--green-text`), eliminating hardcoded dark defaults that previously caused black card backgrounds and unreadable dark-on-dark text in light mode.
+  - **Objective Engineering Copy Polish (`public/index.html`)**: Eliminated hype, ego, and buzzword phrasing across the Guarantees and technical overview sections; replaced with calm, factual engineering specifications detailing deterministic standards, alpha channel verification, and client-side execution boundaries.
+  - **Mobile Responsive Layout & Touch Targets**: Enhanced fluid responsiveness on mobile viewports (<640px and <480px) with single-column card stacking, 44px minimum touch targets across pills and toggles, and seamless horizontal containment.
+
 - **shadcn/ui Minimal Clean Design System & Custom Documentation Components**:
   - **Custom Component Pipeline (`zapwebp-docs/src/render.ts`)**: Added support for YAML frontmatter headers (`title`, `description`) and JSX-compatible documentation primitives: `<Callout>` (with emerald and dark mode styling), `<LinkedCard>` (interactive card grids with subtle lift and border transitions), and `<Button asChild>` actions.
   - **Minimalist Design Tokens & Styles (`zapwebp-docs/public/docs.css`)**: Styled `.shadcn-callout`, `.shadcn-linked-card`, `.shadcn-btn`, and responsive grid utilities (`.grid`, `.gap-4`, `.gap-6`, `.sm:grid-cols-2`, `.sm:grid-cols-3`) adhering to WCAG 2.2 AA contrast standards.

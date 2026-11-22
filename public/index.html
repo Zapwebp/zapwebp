@@ -814,128 +814,127 @@
         </div>
       </section>
 
-      <!-- The Five Guarantees: AI-Ready Image Infrastructure -->
-      <section class="guarantees-section" id="guarantees" aria-labelledby="guarantees-title" style="max-width: 1040px; margin: 3rem auto; padding: 0 1.25rem;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-          <h2 id="guarantees-title" style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-primary);">
-            AI-Ready Image Infrastructure · The Five Guarantees
+      <!-- Technical Architecture & Guarantees -->
+      <section class="guarantees-section" id="guarantees" aria-labelledby="guarantees-title">
+        <div class="guarantees-header">
+          <h2 id="guarantees-title" class="guarantees-title">
+            Technical Architecture &amp; Guarantees
           </h2>
-          <p style="font-size: 0.95rem; color: var(--text-secondary, #94a3b8); max-width: 680px; margin: 0 auto; line-height: 1.5;">
-            Zapwebp Converter (also known as Zap Webp Converter) eliminates guesswork. We stop marketing features and start proving technical guarantees.
+          <p class="guarantees-subtitle">
+            Deterministic conversion standards and verifiable technical guarantees across all execution surfaces.
           </p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        <div class="guarantees-grid">
           <!-- 1. Correctness -->
-          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem;">🎯</span>
-              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">1. Correctness</h3>
+          <article class="guarantee-card">
+            <div class="guarantee-card-header">
+              <span class="guarantee-card-icon" aria-hidden="true">🎯</span>
+              <h3 class="guarantee-card-title">1. Correctness</h3>
             </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
-              Output pixel (0,0) transparency preservation is verified in continuous integration. If transparent input is targeted to JPEG without an explicit background, it fails loudly instead of creating corrupted black boxes.
+            <p class="guarantee-card-body">
+              Output pixel (0,0) transparency preservation is verified in continuous integration. If transparent input is targeted to JPEG without an explicit background color, conversion fails loudly with <code>E_ALPHA_NOT_REPRESENTABLE</code> instead of generating black box artifacts.
             </p>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
-              Status: Verified in CI (test/proof-transparency.test.js)
+            <div class="guarantee-card-status">
+              <span>Status: Verified in CI (test/proof-transparency.test.js)</span>
             </div>
-          </div>
+          </article>
 
           <!-- 2. Reproducibility -->
-          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem;">🔒</span>
-              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">2. Reproducibility</h3>
+          <article class="guarantee-card">
+            <div class="guarantee-card-header">
+              <span class="guarantee-card-icon" aria-hidden="true">🔒</span>
+              <h3 class="guarantee-card-title">2. Reproducibility</h3>
             </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
-              Same input, same configuration, same engine version produces identical bit-for-bit outputs. All 50 Golden Corpus test fixtures are published with SHA-256 hashes in public MANIFEST.json.
+            <p class="guarantee-card-body">
+              Deterministic output: identical input, configuration, and engine version produce bit-for-bit identical files. All 50 Golden Corpus test fixtures are published with SHA-256 hashes in public <code>MANIFEST.json</code>.
             </p>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
-              Status: 50/50 Bit-for-bit parity guaranteed
+            <div class="guarantee-card-status">
+              <span>Status: 50/50 Bit-for-bit parity guaranteed</span>
             </div>
-          </div>
+          </article>
 
           <!-- 3. Privacy -->
-          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem;">🛡️</span>
-              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">3. Privacy</h3>
+          <article class="guarantee-card">
+            <div class="guarantee-card-header">
+              <span class="guarantee-card-icon" aria-hidden="true">🛡️</span>
+              <h3 class="guarantee-card-title">3. Privacy</h3>
             </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
-              100% in-browser client memory execution using WebAssembly and Web Workers. Zero telemetry, zero analytics beacons, zero remote server uploads. Your visual data never leaves your machine.
+            <p class="guarantee-card-body">
+              100% in-browser client memory execution using WebAssembly and Web Workers. Zero telemetry, zero analytics tracking, and zero remote server uploads. Your visual data never leaves your machine.
             </p>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
-              Status: Zero Network Leaks Verified
+            <div class="guarantee-card-status">
+              <span>Status: Zero Network Leaks Verified</span>
             </div>
-          </div>
+          </article>
 
           <!-- 4. Extensibility -->
-          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem;">🔌</span>
-              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">4. Extensibility</h3>
+          <article class="guarantee-card">
+            <div class="guarantee-card-header">
+              <span class="guarantee-card-icon" aria-hidden="true">🔌</span>
+              <h3 class="guarantee-card-title">4. Extensibility</h3>
             </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
-              Standardized Plugin SDK with lifecycle hooks (beforeConvert, afterConvert, transform). Community and first-party plugins for multi-size ICO/CUR, smart face-crop, storage adapters, and build tools.
+            <p class="guarantee-card-body">
+              Standardized Plugin SDK with lifecycle hooks (<code>beforeConvert</code>, <code>afterConvert</code>, <code>transform</code>). Supports format plugins for multi-size ICO/CUR, crop transforms, storage adapters, and build tools.
             </p>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
-              Status: Open Plugin SDK & Registry
+            <div class="guarantee-card-status">
+              <span>Status: Open Plugin SDK &amp; Registry</span>
             </div>
-          </div>
+          </article>
 
           <!-- 5. Universality -->
-          <div style="background: var(--bg-card, #171a15); border: 1px solid var(--border-mid, rgba(255,255,255,0.08)); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem;">🌐</span>
-              <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text-primary);">5. Universality</h3>
+          <article class="guarantee-card">
+            <div class="guarantee-card-header">
+              <span class="guarantee-card-icon" aria-hidden="true">🌐</span>
+              <h3 class="guarantee-card-title">5. Universality</h3>
             </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary, #94a3b8); line-height: 1.45; margin: 0 0 0.75rem 0; flex-grow: 1;">
-              One shared conversion engine running uniformly across Web, CLI (zap/zapwebp), VS Code extension, HTTP REST API, and AI agent Model Context Protocol (MCP) servers.
+            <p class="guarantee-card-body">
+              One shared conversion engine running uniformly across Web, CLI (<code>zap</code>/<code>zapwebp</code>), VS Code extension, HTTP REST API, and AI agent Model Context Protocol (MCP) servers.
             </p>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono, monospace); color: #22c55e;">
-              Status: 5 Execution Surfaces
+            <div class="guarantee-card-status">
+              <span>Status: 5 Execution Surfaces</span>
             </div>
-          </div>
+          </article>
         </div>
       </section>
-    </main>
 
-    <!-- SEO & Technical Architecture Section (Below the fold) -->
+      <!-- Architecture & Capabilities Section -->
       <section class="seo-content" id="seo-content">
         <div class="seo-inner">
-          <h2 class="seo-main-heading">Zapwebp — Free SVG, PNG, JPG to WebP Converter</h2>
+          <h2 class="seo-main-heading">Zapwebp — Transparency-Safe Image Converter</h2>
           <p class="seo-lead-text">
-            Zapwebp is a fast, 100% private in-browser image converter built for developers, designers, and web performance engineers. Convert transparent SVGs, high-resolution PNGs, photos, AVIFs, and WebPs in milliseconds with guaranteed alpha channel preservation, mathematical lossless verification, and zero server uploads.
+            A fast, local in-browser image converter built for developers, designers, and web performance engineers. Converts transparent SVGs, high-resolution PNGs, photos, AVIFs, and WebPs in client memory with guaranteed alpha channel preservation, mathematical lossless verification, and zero server uploads.
           </p>
 
-          <h3 class="seo-subheading">Why Zapwebp?</h3>
+          <h3 class="seo-subheading">Core Architecture</h3>
           <ul class="seo-benefits-list">
-            <li><strong>100% Local In-Memory Processing:</strong> Your visual data never leaves your device or touches a third-party server. Pure WebAssembly and Canvas execution.</li>
+            <li><strong>Local In-Memory Execution:</strong> Your visual data never leaves your device or touches a third-party server. Pure WebAssembly and Canvas execution.</li>
             <li><strong>Deterministic Alpha Preservation:</strong> Alpha channels are mathematically preserved. Transparent pixels never turn into black boxes.</li>
             <li><strong>Clean Metadata Stripping:</strong> Strip EXIF, GPS location, and camera hardware serials with a single click before sharing.</li>
-            <li><strong>Instant Batch ZIP Bundles:</strong> Convert dozens of images at once and download everything in an uncompressed or high-speed ZIP archive.</li>
+            <li><strong>Batch Processing &amp; ZIP Export:</strong> Convert dozens of images at once and download everything in an uncompressed or high-speed ZIP archive.</li>
             <li><strong>Developer-Ready Ecosystem:</strong> Powered by the exact same open-source engine available as an MCP AI Agent server, CLI, and npm SDK.</li>
           </ul>
 
           <h3 class="seo-subheading">Frequently Asked Questions</h3>
           <div class="seo-faqs">
             <details class="seo-faq-item">
-              <summary>Is Zapwebp completely free?</summary>
+              <summary>Is Zapwebp free and open source?</summary>
               <p>Yes. Zapwebp is 100% free and open-source under the MIT license. There are no subscriptions, no file size paywalls, and no account requirements.</p>
             </details>
             <details class="seo-faq-item">
-              <summary>Does Zapwebp upload my images to a server?</summary>
+              <summary>Does Zapwebp upload images to a server?</summary>
               <p>No. Zapwebp executes entirely inside your browser's local memory using Web Workers and WebAssembly. Your images never leave your machine.</p>
             </details>
             <details class="seo-faq-item">
-              <summary>Why does my converted image look sharper or smaller?</summary>
+              <summary>How does Zapwebp achieve high compression ratios?</summary>
               <p>Modern WebP and AVIF formats utilize advanced intra-frame predictive encoding and Lanczos3 resampling, achieving up to 85% smaller file sizes than legacy JPEG or PNG while retaining visual fidelity.</p>
             </details>
             <details class="seo-faq-item">
               <summary>How does Zapwebp protect image transparency?</summary>
-              <p>Zapwebp checks the alpha channel of every source image. When converting to alpha-capable targets (WebP, AVIF, PNG), transparency is preserved byte-for-byte. If you target JPEG (which has no alpha support), Zapwebp prompts you for an explicit background color rather than corrupting transparent areas to black.</p>
+              <p>Zapwebp inspects the alpha channel of every source image. When converting to alpha-capable targets (WebP, AVIF, PNG), transparency is preserved byte-for-byte. If targeting JPEG (which lacks alpha support), Zapwebp prompts for an explicit background color rather than corrupting transparent areas to black.</p>
             </details>
             <details class="seo-faq-item">
-              <summary>What formats can Zapwebp convert?</summary>
+              <summary>What formats are supported?</summary>
               <p>Zapwebp supports SVG, PNG, WebP, AVIF, JPEG, GIF, TIFF, and multi-size ICO containers with bi-directional conversion.</p>
             </details>
           </div>
@@ -948,6 +947,15 @@
       <div class="footer-minimal-inner">
         <span class="footer-brand-tag">⚡ Zapwebp · &copy; 2026 · <a href="https://github.com/Zapwebp/zapwebp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT</a></span>
         <span class="footer-sep">·</span>
+        <a href="https://zapwebp-docs.vercel.app/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
+        <span class="footer-sep">·</span>
+        <a href="https://zapwebp-docs.vercel.app/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+        <span class="footer-sep">·</span>
+        <a href="https://zapwebp-docs.vercel.app" target="_blank" rel="noopener noreferrer">Docs</a>
+        <span class="footer-sep">·</span>
+        <a href="https://github.com/Zapwebp" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </footer>
         <a href="https://zapwebp-docs.vercel.app/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
         <span class="footer-sep">·</span>
         <a href="https://zapwebp-docs.vercel.app/terms" target="_blank" rel="noopener noreferrer">Terms</a>

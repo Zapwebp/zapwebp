@@ -8,24 +8,39 @@
    ========================================================================== */
 :root,
 [data-theme="light"] {
-  --bg: #f7f7f4;
+  --bg: #f8faf6;
   --bg-dropzone: #ffffff;
-  --bg-dropzone-hover: #f0f1eb;
-  --border-mid: #e2e3dc;
-  --border-dropzone: #d5d7cd;
-  --text-primary: #1a1c18;
-  --gray-600: #575c50;
-  --gray-100: #ededeb;
+  --bg-dropzone-hover: #f1f5ed;
+  --bg-card: #ffffff;
+  --bg-card-elevated: #ffffff;
+  --bg-muted: #f0f3eb;
+  --border-mid: #e1e6dc;
+  --border-dropzone: #d2d8cc;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-rim: rgba(0, 0, 0, 0.08);
+  --text-primary: #11140e;
+  --text-secondary: #52584a;
+  --text-muted: #717768;
+  --gray-600: #52584a;
+  --gray-100: #eef2e8;
 
   /* Accent & Status */
-  --green-primary: #8dc63f;
-  --green-hover: #7db732;
-  --green-bright: #c7f36b;
-  --green-outline: #8dc63f;
-  --green-alpha-13: rgba(141, 198, 63, 0.13);
-  --green-alpha-20: rgba(141, 198, 63, 0.20);
+  --green-primary: #65a30d;
+  --green-hover: #4d7c0f;
+  --green-bright: #84cc16;
+  --green-outline: #65a30d;
+  --green-text: #15803d;
+  --green-alpha-13: rgba(101, 163, 13, 0.12);
+  --green-alpha-20: rgba(101, 163, 13, 0.20);
   --error: #cf222e;
-  --status-dot: #8dc63f;
+  --status-dot: #65a30d;
+
+  /* Tactical Depth: Refraction, Rim Light, Reflections */
+  --rim-light: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  --rim-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px -4px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.04), 0 12px 28px -6px rgba(0, 0, 0, 0.1);
+  --glass-refraction: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.2) 100%);
 
   /* Simple Code Block Surface (Light Mode) */
   --code-bg: #ffffff;
@@ -68,23 +83,38 @@
    ========================================================================== */
 [data-theme="dark"] {
   --bg: #10120f;
-  --bg-dropzone: #171a15;
-  --bg-dropzone-hover: #21251e;
-  --border-mid: #292d25;
-  --border-dropzone: #343930;
-  --text-primary: #f2f4ef;
-  --gray-600: #9ca296;
-  --gray-100: #1d211b;
+  --bg-dropzone: #161914;
+  --bg-dropzone-hover: #1e221b;
+  --bg-card: #181c15;
+  --bg-card-elevated: #1f241c;
+  --bg-muted: #131611;
+  --border-mid: #282d24;
+  --border-dropzone: #333a2d;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-rim: rgba(255, 255, 255, 0.1);
+  --text-primary: #f3f5ee;
+  --text-secondary: #9da496;
+  --text-muted: #798071;
+  --gray-600: #9da496;
+  --gray-100: #1c2018;
 
   /* Accent & Status */
   --green-primary: #8dc63f;
   --green-hover: #9fe248;
   --green-bright: #c7f36b;
   --green-outline: #8dc63f;
+  --green-text: #8dc63f;
   --green-alpha-13: rgba(141, 198, 63, 0.16);
   --green-alpha-20: rgba(141, 198, 63, 0.25);
   --error: #f85149;
   --status-dot: #8dc63f;
+
+  /* Tactical Depth: Refraction, Rim Light, Reflections */
+  --rim-light: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --rim-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 16px 36px -6px rgba(0, 0, 0, 0.65);
+  --glass-refraction: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 40%, transparent 100%);
 
   /* Simple Code Block Surface (Dark Mode) */
   --code-bg: #151813;
