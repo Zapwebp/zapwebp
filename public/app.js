@@ -1311,12 +1311,14 @@ function applyTranslations(lang) {
 const headerLangWrap = document.querySelector('#header-lang-dropdown-wrap');
 const headerLangBtn = document.querySelector('#header-lang-btn');
 const headerLangMenu = document.querySelector('#header-lang-dropdown-menu');
+const headerLangBackdrop = document.querySelector('#header-lang-dropdown-backdrop');
 
 function toggleHeaderLangDropdown() {
   if (!headerLangMenu) return;
   const isHidden = headerLangMenu.hidden;
   if (isHidden) {
     headerLangMenu.hidden = false;
+    if (headerLangBackdrop) headerLangBackdrop.hidden = false;
     headerLangBtn?.setAttribute('aria-expanded', 'true');
   } else {
     closeHeaderLangDropdown();
@@ -1326,8 +1328,16 @@ function toggleHeaderLangDropdown() {
 function closeHeaderLangDropdown() {
   if (headerLangMenu && !headerLangMenu.hidden) {
     headerLangMenu.hidden = true;
+    if (headerLangBackdrop) headerLangBackdrop.hidden = true;
     headerLangBtn?.setAttribute('aria-expanded', 'false');
   }
+}
+
+if (headerLangBackdrop) {
+  headerLangBackdrop.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeHeaderLangDropdown();
+  });
 }
 
 if (headerLangBtn) {

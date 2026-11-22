@@ -6,6 +6,12 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Mobile Responsive Language Picker & Stacking Context Isolation**:
+  - **Occlusion & Clipping Remediation**: Resolved mobile language dropdown clipping and header occlusion across both `zapwebp-docs` and the main web converter (`public/`).
+  - **Fixed Viewport Anchoring**: Configured mobile language dropdown menus with `position: fixed` (`top: 58px; right: 12px; z-index: 9999; width: 230px;`), isolating the dropdown from `.site-header`'s `height: 52px` box bounds and `backdrop-filter` compositing boundary on mobile viewports.
+  - **Touch Dismissal & WCAG 2.2 AA Targets**: Added a full-viewport touch backdrop (`.lang-dropdown-backdrop`) for seamless outside-click dismissal, with 44px minimum touch targets (`min-height: 44px`) across all dropdown options.
+  - **Robust Fallback & Error Containment**: Updated `renderDoc` in `zapwebp-docs/src/render.ts` to assert that localized markdown responses are not HTML SPA rewrites before parsing, and verified error boundaries in `router.ts` to prevent blank document states.
+
 - **Automated Documentation CI Regression Guards & Synchronization Validation**:
   - **Structure Guard (`scripts/validate-docs-structure.js`)**: Validates that all 47 technical documents strictly include `Covers:`, `Does not cover:`, and `Applies to:` in lines 1–10 and an H1 title, while asserting that the 7 legal and informational documents (`about.md`, `privacy.md`, `terms.md`, `security.md`, `code-of-conduct.md`, `contributing.md`, `translators.md`) do not contain technical metadata headers.
   - **Link Guard (`scripts/validate-docs-links.js`)**: Scans all 162 documentation files across content and mirror trees, extracting 700+ internal links and failing the build if any link targets a raw `.md` extension instead of clean SPA route slugs.

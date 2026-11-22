@@ -10,7 +10,11 @@ export async function renderDoc(fileKey: string, mount: HTMLElement): Promise<vo
     try {
       const tlRes = await fetch(`/locales/tl/docs/${fileKey}.md`);
       if (tlRes.ok) {
-        rawMarkdown = await tlRes.text();
+        const text = await tlRes.text();
+        const contentType = tlRes.headers.get('content-type') || '';
+        if (!contentType.includes('text/html') && !text.trim().startsWith('<!doctype') && !text.trim().startsWith('<html')) {
+          rawMarkdown = text;
+        }
       }
     } catch (_) {}
   }
