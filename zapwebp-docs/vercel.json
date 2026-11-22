@@ -2,8 +2,12 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/", "destination": "/hero.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/hero.html", "destination": "/index.html" },
+    { "source": "/docs", "destination": "/app.html" },
+    { "source": "/docs/(.*)", "destination": "/app.html" },
+    { "source": "/(.*).md", "destination": "/content/$1.md" },
+    { "source": "/(.*)", "destination": "/app.html" }
   ],
   "headers": [
     {

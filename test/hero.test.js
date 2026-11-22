@@ -45,7 +45,7 @@ test('Hero Landing Page: hero.html exists and conforms to specifications', () =>
   assert.ok(content.includes('prefers-color-scheme: dark'), 'must support dark mode');
 });
 
-test('Hero Routing: vercel.json rewrites / to /hero.html and other routes to /index.html', () => {
+test('Hero Routing: vercel.json rewrites / to /index.html and docs routes to /app.html', () => {
   const vercelPath = path.join(root, 'zapwebp-docs', 'vercel.json');
   assert.ok(fs.existsSync(vercelPath), 'zapwebp-docs/vercel.json must exist');
 
@@ -54,11 +54,11 @@ test('Hero Routing: vercel.json rewrites / to /hero.html and other routes to /in
 
   const rootRewrite = config.rewrites.find((r) => r.source === '/');
   assert.ok(rootRewrite, 'must have rewrite for /');
-  assert.equal(rootRewrite.destination, '/hero.html', '/ must rewrite to /hero.html');
+  assert.equal(rootRewrite.destination, '/index.html', '/ must resolve to /index.html (hero landing)');
 
-  const catchAll = config.rewrites.find((r) => r.source === '/(.*)');
-  assert.ok(catchAll, 'must have catch-all rewrite');
-  assert.equal(catchAll.destination, '/index.html', '/(.*) must rewrite to /index.html');
+  const docsRewrite = config.rewrites.find((r) => r.source === '/docs');
+  assert.ok(docsRewrite, 'must have rewrite for /docs');
+  assert.equal(docsRewrite.destination, '/app.html', '/docs must rewrite to /app.html');
 });
 
 test('Docs SPA Integration: brand logo in shell links to / and router allows clean navigation', () => {
