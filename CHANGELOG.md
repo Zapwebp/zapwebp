@@ -53,6 +53,10 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Fixed
 
+- **Header Language Picker Backdrop & Clean Minimal Footer (`public/`, `zapwebp-docs/`)**:
+  - **Transparent Language Backdrop**: Replaced dark tinted overlay (`rgba(0, 0, 0, 0.45)`) and 2px blur with a transparent, non-intrusive backdrop (`background: transparent; z-index: 9998;`) in both `public/styles.css` and `zapwebp-docs/public/docs.css`. Opening the language dropdown no longer dims the header or blurs page content.
+  - **Dangling Footer Links Removal**: Removed stray duplicate `<a>` tags and redundant unclosed container tags outside `</footer>` in `public/index.html` that previously rendered unstyled blue links at the bottom left of the screen.
+
 - **CSS Syntax & Mobile Dropdown Placement**:
   - **Syntax Correction**: Removed a stray closing curly brace in `public/styles.css` that prematurely terminated a `@media` query and caused downstream CSS parser errors.
   - **Header-Relative Dropdown Anchoring**: Updated `.lang-dropdown-menu` across `public/styles.css` and `zapwebp-docs/public/docs.css` to use relative anchoring (`position: absolute; top: calc(100% + 8px); right: 0;`), preventing status bar and safe-area header clipping on mobile screens.
