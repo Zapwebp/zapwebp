@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zapwebp — Convert correctly</title>
+  <meta name="description" content="A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere — browser, terminal, build tools, CI, AI agents.">
+  <meta name="keywords" content="zapwebp, image converter, webp converter, transparency preservation, mcp agent, cli tool, image optimization, zero telemetry">
+  <meta name="author" content="Eldrex Delos Reyes Bula <eldrexdelosreyesbula@gmail.com>">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="canonical" href="https://zapwebp-docs.vercel.app/">
+  <link rel="alternate" type="text/markdown" href="/llms.txt" title="Agentic Documentation Catalog">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Zapwebp">
+  <meta property="og:title" content="Zapwebp — Convert correctly">
+  <meta property="og:description" content="A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere — browser, terminal, build tools, CI, AI agents.">
+  <meta property="og:url" content="https://zapwebp-docs.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://zapwebp-docs.vercel.app/zapwebp.svg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Zapwebp — Convert correctly">
+  <meta name="twitter:description" content="A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere.">
+  <meta name="twitter:image" content="https://zapwebp-docs.vercel.app/zapwebp.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/tokens.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Zapwebp",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Universal (Node.js, Browser, CLI, VS Code, MCP)",
+    "description": "A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere — browser, terminal, build tools, CI, AI agents.",
+    "url": "https://zapwebp-docs.vercel.app/",
+    "author": {
+      "@type": "Person",
+      "name": "Eldrex Delos Reyes Bula",
+      "email": "eldrexdelosreyesbula@gmail.com"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <script>
+    try {
+      var t = localStorage.getItem('zapwebp_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (_) {}
+  </script>
+
+  <style>
+    /* ==========================================================================
+       Hero Landing Page Styles (Clean, Token-Driven, Zero Framework)
+       ========================================================================== */
+    :root {
+      --hero-bg: #f7f7f4;
+      --hero-surface: #ffffff;
+      --hero-surface-hover: #f0f1eb;
+      --hero-border: #e2e3dc;
+      --hero-text: #1a1c18;
+      --hero-muted: #575c50;
+      --hero-primary: #8dc63f;
+      --hero-primary-hover: #7db732;
+      --hero-primary-text: #0d0f0c;
+      --hero-code-bg: #ffffff;
+      --hero-code-border: #e2e3dc;
+      --hero-code-text: #1a1c18;
+      --hero-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -4px rgba(0, 0, 0, 0.02);
+      --hero-radius: 12px;
+      --hero-max-width: 900px;
+    }
+
+    [data-theme="dark"] {
+      --hero-bg: #10120f;
+      --hero-surface: #171a15;
+      --hero-surface-hover: #21251e;
+      --hero-border: #292d25;
+      --hero-text: #f2f4ef;
+      --hero-muted: #8e9488;
+      --hero-primary: #8dc63f;
+      --hero-primary-hover: #9fe248;
+      --hero-primary-text: #0d0f0c;
+      --hero-code-bg: #151813;
+      --hero-code-border: #292d25;
+      --hero-code-text: #e8eae4;
+      --hero-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --hero-bg: #10120f;
+        --hero-surface: #171a15;
+        --hero-surface-hover: #21251e;
+        --hero-border: #292d25;
+        --hero-text: #f2f4ef;
+        --hero-muted: #8e9488;
+        --hero-primary: #8dc63f;
+        --hero-primary-hover: #9fe248;
+        --hero-primary-text: #0d0f0c;
+        --hero-code-bg: #151813;
+        --hero-code-border: #292d25;
+        --hero-code-text: #e8eae4;
+        --hero-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+      background: var(--hero-bg);
+      color: var(--hero-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--hero-primary);
+      outline-offset: 3px;
+    }
+
+    /* Header */
+    .hero-header {
+      border-bottom: 1px solid var(--hero-border);
+      background: var(--hero-bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .hero-header-inner {
+      max-width: var(--hero-max-width);
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      color: var(--hero-text);
+    }
+
+    .brand img {
+      width: 26px;
+      height: 26px;
+      display: block;
+    }
+
+    .hero-nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--hero-muted);
+      transition: color 150ms ease;
+    }
+
+    .nav-link:hover {
+      color: var(--hero-text);
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: var(--hero-primary);
+      color: var(--hero-primary-text);
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 8px;
+      transition: background 150ms ease, transform 120ms ease;
+    }
+
+    .nav-cta:hover {
+      background: var(--hero-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      max-width: var(--hero-max-width);
+      margin: 0 auto;
+      padding: 72px 20px 48px 20px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background: rgba(141, 198, 63, 0.12);
+      border: 1px solid rgba(141, 198, 63, 0.3);
+      color: var(--hero-primary);
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--hero-primary);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: var(--hero-text);
+    }
+
+    .hero .tagline {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--hero-muted);
+      max-width: 680px;
+      margin: 0 auto 36px auto;
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .button-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--hero-primary);
+      color: var(--hero-primary-text);
+      padding: 13px 26px;
+      border-radius: var(--hero-radius);
+      font-size: 15px;
+      font-weight: 700;
+      transition: background 150ms ease, transform 120ms ease;
+    }
+
+    .button-primary:hover {
+      background: var(--hero-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .button-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--hero-surface);
+      color: var(--hero-text);
+      border: 1px solid var(--hero-border);
+      padding: 13px 24px;
+      border-radius: var(--hero-radius);
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 150ms ease, border-color 150ms ease, transform 120ms ease;
+    }
+
+    .button-secondary:hover {
+      background: var(--hero-surface-hover);
+      border-color: var(--hero-muted);
+      transform: translateY(-1px);
+    }
+
+    /* Features Grid */
+    .features-section {
+      max-width: var(--hero-max-width);
+      margin: 0 auto;
+      padding: 32px 20px 56px 20px;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .features-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--hero-muted);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .feature {
+      background: var(--hero-surface);
+      border: 1px solid var(--hero-border);
+      border-radius: var(--hero-radius);
+      padding: 24px 22px;
+      box-shadow: var(--hero-card-shadow);
+      display: flex;
+      flex-direction: column;
+      transition: border-color 150ms ease, transform 150ms ease;
+    }
+
+    .feature:hover {
+      border-color: rgba(141, 198, 63, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(141, 198, 63, 0.12);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .feature h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--hero-text);
+      letter-spacing: -0.01em;
+    }
+
+    .feature p {
+      font-size: 0.9rem;
+      color: var(--hero-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .feature code {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.85em;
+      background: rgba(141, 198, 63, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--hero-text);
+    }
+
+    .feature-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--hero-primary);
+      margin-top: auto;
+      transition: color 120ms ease;
+    }
+
+    .feature-link:hover {
+      color: var(--hero-primary-hover);
+      text-decoration: underline;
+    }
+
+    /* Quick Start */
+    .quickstart {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 40px 20px 72px 20px;
+      text-align: center;
+    }
+
+    .quickstart h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .code-terminal-card {
+      background: var(--hero-code-bg);
+      border: 1px solid var(--hero-code-border);
+      border-radius: var(--hero-radius);
+      box-shadow: var(--hero-card-shadow);
+      margin: 20px 0 20px 0;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .terminal-header {
+      padding: 10px 14px;
+      background: var(--hero-surface-hover);
+      border-bottom: 1px solid var(--hero-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--hero-border);
+    }
+
+    .terminal-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      color: var(--hero-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .terminal-body {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .terminal-code {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.95rem;
+      color: var(--hero-code-text);
+      overflow-x: auto;
+    }
+
+    .terminal-prompt {
+      color: var(--hero-primary);
+      margin-right: 8px;
+      user-select: none;
+    }
+
+    .copy-button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--hero-surface);
+      border: 1px solid var(--hero-border);
+      color: var(--hero-text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .copy-button:hover {
+      background: var(--hero-surface-hover);
+      border-color: var(--hero-muted);
+    }
+
+    .quickstart p {
+      font-size: 0.95rem;
+      color: var(--hero-muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .quickstart p code {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.9em;
+      background: rgba(141, 198, 63, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--hero-text);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--hero-border);
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--hero-muted);
+      font-size: 0.875rem;
+      background: var(--hero-bg);
+    }
+
+    .footer-inner {
+      max-width: var(--hero-max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-inner a {
+      color: var(--hero-muted);
+      transition: color 150ms ease;
+    }
+
+    .footer-inner a:hover {
+      color: var(--hero-text);
+      text-decoration: underline;
+    }
+
+    .footer-sep {
+      color: var(--hero-border);
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .hero {
+        padding: 48px 16px 36px 16px;
+      }
+      .features {
+        grid-template-columns: 1fr;
+      }
+      .hero-nav {
+        gap: 12px;
+      }
+      .nav-link {
+        font-size: 13px;
+      }
+      .terminal-body {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .copy-button {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="hero-header">
+    <div class="hero-header-inner">
+      <a href="/" class="brand" aria-label="Zapwebp Home">
+        <img src="/favicon.svg" alt="Zapwebp" width="26" height="26">
+        <span>Zapwebp</span>
+      </a>
+      <nav class="hero-nav" aria-label="Main Navigation">
+        <a href="/docs" class="nav-link">Docs</a>
+        <a href="https://zapwebp.vercel.app" class="nav-link" target="_blank" rel="noopener noreferrer">Converter ↗</a>
+        <a href="https://github.com/Zapwebp" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a href="/docs" class="nav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Banner -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span>Universal Conversion Engine</span>
+      </div>
+      <h1>Convert correctly.</h1>
+      <p class="tagline">
+        A universal image conversion engine that preserves transparency, strips metadata, and runs everywhere — browser, terminal, build tools, CI, AI agents.
+      </p>
+      <div class="hero-actions">
+        <a href="/docs" class="button-primary">Read the docs →</a>
+        <a href="https://zapwebp.vercel.app" class="button-secondary" target="_blank" rel="noopener noreferrer">Web Converter ↗</a>
+      </div>
+    </section>
+
+    <!-- Surfaces & Features Grid -->
+    <section class="features-section" aria-label="Supported Surfaces">
+      <div class="features-header">
+        <span class="features-title">Everywhere You Work</span>
+      </div>
+      <div class="features">
+        <!-- 1. Browser -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">🌐</div>
+          <h2>Browser</h2>
+          <p>Drop, paste, download. Zero uploads. Complete client-side in-memory execution.</p>
+          <a href="https://zapwebp.vercel.app" class="feature-link" target="_blank" rel="noopener noreferrer">Open Web Converter ↗</a>
+        </article>
+
+        <!-- 2. Terminal -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">⚡</div>
+          <h2>Terminal</h2>
+          <p><code>npx zapwebp ./icons</code> — batch conversion, retina multipliers (@1x/@2x/@3x), undo journals.</p>
+          <a href="/cli" class="feature-link">Explore CLI →</a>
+        </article>
+
+        <!-- 3. AI Agents -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">🤖</div>
+          <h2>AI Agents</h2>
+          <p>Model Context Protocol (MCP) server for Claude, Cursor, and Antigravity with 15 tools.</p>
+          <a href="/mcp" class="feature-link">Inspect MCP Agent →</a>
+        </article>
+
+        <!-- 4. Build Tools -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">🔌</div>
+          <h2>Build Tools</h2>
+          <p>Official plugins for Vite, Next.js, and GitHub Actions CI pipelines with byte limits.</p>
+          <a href="/plugins/vite" class="feature-link">View Plugins →</a>
+        </article>
+
+        <!-- 5. Storage Adapters -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">📦</div>
+          <h2>Storage Adapters</h2>
+          <p>Pre-upload conversion and cascading deletion for Supabase, Firebase, and Neocities.</p>
+          <a href="/plugins/storage" class="feature-link">Storage Guides →</a>
+        </article>
+
+        <!-- 6. Inspector -->
+        <article class="feature">
+          <div class="feature-icon-wrap" aria-hidden="true">🔍</div>
+          <h2>Inspector</h2>
+          <p><code>zapwebp-lens</code> CLI inspects container chunks, EXIF metadata, alpha, and visual diffs.</p>
+          <a href="/plugins/lens" class="feature-link">Lens Inspector →</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section class="quickstart" aria-label="Quick Start">
+      <h2>Quick start</h2>
+      <div class="code-terminal-card">
+        <div class="terminal-header">
+          <div class="terminal-dots" aria-hidden="true">
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
+          </div>
+          <span class="terminal-label">Bash / Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-code"><span class="terminal-prompt">$</span>npx zapwebp logo.svg</div>
+          <button type="button" class="copy-button" id="copy-btn" aria-label="Copy command">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="copy-btn-text">Copy</span>
+          </button>
+        </div>
+      </div>
+      <p>
+        That's it. The output is <code>logo.webp</code>. Transparency preserved. Metadata stripped.
+      </p>
+      <a href="/docs" class="button-primary">Read the docs →</a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <span>⚡ Zapwebp</span>
+      <span class="footer-sep">·</span>
+      <span>© 2026</span>
+      <span class="footer-sep">·</span>
+      <span>MIT License</span>
+      <span class="footer-sep">·</span>
+      <a href="https://github.com/Zapwebp" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <span class="footer-sep">·</span>
+      <a href="https://www.npmjs.com/org/zapwebp" target="_blank" rel="noopener noreferrer">npm</a>
+      <span class="footer-sep">·</span>
+      <a href="/llms.txt">llms.txt</a>
+      <span class="footer-sep">·</span>
+      <a href="/docs">Docs</a>
+    </div>
+  </footer>
+
+  <script>
+    // Progressive enhancement: Copy button for terminal quick start
+    var copyBtn = document.getElementById('copy-btn');
+    var copyText = document.getElementById('copy-btn-text');
+    if (copyBtn && navigator.clipboard) {
+      copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText('npx zapwebp logo.svg').then(function() {
+          if (copyText) copyText.textContent = 'Copied!';
+          setTimeout(function() {
+            if (copyText) copyText.textContent = 'Copy';
+          }, 2000);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

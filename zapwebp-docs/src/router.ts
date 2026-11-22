@@ -166,6 +166,9 @@ export function start(mount: HTMLElement): void {
       if (href === '/' && a.classList.contains('header-converter-btn')) {
         return;
       }
+      if (href === '/' || href === '/hero.html') {
+        return;
+      }
 
       e.preventDefault();
       navigate(href);
@@ -174,5 +177,9 @@ export function start(mount: HTMLElement): void {
 
   // Initial render
   const initialPath = location.pathname.replace(/\/$/, '') || '/';
-  runRender(initialPath, location.hash);
+  if (initialPath === '/') {
+    runRender('/docs', location.hash);
+  } else {
+    runRender(initialPath, location.hash);
+  }
 }

@@ -6,6 +6,12 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Hero Landing Page for Documentation Portal**:
+  - **Standalone Hero Page (`public/hero.html`)**: Added a zero-framework, token-driven hero landing page at `zapwebp-docs/public/hero.html` featuring a prominent brand tagline ("Convert correctly."), 6 surface highlight cards (Browser, Terminal, AI Agents, Build Tools, Storage Adapters, Inspector), interactive terminal quick-start with one-click copy, and primary CTA directing visitors to `/docs`.
+  - **Vercel Routing Governance**: Updated `zapwebp-docs/vercel.json` rewrites to map `/` to `/hero.html` while preserving catch-all `/index.html` for documentation SPA paths (`/docs`, `/cli`, `/mcp`, `/plugins/*`).
+  - **Two-Way Navigation Flow**: Updated docs SPA brand lockup in `zapwebp-docs/src/shell.ts` to link to `/` and configured `zapwebp-docs/src/router.ts` to permit full native navigation to `/` without SPA event interception.
+  - **Semantic SEO & Agent Discovery**: Incorporated `SoftwareApplication` JSON-LD schema, Inter & JetBrains Mono typography, dark mode synchronization (`localStorage` and `prefers-color-scheme`), and agent links (`/llms.txt`).
+
 - **Universal Stability, Performance & Reliability Contract**:
   - **Nine Universal Promises**: Codified measurable contracts across all surfaces (Correctness, Determinism, Stability, Performance, Accessibility, Reliability, Optimization, Security, Reversibility) into canonical documentation ([content/reliability.md](content/reliability.md)) and mirrors.
   - **Per-Surface Performance Budgets**: Defined exact performance and memory budgets for Web (FCP < 0.8s, TTI < 1.2s, CLS < 0.02, initial JS bundle < 40KB gzipped), VS Code Extension (activation < 100ms, single file < 100ms, memory < 80MB), Core Engine (cold start < 250ms, SVG→WebP < 25ms, PNG→WebP < 80ms), and GitHub Actions (startup < 5s, 100 SVGs < 30s).

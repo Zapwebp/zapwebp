@@ -18,7 +18,7 @@
     "cli:zapwebp": "node packages/cli/bin/zapwebp.js",
     "zap": "node packages/cli/bin/zap.js",
     "mcp": "node packages/mcp/bin/zapwebp-mcp.js",
-    "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js && node --test test/reliability.test.js && node --test test/web-service.test.js && node --test test/proof-transparency.test.js && node --test test/proof-reproducibility.test.js",
+    "test": "pnpm -r --if-present test && node --test test/docs.test.js && node --test test/locales-docs.test.js && node --test test/reliability.test.js && node --test test/web-service.test.js && node --test test/hero.test.js && node --test test/proof-transparency.test.js && node --test test/proof-reproducibility.test.js",
     "test:proofs": "node --test test/proof-transparency.test.js && node --test packages/cli/test/verify.test.js && node --test test/proof-reproducibility.test.js",
     "test:e2e": "node --test test/web-real-world.test.js && node --test apps/vscode/test/real-world.test.js",
     "build": "node scripts/build-llms.js",

@@ -19,7 +19,7 @@ export function shell(content: HTMLElement): HTMLElement {
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <a href="/docs" class="brand-link" aria-label="Zapwebp Documentation Home">
+        <a href="/" class="brand-link" aria-label="Zapwebp Home">
           <img src="/zapwebp.svg" alt="Zapwebp" class="brand-logo" width="24" height="24" />
           <span class="brand-name">Zapwebp</span>
           <span class="brand-badge">Docs</span>
