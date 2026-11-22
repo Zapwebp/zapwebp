@@ -6,6 +6,11 @@ This changelog records the changes included in each Zapwebp version.
 
 ### Added
 
+- **Documentation Architecture & Ecosystem Directory Relocation**:
+  - **Clean Documentation Footer (`zapwebp-docs/src/render.ts`)**: Removed the heavy 4-column sitemap grid ("Explore Zapwebp Architecture & Ecosystem") from the bottom of documentation articles (`/docs`, `/mcp`, etc.), resolving bottom clutter while preserving the helpful article meta row (raw markdown link, GitHub issue link, translation contribution, and back-to-top action) alongside the brand and zero-telemetry trust bar.
+  - **Landing Page Ecosystem Directory (`public/hero.html`, `zapwebp-docs/index.html`)**: Transferred the full 4-column directory (`Core Engine`, `Plugins & Frameworks`, `Developer SDKs & API`, `Platform & Governance`) to the landing page right after the Quick Start section, styled with tactile card surfaces, tokenized borders, badges, and responsive multi-column layouts.
+  - **Docs Delivery Engine Integration (`@zapwebp/docs`)**: Added root and docs app `docs.config.json` configurations connecting the `@zapwebp/docs` delivery engine to documentation build and verification workflows.
+
 - **Tactile Refraction, Rim Light & Reflection Design System**:
   - **Specular Highlights & Rim Light (`public/styles.css`, `public/tokens.css`)**: Implemented high-contrast physical depth with razor-sharp 1px top rim highlights (`--rim-highlight`), inset dual-bevel rim lighting (`--rim-light`), ambient shadows, and top-lit glass specular refraction gradients (`--glass-refraction`) across all cards (`.guarantee-card`, `.cockpit-bar`, `.converter-card`, `.single-result-card`, `.feature`, `.code-terminal-card`).
   - **Light Mode Contrast Harmonization**: Solved light mode theme drift by declaring explicit semantic surface tokens (`--bg-card`, `--bg-card-elevated`, `--bg-muted`, `--border-rim`, `--border-subtle`, `--text-secondary`, `--green-text`), eliminating hardcoded dark defaults that previously caused black card backgrounds and unreadable dark-on-dark text in light mode.

@@ -344,19 +344,39 @@
     }
 
     .feature {
+      position: relative;
       background: var(--hero-surface);
       border: 1px solid var(--hero-border);
       border-radius: var(--hero-radius);
       padding: 24px 22px;
-      box-shadow: var(--hero-card-shadow);
+      box-shadow: var(--hero-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
       display: flex;
       flex-direction: column;
-      transition: border-color 150ms ease, transform 150ms ease;
+      overflow: hidden;
+      transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+    }
+
+    [data-theme="dark"] .feature {
+      box-shadow: var(--hero-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .feature::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+      pointer-events: none;
+    }
+
+    [data-theme="dark"] .feature::before {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
     }
 
     .feature:hover {
       border-color: rgba(141, 198, 63, 0.5);
       transform: translateY(-2px);
+      box-shadow: var(--hero-card-shadow), 0 0 0 1px rgba(141, 198, 63, 0.2);
     }
 
     .feature-icon-wrap {
@@ -428,13 +448,31 @@
     }
 
     .code-terminal-card {
+      position: relative;
       background: var(--hero-code-bg);
       border: 1px solid var(--hero-code-border);
       border-radius: var(--hero-radius);
-      box-shadow: var(--hero-card-shadow);
+      box-shadow: var(--hero-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
       margin: 20px 0 20px 0;
       overflow: hidden;
       text-align: left;
+    }
+
+    [data-theme="dark"] .code-terminal-card {
+      box-shadow: var(--hero-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .code-terminal-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+      pointer-events: none;
+    }
+
+    [data-theme="dark"] .code-terminal-card::before {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
     }
 
     .terminal-header {
@@ -523,10 +561,130 @@
       color: var(--hero-text);
     }
 
+    /* Architecture & Ecosystem Section */
+    .ecosystem-section {
+      max-width: var(--hero-max-width);
+      margin: 0 auto;
+      padding: 64px 20px 72px 20px;
+      border-top: 1px solid var(--hero-border);
+    }
+
+    .ecosystem-header {
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .ecosystem-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--hero-primary);
+      margin-bottom: 8px;
+    }
+
+    .ecosystem-title {
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--hero-text);
+      margin-bottom: 8px;
+    }
+
+    .ecosystem-desc {
+      font-size: 0.95rem;
+      color: var(--hero-muted);
+      max-width: 680px;
+      line-height: 1.5;
+    }
+
+    .ecosystem-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .ecosystem-col {
+      background: var(--hero-surface);
+      border: 1px solid var(--hero-border);
+      border-radius: var(--hero-radius);
+      padding: 20px 18px;
+      box-shadow: var(--hero-card-shadow);
+      position: relative;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .ecosystem-col:hover {
+      border-color: rgba(141, 198, 63, 0.4);
+    }
+
+    .ecosystem-col-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--hero-text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--hero-border);
+    }
+
+    .ecosystem-links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ecosystem-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--hero-muted);
+      text-decoration: none;
+      transition: color 120ms ease, transform 120ms ease;
+    }
+
+    .ecosystem-link:hover {
+      color: var(--hero-primary);
+      transform: translateX(2px);
+    }
+
+    .ecosystem-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(141, 198, 63, 0.12);
+      border: 1px solid rgba(141, 198, 63, 0.25);
+      color: var(--hero-primary);
+      letter-spacing: 0.02em;
+    }
+
+    @media (max-width: 860px) {
+      .ecosystem-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 540px) {
+      .ecosystem-grid {
+        grid-template-columns: 1fr;
+      }
+      .ecosystem-section {
+        padding: 48px 16px;
+      }
+    }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--hero-border);
-      padding: 28px 20px;
+      padding: 32px 20px;
       text-align: center;
       color: var(--hero-muted);
       font-size: 0.875rem;
@@ -537,9 +695,17 @@
       max-width: var(--hero-max-width);
       margin: 0 auto;
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-brand-wrap,
+    .footer-links-wrap {
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -697,24 +863,125 @@
       </p>
       <a href="/docs" class="button-primary">Read the docs →</a>
     </section>
+
+    <!-- Architecture & Ecosystem Directory -->
+    <section class="ecosystem-section" aria-label="Explore Zapwebp Architecture & Ecosystem">
+      <div class="ecosystem-header">
+        <span class="ecosystem-tag">Documentation Directory</span>
+        <h2 class="ecosystem-title">Explore Zapwebp Architecture & Ecosystem</h2>
+        <p class="ecosystem-desc">Comprehensive reference for developers, automation pipelines, and AI systems across all 20 packages.</p>
+      </div>
+      <div class="ecosystem-grid">
+        <!-- Core Column -->
+        <div class="ecosystem-col">
+          <h3 class="ecosystem-col-title">Core Engine</h3>
+          <ul class="ecosystem-links-list">
+            <li><a href="/docs" class="ecosystem-link"><span>Overview</span></a></li>
+            <li><a href="/convert" class="ecosystem-link"><span>Convert</span></a></li>
+            <li><a href="/cli" class="ecosystem-link"><span>CLI</span> <span class="ecosystem-badge">v1.1.0</span></a></li>
+            <li><a href="/mcp" class="ecosystem-link"><span>MCP Agent</span> <span class="ecosystem-badge">AI</span></a></li>
+            <li><a href="/clean" class="ecosystem-link"><span>Clean</span></a></li>
+            <li><a href="/lock-target" class="ecosystem-link"><span>Target Lock</span> <span class="ecosystem-badge">v2.0</span></a></li>
+            <li><a href="/backgrounds" class="ecosystem-link"><span>Backgrounds</span> <span class="ecosystem-badge">v2.0</span></a></li>
+            <li><a href="/policy" class="ecosystem-link"><span>Policy Engine</span> <span class="ecosystem-badge">v2.0</span></a></li>
+            <li><a href="/formats" class="ecosystem-link"><span>Formats</span></a></li>
+            <li><a href="/safety" class="ecosystem-link"><span>Safety</span></a></li>
+            <li><a href="/errors" class="ecosystem-link"><span>Errors</span></a></li>
+            <li><a href="/smart" class="ecosystem-link"><span>Smart Optimization</span> <span class="ecosystem-badge">v2.19</span></a></li>
+            <li><a href="/limits" class="ecosystem-link"><span>Limits & Rate Controls</span> <span class="ecosystem-badge">v2.28</span></a></li>
+            <li><a href="/lossless" class="ecosystem-link"><span>Lossless</span> <span class="ecosystem-badge">Guaranteed</span></a></li>
+            <li><a href="/reports" class="ecosystem-link"><span>Performance Reports</span> <span class="ecosystem-badge">v2.19</span></a></li>
+            <li><a href="/deletion" class="ecosystem-link"><span>File Deletion</span> <span class="ecosystem-badge">Opt-In</span></a></li>
+            <li><a href="/freeze" class="ecosystem-link"><span>Core Freeze</span> <span class="ecosystem-badge">Frozen</span></a></li>
+          </ul>
+        </div>
+
+        <!-- Plugins Column -->
+        <div class="ecosystem-col">
+          <h3 class="ecosystem-col-title">Plugins & Frameworks</h3>
+          <ul class="ecosystem-links-list">
+            <li><a href="/plugins/vite" class="ecosystem-link"><span>Vite Plugin</span></a></li>
+            <li><a href="/plugins/next" class="ecosystem-link"><span>Next.js Plugin</span></a></li>
+            <li><a href="/plugins/github-action" class="ecosystem-link"><span>GitHub Action</span></a></li>
+            <li><a href="/plugins/storage" class="ecosystem-link"><span>Storage Adapters</span></a></li>
+            <li><a href="/storage/supabase" class="ecosystem-link"><span>Supabase Storage</span> <span class="ecosystem-badge">Guide</span></a></li>
+            <li><a href="/storage/firebase" class="ecosystem-link"><span>Firebase Storage</span> <span class="ecosystem-badge">Guide</span></a></li>
+            <li><a href="/storage/neocities" class="ecosystem-link"><span>Neocities Storage</span> <span class="ecosystem-badge">Guide</span></a></li>
+            <li><a href="/plugins/vscode" class="ecosystem-link"><span>VS Code Extension</span> <span class="ecosystem-badge">Open VSX</span></a></li>
+            <li><a href="/plugins/laravel" class="ecosystem-link"><span>Laravel Package</span> <span class="ecosystem-badge">PHP</span></a></li>
+            <li><a href="/plugins/lens" class="ecosystem-link"><span>Lens CLI</span></a></li>
+            <li><a href="/plugins/crop" class="ecosystem-link"><span>Crop Plugin</span> <span class="ecosystem-badge">Transform</span></a></li>
+            <li><a href="/plugins/format-ico" class="ecosystem-link"><span>ICO Plugin</span> <span class="ecosystem-badge">Format</span></a></li>
+            <li><a href="/plugins/compressor" class="ecosystem-link"><span>Compressor Plugin</span> <span class="ecosystem-badge">Compression</span></a></li>
+            <li><a href="/plugins/lock" class="ecosystem-link"><span>Lock Plugin</span> <span class="ecosystem-badge">Idempotency</span></a></li>
+            <li><a href="/plugins/docs" class="ecosystem-link"><span>Docs Delivery Engine</span> <span class="ecosystem-badge">v1.0</span></a></li>
+          </ul>
+        </div>
+
+        <!-- Developers Column -->
+        <div class="ecosystem-col">
+          <h3 class="ecosystem-col-title">Developer SDKs & API</h3>
+          <ul class="ecosystem-links-list">
+            <li><a href="/sdk" class="ecosystem-link"><span>Developers Overview</span></a></li>
+            <li><a href="/sdk/core" class="ecosystem-link"><span>Core SDK</span> <span class="ecosystem-badge">Engine</span></a></li>
+            <li><a href="/sdk/plugin" class="ecosystem-link"><span>Plugin SDK</span></a></li>
+            <li><a href="/sdk/ui-kit" class="ecosystem-link"><span>UI Kit</span> <span class="ecosystem-badge">v2.2</span></a></li>
+            <li><a href="/sdk/ui" class="ecosystem-link"><span>UI SDK</span></a></li>
+            <li><a href="/sdk/cli" class="ecosystem-link"><span>CLI SDK</span></a></li>
+            <li><a href="/sdk/storage" class="ecosystem-link"><span>Storage SDK</span></a></li>
+            <li><a href="/sdk/edge" class="ecosystem-link"><span>Edge SDK</span> <span class="ecosystem-badge">Edge</span></a></li>
+            <li><a href="/api" class="ecosystem-link"><span>REST API</span></a></li>
+            <li><a href="/ai-integration" class="ecosystem-link"><span>AI Integration</span> <span class="ecosystem-badge">AI</span></a></li>
+            <li><a href="/scaffolding" class="ecosystem-link"><span>Plugin Scaffolding</span> <span class="ecosystem-badge">CLI</span></a></li>
+          </ul>
+        </div>
+
+        <!-- Platform Column -->
+        <div class="ecosystem-col">
+          <h3 class="ecosystem-col-title">Platform & Governance</h3>
+          <ul class="ecosystem-links-list">
+            <li><a href="/about" class="ecosystem-link"><span>About</span></a></li>
+            <li><a href="/privacy" class="ecosystem-link"><span>Privacy Policy</span></a></li>
+            <li><a href="/terms" class="ecosystem-link"><span>Terms of Service</span></a></li>
+            <li><a href="/security" class="ecosystem-link"><span>Security</span></a></li>
+            <li><a href="/code-of-conduct" class="ecosystem-link"><span>Code of Conduct</span></a></li>
+            <li><a href="/contributing" class="ecosystem-link"><span>Contributing</span></a></li>
+            <li><a href="/translators" class="ecosystem-link"><span>Translators</span></a></li>
+            <li><a href="/faq" class="ecosystem-link"><span>Common FAQs</span> <span class="ecosystem-badge">Help</span></a></li>
+            <li><a href="/stability" class="ecosystem-link"><span>Stability</span> <span class="ecosystem-badge">Hardened</span></a></li>
+            <li><a href="/performance" class="ecosystem-link"><span>Performance</span> <span class="ecosystem-badge">Budgets</span></a></li>
+            <li><a href="/reliability" class="ecosystem-link"><span>Reliability</span> <span class="ecosystem-badge">Masterplan</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Footer -->
   <footer>
     <div class="footer-inner">
-      <span>⚡ Zapwebp</span>
-      <span class="footer-sep">·</span>
-      <span>© 2026</span>
-      <span class="footer-sep">·</span>
-      <span>MIT License</span>
-      <span class="footer-sep">·</span>
-      <a href="https://github.com/Zapwebp" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <span class="footer-sep">·</span>
-      <a href="https://www.npmjs.com/org/zapwebp" target="_blank" rel="noopener noreferrer">npm</a>
-      <span class="footer-sep">·</span>
-      <a href="/llms.txt">llms.txt</a>
-      <span class="footer-sep">·</span>
-      <a href="/docs">Docs</a>
+      <div class="footer-brand-wrap">
+        <span>⚡ Zapwebp</span>
+        <span class="footer-sep">·</span>
+        <span>© 2026</span>
+        <span class="footer-sep">·</span>
+        <span>MIT License</span>
+        <span class="footer-sep">·</span>
+        <span>Maintained by <strong>Eldrex Delos Reyes Bula</strong></span>
+      </div>
+      <div class="footer-links-wrap">
+        <a href="https://zapwebp.vercel.app" target="_blank" rel="noopener noreferrer">Web Converter ↗</a>
+        <span class="footer-sep">·</span>
+        <a href="https://github.com/Zapwebp" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.npmjs.com/org/zapwebp" target="_blank" rel="noopener noreferrer">npm ↗</a>
+        <span class="footer-sep">·</span>
+        <a href="https://open-vsx.org/extension/ebula/zapwebp-vscode" target="_blank" rel="noopener noreferrer">Open VSX ↗</a>
+        <span class="footer-sep">·</span>
+        <a href="/llms.txt">llms.txt</a>
+        <span class="footer-sep">·</span>
+        <a href="/docs">Docs</a>
+      </div>
     </div>
   </footer>
 

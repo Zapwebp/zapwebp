@@ -588,45 +588,9 @@ function appendPagination(mount: HTMLElement, currentRoute: DocRoute) {
 }
 
 /**
- * Appends comprehensive documentation sitemap and open-source governance footer
+ * Appends documentation article meta bar and open-source governance footer
  */
 export function buildComprehensiveFooter(fileKey?: string): HTMLElement {
-  const categories: Array<'Core' | 'Plugins' | 'Developers' | 'Platform'> = ['Core', 'Plugins', 'Developers', 'Platform'];
-
-  const categoryHeaders: Record<string, string> = {
-    Core: t('cat.Core') || 'Core Engine',
-    Plugins: t('cat.Plugins') || 'Plugins & Frameworks',
-    Developers: t('cat.Developers') || 'Developer SDKs & API',
-    Platform: t('cat.Platform') || 'Platform & Legal',
-  };
-
-  const columnsHtml = categories
-    .map((cat) => {
-      const routesInCat = DOC_ROUTES.filter((r) => r.category === cat);
-      const linksHtml = routesInCat
-        .map(
-          (r) => `
-        <li>
-          <a href="${r.path}" class="docs-footer-sitemap-link">
-            <span>${t(`title.${r.title}`, undefined, r.title)}</span>
-            ${r.badge ? `<span class="docs-footer-badge">${escapeHtml(r.badge)}</span>` : ''}
-          </a>
-        </li>
-      `
-        )
-        .join('');
-
-      return `
-        <div class="docs-footer-col">
-          <h4 class="docs-footer-col-title">${escapeHtml(categoryHeaders[cat])}</h4>
-          <ul class="docs-footer-links-list">
-            ${linksHtml}
-          </ul>
-        </div>
-      `;
-    })
-    .join('');
-
   const footer = document.createElement('footer');
   footer.className = 'docs-comprehensive-footer';
   footer.innerHTML = `
@@ -655,17 +619,6 @@ export function buildComprehensiveFooter(fileKey?: string): HTMLElement {
       </div>
     </div>
     ` : ''}
-
-    <!-- Full 4-Column Documentation Sitemap Grid -->
-    <div class="docs-footer-sitemap-section">
-      <div class="docs-footer-sitemap-header">
-        <span class="sitemap-tag">Documentation Directory</span>
-        <h3 class="sitemap-heading">Explore Zapwebp Architecture & Ecosystem</h3>
-      </div>
-      <div class="docs-footer-sitemap-grid">
-        ${columnsHtml}
-      </div>
-    </div>
 
     <!-- Brand & Governance Trust Bar -->
     <div class="docs-footer-brand-bar">

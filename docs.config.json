@@ -1,0 +1,40 @@
+{
+  "title": "Zapwebp Documentation",
+  "tagline": "Transparency-safe image conversion across developer terminals, AI agents, code editors, and browsers with zero server uploads.",
+  "description": "High-performance, transparency-preserving image conversion engine with memory-only execution, zero telemetry, and deterministic output.",
+  "url": "https://zapwebp-docs.vercel.app",
+  "lang": "en",
+  "author": {
+    "name": "Eldrex Delos Reyes Bula",
+    "url": "https://github.com/Zapwebp",
+    "email": "eldrexdelosreyesbula@gmail.com"
+  },
+  "content": {
+    "dir": "content",
+    "extensions": [".md"]
+  },
+  "output": {
+    "dir": "dist",
+    "html": true,
+    "markdown": true,
+    "llmsTxt": true,
+    "sitemap": true,
+    "robots": true,
+    "agentJson": true,
+    "searchIndex": true
+  },
+  "assets": {
+    "dir": "public"
+  },
+  "theme": {
+    "tokens": "/tokens.css",
+    "font": "Inter, system-ui, -apple-system, sans-serif",
+    "accentColor": "#8dc63f",
+    "github": "https://github.com/Zapwebp/zapwebp",
+    "searchPlaceholder": "Search documentation..."
+  },
+  "footer": {
+    "copyright": "© 2026",
+    "license": "MIT"
+  }
+}

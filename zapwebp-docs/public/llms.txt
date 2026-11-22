@@ -1,13 +1,13 @@
 # Zapwebp
 
-> AI-ready image infrastructure built for developers who need reliable, reproducible, privacy-conscious image processing.
+> Universal image infrastructure built for developers, automation pipelines, and AI systems.
 >
-> Stop marketing features. Start proving guarantees:
-> 1. Correctness: Conversion is not enough. Verify the result (alpha preserved at origin pixel 0,0).
-> 2. Reproducibility: Same input, same configuration, same engine version across OSes (verified via MANIFEST.json).
-> 3. Privacy: Local-first processing. No mandatory cloud uploads. Zero telemetry.
-> 4. Extensibility: Open plugin architecture, not a closed ecosystem (scaffold via create-zapwebp).
-> 5. Universality: One engine across Web (WASM), CLI, VS Code, and AI Agents (MCP).
+> Core Technical Guarantees:
+> 1. Correctness: Pixel transparency preservation is verified in continuous integration.
+> 2. Reproducibility: Bit-for-bit parity across runs (verified via MANIFEST.json SHA-256 corpus).
+> 3. Privacy: 100% in-browser client memory execution. Zero telemetry.
+> 4. Extensibility: Standardized plugin architecture (@zapwebp/plugin-sdk).
+> 5. Universality: One shared engine across Web, CLI, VS Code, and AI Agents (MCP).
 
 ## Core
 

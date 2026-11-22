@@ -40,7 +40,14 @@ test('Hero Landing Page: hero.html exists and conforms to specifications', () =>
     assert.ok(content.includes(`<h2>${f}</h2>`), `must include feature card for ${f}`);
   }
 
-  // 6. Tokens & Dark Mode
+  // 6. Architecture & Ecosystem Directory (Moved to Landing Page)
+  assert.ok(content.includes('Explore Zapwebp Architecture & Ecosystem'), 'must include ecosystem architecture directory');
+  assert.ok(content.includes('Core Engine'), 'must include Core Engine column');
+  assert.ok(content.includes('Plugins & Frameworks'), 'must include Plugins & Frameworks column');
+  assert.ok(content.includes('Developer SDKs & API'), 'must include Developer SDKs column');
+  assert.ok(content.includes('Platform & Governance'), 'must include Platform column');
+
+  // 7. Tokens & Dark Mode
   assert.ok(content.includes('href="/tokens.css"'), 'must link to /tokens.css');
   assert.ok(content.includes('prefers-color-scheme: dark'), 'must support dark mode');
 });
